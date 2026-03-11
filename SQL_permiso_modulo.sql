@@ -4,7 +4,7 @@
 -- SEGURO ejecutar múltiples veces (limpia antes de insertar).
 -- =============================================
 
-USE Prueba_erp;
+USE erp;
 
 -- ═══════════════════════════════════════════════
 -- 1. LIMPIAR DATOS ANTERIORES (orden FK correcto)
@@ -44,5 +44,5 @@ INSERT INTO `asignacion_accs` (`ID_ROL`, `ID_PERM`) VALUES
 (3,6),(3,8),
 -- RRHH (4): inicio, asistencia, personal, horarios, clientes
 (4,1),(4,2),(4,3),(4,8),(4,10),
--- SUPERVISOR (5): inicio, asistencia, personal
-(5,1),(5,2),(5,8);
+-- SUPERVISOR (5): TODOS (modo lectura — el frontend desactiva CRUD)
+(5,1),(5,2),(5,3),(5,4),(5,5),(5,6),(5,7),(5,8),(5,9),(5,10),(5,11);

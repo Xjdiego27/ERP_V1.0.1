@@ -227,6 +227,14 @@
     background: #d1fae5;
     color: #065f46;
 }
+.badge-rrhh {
+    background: #d1fae5;
+    color: #065f46;
+}
+.badge-supervisor {
+    background: #ede9fe;
+    color: #5b21b6;
+}
 
 /* Checkboxes de módulo */
 .col-modulo {
@@ -334,6 +342,69 @@
     font-size: .92rem;
 }
 
+/* Subtítulo en secciones */
+.seccion-subtitulo {
+    font-size: .78rem;
+    color: #94a3b8;
+    font-weight: 400;
+    margin-left: auto;
+}
+
+/* Banner informativo */
+.permisos-info-banner {
+    display: flex;
+    align-items: center;
+    gap: .6rem;
+    padding: .65rem 1rem;
+    background: #eff6ff;
+    border: 1px solid #bfdbfe;
+    border-radius: 8px;
+    font-size: .82rem;
+    color: #1e40af;
+    margin-bottom: 1rem;
+}
+.permisos-info-banner svg {
+    flex-shrink: 0;
+    font-size: 1rem;
+}
+
+/* Dropdown de rol en tabla personal */
+.col-rol-asignar {
+    min-width: 140px;
+    text-align: center !important;
+}
+.rol-select {
+    padding: .35rem .5rem;
+    border-radius: 6px;
+    border: 1.5px solid #e2e8f0;
+    font-size: .78rem;
+    font-weight: 600;
+    background: #fff;
+    color: #334155;
+    cursor: pointer;
+    transition: all .2s ease;
+    width: 100%;
+    max-width: 150px;
+}
+.rol-select:hover {
+    border-color: #93c5fd;
+}
+.rol-select:focus {
+    outline: none;
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59,130,246,.15);
+}
+.rol-select.cambiado {
+    border-color: #f59e0b;
+    background: #fffbeb;
+    color: #92400e;
+}
+
+.sin-cambios {
+    color: #cbd5e1;
+    font-size: .85rem;
+}
+
 /* Spin animation */
 @keyframes spin { to { transform: rotate(360deg); } }
 .spin { animation: spin .8s linear infinite; }
@@ -378,6 +449,24 @@
     background: #450a0a;
     color: #fca5a5;
     border-color: #991b1b;
+}
+.dark-mode .permisos-info-banner {
+    background: #1e293b;
+    border-color: #334155;
+    color: #93c5fd;
+}
+.dark-mode .rol-select {
+    background: #1e293b;
+    border-color: #475569;
+    color: #e2e8f0;
+}
+.dark-mode .rol-select.cambiado {
+    border-color: #f59e0b;
+    background: #422006;
+    color: #fbbf24;
+}
+.dark-mode .seccion-subtitulo {
+    color: #64748b;
 }
 
 /* Responsive */

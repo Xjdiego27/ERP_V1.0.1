@@ -315,11 +315,12 @@ export default function Tickets() {
                                             {ETIQUETAS_FLUJO.map(function (et, i) {
                                                 var completado = i <= pasoActual;
                                                 var esActual = i === pasoActual;
+                                                var lineaActiva = i < pasoActual;
                                                 return (
                                                     <React.Fragment key={et}>
                                                         <div className={'step-det-dot' + (completado ? ' activo' : '') + (esActual ? ' actual' : '')}></div>
                                                         {i < ETIQUETAS_FLUJO.length - 1 && (
-                                                            <div className={'step-det-line' + (completado ? ' activo' : '')}></div>
+                                                            <div className={'step-det-line' + (lineaActiva ? ' activo' : '')}></div>
                                                         )}
                                                     </React.Fragment>
                                                 );

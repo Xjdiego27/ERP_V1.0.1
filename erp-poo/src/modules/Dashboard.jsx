@@ -88,8 +88,11 @@ export default function Dashboard() {
 
     if (!usuario) return <p>Cargando sesión...</p>;
 
+    // SUPERVISOR (rol 5) ve todo pero en modo solo lectura
+    var esLectura = (usuario.rol || '').toUpperCase() === 'SUPERVISOR';
+
     return (
-        <div className="dashboard-layout">
+        <div className={'dashboard-layout' + (esLectura ? ' modo-lectura' : '')}>
             {mostrarCambioPassword && (
                 <CambioPassword onCambiado={() => setMostrarCambioPassword(false)} />
             )}

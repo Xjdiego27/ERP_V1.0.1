@@ -23,6 +23,7 @@ from database import (
 )
 from auth_token import verificar_token
 from auditoria import registrar_accion
+from mongodb import coleccion_notif_tickets
 
 router = APIRouter()
 
@@ -45,6 +46,50 @@ def _es_ti(token: dict) -> bool:
 def _personal_por_accs(db: Session, id_accs: int):
     """Obtiene el Personal vinculado a un ID_ACCS."""
     return db.query(Personal).filter(Personal.ID_ACCS == id_accs).first()
+
+
+async def _notificar_ticket(db: Session, id_ticket: int, tipo: str, texto: str,
+                            destinatarios_ids: list = None, roles_destino: list = None,
+                            id_empresa: int = None):
+    """
+    Inserta notificaciones de ticket en MongoDB.
+    - destinatarios_ids: lista de ID_PERSONAL concretos
+    - roles_destino: lista de ID_ROL (busca empleados con esos roles en la empresa)
+    """
+    ids = set(destinatarios_ids or [])
+
+    if roles_destino and id_empresa:
+        personas_rol = (
+            db.query(Personal)
+            .join(Acceso, Acceso.ID_ACCS == Personal.ID_ACCS)
+            .join(Contrato, Contrato.ID_PERSONAL == Personal.ID_PERSONAL)
+            .join(Cargo, Cargo.ID_CARGO == Contrato.ID_CARGO)
+            .filter(
+                Acceso.ID_ESTADO == 1,
+                Acceso.ID_ROL.in_(roles_destino),
+                Cargo.ID_EMP == id_empresa,
+                Contrato.ID_ESTADO_CONTRATO == 1,
+            )
+            .all()
+        )
+        for p in personas_rol:
+            ids.add(p.ID_PERSONAL)
+
+    if not ids:
+        return
+
+    docs = []
+    for id_p in ids:
+        docs.append({
+            "id_personal": id_p,
+            "id_ticket": id_ticket,
+            "tipo": tipo,
+            "texto": texto,
+            "leido": False,
+            "fecha": datetime.now(),
+        })
+    if docs:
+        await coleccion_notif_tickets.insert_many(docs)
 
 
 def _equipo_asignado(db: Session, id_personal: int):
@@ -366,6 +411,16 @@ async def crear_ticket(
         datos_nuevos={"prioridad": prioridad, "categoria": id_categoria},
     )
 
+    # Notificar a SOPORTE (2) y ADMINISTRADOR (1) sobre nuevo ticket
+    nombre_creador = f"{persona.NOMBRES} {persona.APE_PATERNO}" if persona else "Usuario"
+    await _notificar_ticket(
+        db, nuevo.ID_TICKET,
+        tipo="ticket_creado",
+        texto=f"Nuevo ticket #{nuevo.ID_TICKET}: {asunto} — {nombre_creador} [{prioridad.upper()}]",
+        roles_destino=[1, 2],
+        id_empresa=token.get("id_emp"),
+    )
+
     return {"mensaje": "Ticket creado exitosamente", "id_ticket": nuevo.ID_TICKET}
 
 
@@ -501,6 +556,16 @@ async def asignar_ticket(
         datos_nuevos={"id_ti": id_ti, "estado": t.ESTADO},
     )
 
+    # Notificar al creador que su ticket fue asignado
+    tec = db.query(Personal).filter(Personal.ID_PERSONAL == id_ti).first()
+    nombre_tec = f"{tec.NOMBRES} {tec.APE_PATERNO}" if tec else "un técnico"
+    await _notificar_ticket(
+        db, id_ticket,
+        tipo="ticket_estado",
+        texto=f"Tu ticket #{id_ticket} fue asignado a {nombre_tec}",
+        destinatarios_ids=[t.ID_PERSONAL],
+    )
+
     return {"mensaje": "Ticket asignado", "estado": t.ESTADO}
 
 
@@ -540,6 +605,15 @@ async def cambiar_estado(
         datos_nuevos={"estado": estado},
     )
 
+    # Notificar al creador del ticket sobre el cambio de estado
+    etiquetas = {"ASIGNADO": "asignado", "RESUELTO": "en progreso", "CERRADO": "cerrado"}
+    await _notificar_ticket(
+        db, id_ticket,
+        tipo="ticket_estado",
+        texto=f"Tu ticket #{id_ticket} ahora está {etiquetas.get(estado, estado)}",
+        destinatarios_ids=[t.ID_PERSONAL],
+    )
+
     return {"mensaje": f"Estado actualizado a {estado}"}
 
 
@@ -575,6 +649,14 @@ async def cerrar_ticket(
         datos_nuevos={"mensaje_ti": mensaje_ti},
     )
 
+    # Notificar al creador que su ticket fue cerrado
+    await _notificar_ticket(
+        db, id_ticket,
+        tipo="ticket_estado",
+        texto=f"Tu ticket #{id_ticket} fue cerrado" + (f": {mensaje_ti}" if mensaje_ti else ""),
+        destinatarios_ids=[t.ID_PERSONAL],
+    )
+
     return {"mensaje": "Ticket cerrado exitosamente"}
 
 
@@ -603,3 +685,48 @@ async def valorar_ticket(
     db.commit()
 
     return {"mensaje": "Valoración registrada"}
+
+
+@router.put("/tickets/{id_ticket}/reabrir")
+async def reabrir_ticket(
+    id_ticket: int,
+    db: Session = Depends(get_db),
+    token: dict = Depends(verificar_token),
+):
+    """El usuario creador puede reabrir un ticket cerrado (en lugar de valorar)."""
+    if not Ticket:
+        raise HTTPException(status_code=500, detail="Módulo no disponible")
+
+    t = db.query(Ticket).filter(Ticket.ID_TICKET == id_ticket).first()
+    if not t:
+        raise HTTPException(status_code=404, detail="Ticket no encontrado")
+
+    if t.ESTADO != "CERRADO":
+        raise HTTPException(status_code=400, detail="Solo se pueden reabrir tickets cerrados")
+
+    t.ESTADO = "ABIERTO"
+    t.VALORACION = None
+    t.FECH_CIERRE = None
+    t.MENSAJE_TI = None
+    db.commit()
+
+    await registrar_accion(
+        usuario=token.get("sub", "desconocido"),
+        accion="REABRIR",
+        modulo="TICKETS",
+        id_afectado=id_ticket,
+        nombre_afectado=t.ASUNTO,
+        datos_nuevos={"estado": "ABIERTO"},
+    )
+
+    # Notificar a SOPORTE y ADMIN que el ticket fue reabierto
+    id_empresa = token.get("id_emp")
+    await _notificar_ticket(
+        db, id_ticket,
+        tipo="ticket_creado",
+        texto=f"Ticket #{id_ticket} fue reabierto: {t.ASUNTO}",
+        roles_destino=[1, 2],
+        id_empresa=id_empresa,
+    )
+
+    return {"mensaje": "Ticket reabierto exitosamente"}

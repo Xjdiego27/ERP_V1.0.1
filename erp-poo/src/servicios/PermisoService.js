@@ -67,6 +67,11 @@ class PermisoService {
         return ['ADMINISTRADOR', 'ADMIN', 'SOPORTE'].indexOf(this._rol) >= 0;
     }
 
+    /** ¿Es modo lectura? SUPERVISOR ve todo pero no puede hacer CRUD. */
+    get esLectura() {
+        return this._rol === 'SUPERVISOR';
+    }
+
     /** Nombre del rol en mayúsculas. */
     get rol() {
         return this._rol;

@@ -238,6 +238,19 @@ export default function IngresarTicket() {
         } catch (e) { alert(e.message); }
     }
 
+    async function reabrirTicket() {
+        if (!ticketPendienteVal) return;
+        try {
+            var resp = await fetch(API_URL + '/tickets/' + ticketPendienteVal.id_ticket + '/reabrir', {
+                method: 'PUT', headers: headersConToken(),
+            });
+            if (!resp.ok) throw new Error('Error al reabrir');
+            setModalValoracion(false);
+            setTicketPendienteVal(null);
+            cargarMisTickets();
+        } catch (e) { alert(e.message); }
+    }
+
     // ── Render campos SAP dinámicos ──
     function renderCamposSAP() {
         if (!esSAP || !form.id_subcategoria || !sapCatalogos) return null;
@@ -420,10 +433,11 @@ export default function IngresarTicket() {
                                         <div className="stepper-mini">
                                             {ETIQUETAS_FLUJO.map(function (et, i) {
                                                 var completado = i <= paso;
+                                                var lineaActiva = i < paso;
                                                 return (
                                                     <div key={et} className={'step-mini' + (completado ? ' activo' : '')}>
                                                         <div className="step-dot"></div>
-                                                        {i < ETIQUETAS_FLUJO.length - 1 && <div className="step-line"></div>}
+                                                        {i < ETIQUETAS_FLUJO.length - 1 && <div className={'step-line' + (lineaActiva ? ' linea-activa' : '')}></div>}
                                                     </div>
                                                 );
                                             })}
@@ -556,6 +570,16 @@ export default function IngresarTicket() {
                                 <button className="valoracion-btn val-rapido" onClick={function () { enviarValoracion(3); }}>
                                     <span className="val-estrellas"><IconoFa icono={faStar} /> <IconoFa icono={faStar} /> <IconoFa icono={faStar} /></span>
                                     <span className="val-texto">RÁPIDO</span>
+                                </button>
+                            </div>
+
+                            {/* Reabrir ticket */}
+                            <div className="reabrir-seccion">
+                                <div className="reabrir-separador"></div>
+                                <h4 className="reabrir-titulo">¿SE RESOLVIÓ TU PROBLEMA?</h4>
+                                <p className="reabrir-desc">Si el problema persiste, puedes reabrir el ticket para que sea atendido nuevamente.</p>
+                                <button className="btn-reabrir-ticket" onClick={reabrirTicket}>
+                                    REABRIR TICKET
                                 </button>
                             </div>
                         </div>

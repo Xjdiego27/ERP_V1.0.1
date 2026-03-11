@@ -122,3 +122,45 @@ html, body {
 .sidebar-overlay {
     display: none;
 }
+
+/* ═══ MODO LECTURA (rol USUARIO) — deshabilita botones CRUD ═══ */
+.modo-lectura .personal-btn-nuevo,
+.modo-lectura .det-btn-agregar-contacto,
+.modo-lectura .det-btn-nuevo,
+.modo-lectura .det-btn-editar,
+.modo-lectura .det-btn-guardar,
+.modo-lectura .det-btn-quitar,
+.modo-lectura .det-btn-desactivar,
+.modo-lectura .det-btn-reactivar,
+.modo-lectura .det-btn-justificar,
+.modo-lectura .horarios-btn-crear,
+.modo-lectura .horario-btn-edit,
+.modo-lectura .modal-btn-guardar,
+.modo-lectura .eq-btn-add,
+.modo-lectura .eq-btn-crear,
+.modo-lectura .eq-btn-edit,
+.modo-lectura .eq-btn-del,
+.modo-lectura .eqa-btn-nueva,
+.modo-lectura .eqa-btn-asignar,
+.modo-lectura .eqa-btn-devolver,
+.modo-lectura .masivo-btn,
+.modo-lectura .seccion-btn-eliminar,
+.modo-lectura .seccion-btn-subir,
+.modo-lectura .doc-btn-eliminar,
+.modo-lectura .btn-guardar,
+.modo-lectura .btn-todos,
+.modo-lectura .btn-ninguno,
+.modo-lectura .btn-cerrar-ticket,
+.modo-lectura .btn-estado-cambio {
+    pointer-events: none;
+    opacity: 0.35;
+    cursor: not-allowed;
+    filter: grayscale(40%);
+}
+/* El USUARIO sí puede crear tickets */
+.modo-lectura .btn-crear-ticket {
+    pointer-events: auto;
+    opacity: 1;
+    cursor: pointer;
+    filter: none;
+}

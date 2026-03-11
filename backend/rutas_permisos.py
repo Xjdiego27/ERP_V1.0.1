@@ -74,6 +74,27 @@ def listar_usuarios_permisos(db: Session = Depends(get_db), token: dict = Depend
     return PermisoService(db).listar_personal_empresa(id_empresa)
 
 
+# ── Cambiar rol de un usuario individual ──────────
+class CambioRolSchema(BaseModel):
+    id_rol: int
+
+
+@router.put("/permisos/usuarios/{id_accs}/rol")
+def cambiar_rol_usuario(
+    id_accs: int,
+    datos: CambioRolSchema,
+    db: Session = Depends(get_db),
+    token: dict = Depends(verificar_token),
+):
+    """Cambia el rol de un usuario específico (personaliza su acceso)."""
+    _solo_admin(token)
+    try:
+        return PermisoService(db).cambiar_rol_usuario(id_accs, datos.id_rol)
+    except ValueError as e:
+        status = 404 if "no encontrado" in str(e) else 500
+        raise HTTPException(status_code=status, detail=str(e))
+
+
 # ── Mis módulos (para Sidebar del usuario actual) ─
 @router.get("/permisos/mis-modulos")
 def mis_modulos(db: Session = Depends(get_db), token: dict = Depends(verificar_token)):

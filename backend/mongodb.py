@@ -25,3 +25,4 @@ coleccion_eventos = db_mongo["eventos"]                # Registros de eventos su
 coleccion_asistencia = db_mongo["asistencia"]          # Marcajes del huellero (ZkTimeNet → MongoDB)
 coleccion_justificaciones = db_mongo["justificaciones"]  # Justificaciones manuales de asistencia
 coleccion_auditoria = db_mongo["auditoria"]            # Log de cambios: quién, qué, a quién, cuándo
+coleccion_notif_tickets = db_mongo["notificaciones_tickets"]  # Notificaciones de tickets (creación, estado)

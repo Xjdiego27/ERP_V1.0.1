@@ -144,6 +144,35 @@ class PermisoService:
         return resultado
 
     # ══════════════════════════════════════════════
+    #  CAMBIO DE ROL POR USUARIO
+    # ══════════════════════════════════════════════
+
+    def cambiar_rol_usuario(self, id_accs: int, nuevo_id_rol: int) -> dict:
+        """Cambia el rol de un usuario individual.
+        Esto modifica los módulos que puede ver (derivados del nuevo rol)."""
+        acceso = self._db.query(Acceso).filter(Acceso.ID_ACCS == id_accs).first()
+        if not acceso:
+            raise ValueError("Usuario no encontrado")
+
+        rol = self._db.query(RolAccs).filter(RolAccs.ID_ROL == nuevo_id_rol).first()
+        if not rol:
+            raise ValueError("Rol no encontrado")
+
+        rol_anterior = acceso.ID_ROL
+        acceso.ID_ROL = nuevo_id_rol
+        self._db.commit()
+
+        nuevos_modulos = self.obtener_modulos_rol(nuevo_id_rol)
+        return {
+            "mensaje": f"Rol de {acceso.USUARIO} cambiado a {rol.DESCRIP}",
+            "id_accs": id_accs,
+            "rol_anterior": rol_anterior,
+            "nuevo_rol": nuevo_id_rol,
+            "nombre_rol": rol.DESCRIP,
+            "modulos": nuevos_modulos,
+        }
+
+    # ══════════════════════════════════════════════
     #  MÉTODOS PRIVADOS
     # ══════════════════════════════════════════════
 

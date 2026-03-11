@@ -1,17 +1,22 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { API_URL, headersConToken } from '../auth';
 import IconoFa from '../components/IconoFa';
 import PageContent from '../components/PageContent';
-import { faShieldHalved, faSearch, faCheck, faTimes, faSpinner, faSave, faUserShield, faUsers } from '@fortawesome/free-solid-svg-icons';
+import {
+    faShieldHalved, faSearch, faCheck, faTimes, faSpinner, faSave,
+    faUserShield, faUsers, faExchangeAlt, faInfoCircle
+} from '@fortawesome/free-solid-svg-icons';
 import '../styles/GestionPermisos.css';
 
 export default function GestionPermisos() {
-    var [datos, setDatos] = useState(null);       // {roles, submodulos}
+    var [datos, setDatos] = useState(null);         // {roles, submodulos}
     var [usuarios, setUsuarios] = useState([]);
     var [busqueda, setBusqueda] = useState('');
-    var [guardando, setGuardando] = useState(null); // id_rol del que se guarda
+    var [guardando, setGuardando] = useState(null);  // id_rol del que se guarda
+    var [guardandoUser, setGuardandoUser] = useState(null); // id_accs del usuario
     var [mensaje, setMensaje] = useState('');
-    var [cambiosPendientes, setCambiosPendientes] = useState({}); // {id_rol: [id_perm, ...]}
+    var [cambiosPendientes, setCambiosPendientes] = useState({});    // {id_rol: [id_perm, ...]}
+    var [cambiosRol, setCambiosRol] = useState({});                  // {id_accs: nuevo_id_rol}
 
     useEffect(function () {
         cargarDatos();
@@ -20,11 +25,13 @@ export default function GestionPermisos() {
     function cargarDatos() {
         fetch(API_URL + '/permisos/roles', { headers: headersConToken() })
             .then(function (r) { return r.json(); })
-            .then(function (data) { setDatos(data); });
+            .then(function (data) { setDatos(data); })
+            .catch(function () {});
 
         fetch(API_URL + '/permisos/usuarios', { headers: headersConToken() })
             .then(function (r) { return r.json(); })
-            .then(function (data) { setUsuarios(Array.isArray(data) ? data : []); });
+            .then(function (data) { setUsuarios(Array.isArray(data) ? data : []); })
+            .catch(function () {});
     }
 
     if (!datos) return <PageContent><p>Cargando permisos...</p></PageContent>;
@@ -32,7 +39,9 @@ export default function GestionPermisos() {
     var roles = datos.roles || [];
     var submodulos = datos.submodulos || [];
 
-    // ── Lógica de checkboxes por ROL ──
+    // ══════════════════════════════════════
+    //  LÓGICA SECCIÓN 1: ROLES × MÓDULOS
+    // ══════════════════════════════════════
 
     function permisosDelRol(rol) {
         if (cambiosPendientes[rol.id_rol]) return cambiosPendientes[rol.id_rol];
@@ -91,7 +100,6 @@ export default function GestionPermisos() {
             var data = await resp.json();
             if (!resp.ok) throw new Error(data.detail || 'Error al guardar');
 
-            // Actualizar estado local
             setDatos(function (prev) {
                 var nuevosRoles = prev.roles.map(function (r) {
                     if (r.id_rol === rol.id_rol) return Object.assign({}, r, { permisos: permisos });
@@ -107,7 +115,7 @@ export default function GestionPermisos() {
 
             setMensaje('Permisos de ' + rol.nombre + ' actualizados ✓');
 
-            // Refrescar lista de usuarios (sus permisos derivados cambiaron)
+            // Refrescar personal (sus permisos derivados cambiaron)
             fetch(API_URL + '/permisos/usuarios', { headers: headersConToken() })
                 .then(function (r) { return r.json(); })
                 .then(function (data) { setUsuarios(Array.isArray(data) ? data : []); });
@@ -120,15 +128,91 @@ export default function GestionPermisos() {
         }
     }
 
+    // ══════════════════════════════════════
+    //  LÓGICA SECCIÓN 2: PERSONAL + ROL
+    // ══════════════════════════════════════
+
+    function rolActualUsuario(u) {
+        if (cambiosRol[u.id_accs] !== undefined) return cambiosRol[u.id_accs];
+        return u.id_rol;
+    }
+
+    function tieneRolCambiado(u) {
+        return cambiosRol[u.id_accs] !== undefined && cambiosRol[u.id_accs] !== u.id_rol;
+    }
+
+    function onCambioRol(u, nuevoIdRol) {
+        var nuevoId = parseInt(nuevoIdRol, 10);
+        setCambiosRol(function (prev) {
+            var n = Object.assign({}, prev);
+            if (nuevoId === u.id_rol) {
+                delete n[u.id_accs];
+            } else {
+                n[u.id_accs] = nuevoId;
+            }
+            return n;
+        });
+    }
+
+    async function guardarRolUsuario(u) {
+        var nuevoRol = cambiosRol[u.id_accs];
+        if (nuevoRol === undefined || nuevoRol === u.id_rol) return;
+
+        setGuardandoUser(u.id_accs);
+        setMensaje('');
+        try {
+            var resp = await fetch(API_URL + '/permisos/usuarios/' + u.id_accs + '/rol', {
+                method: 'PUT',
+                headers: headersConToken(),
+                body: JSON.stringify({ id_rol: nuevoRol }),
+            });
+            var data = await resp.json();
+            if (!resp.ok) throw new Error(data.detail || 'Error al cambiar rol');
+
+            // Actualizar estado local
+            setUsuarios(function (prev) {
+                return prev.map(function (usr) {
+                    if (usr.id_accs === u.id_accs) {
+                        return Object.assign({}, usr, {
+                            id_rol: nuevoRol,
+                            rol: data.nombre_rol || roles.find(function (r) { return r.id_rol === nuevoRol; })?.nombre || '',
+                            modulos: data.modulos || [],
+                        });
+                    }
+                    return usr;
+                });
+            });
+            setCambiosRol(function (prev) {
+                var n = Object.assign({}, prev);
+                delete n[u.id_accs];
+                return n;
+            });
+
+            setMensaje('Rol de ' + u.nombre_completo + ' cambiado a ' + (data.nombre_rol || '') + ' ✓');
+            setTimeout(function () { setMensaje(''); }, 3500);
+        } catch (err) {
+            setMensaje('Error: ' + err.message);
+        } finally {
+            setGuardandoUser(null);
+        }
+    }
+
+    // Módulos que tendría el usuario según el rol seleccionado (para preview)
+    function modulosPreview(u) {
+        var idRol = rolActualUsuario(u);
+        var rolObj = roles.find(function (r) { return r.id_rol === idRol; });
+        if (!rolObj) return [];
+        var permIds = rolObj.permisos || [];
+        return submodulos
+            .filter(function (s) { return permIds.indexOf(s.id) >= 0; })
+            .map(function (s) { return s.nombre; });
+    }
+
     // ── Filtro de personal ──
     var usuariosFiltrados = usuarios.filter(function (u) {
         var texto = (u.nombre_completo + ' ' + u.usuario + ' ' + u.area + ' ' + u.rol).toLowerCase();
         return texto.indexOf(busqueda.toLowerCase()) >= 0;
     });
-
-    // Mapa de nombres de submódulo por DESCRIP
-    var subNombreMap = {};
-    submodulos.forEach(function (s) { subNombreMap[s.nombre] = s.nombre; });
 
     return (
         <PageContent>
@@ -136,7 +220,7 @@ export default function GestionPermisos() {
                 {/* ── Cabecera ── */}
                 <div className="permisos-header">
                     <IconoFa icono={faShieldHalved} clase="permisos-header-icon" />
-                    <h2>Gestión de Permisos por Rol</h2>
+                    <h2>Gestión de Permisos</h2>
                 </div>
 
                 {mensaje && (
@@ -150,7 +234,8 @@ export default function GestionPermisos() {
                    ══════════════════════════════════════ */}
                 <div className="seccion-titulo">
                     <IconoFa icono={faShieldHalved} />
-                    <span>Asignación de Submódulos por Rol</span>
+                    <span>Submódulos por Rol</span>
+                    <span className="seccion-subtitulo">Define qué módulos puede ver cada rol</span>
                 </div>
 
                 <div className="permisos-tabla-wrapper">
@@ -211,12 +296,18 @@ export default function GestionPermisos() {
                     </table>
                 </div>
 
-                {/* ══════════════════════════════════════
-                    SECCIÓN 2: Lista de Personal (lectura)
-                   ══════════════════════════════════════ */}
+                {/* ══════════════════════════════════════════════
+                    SECCIÓN 2: Personal — Asignar Rol Individual
+                   ══════════════════════════════════════════════ */}
                 <div className="seccion-titulo seccion-personal">
                     <IconoFa icono={faUsers} />
-                    <span>Personal y Accesos Derivados</span>
+                    <span>Asignación de Accesos por Persona</span>
+                    <span className="seccion-subtitulo">Cambia el rol de cada empleado para personalizar su acceso</span>
+                </div>
+
+                <div className="permisos-info-banner">
+                    <IconoFa icono={faInfoCircle} />
+                    <span>Al cambiar el rol de un empleado, sus módulos se actualizan automáticamente según lo definido en la sección superior.</span>
                 </div>
 
                 <div className="permisos-buscador">
@@ -236,16 +327,19 @@ export default function GestionPermisos() {
                             <tr>
                                 <th className="col-usuario">Usuario</th>
                                 <th className="col-info">Nombre / Área</th>
-                                <th className="col-rol">Rol</th>
+                                <th className="col-rol-asignar">Rol Asignado</th>
                                 {submodulos.map(function (s) {
                                     return <th key={s.id} className="col-modulo" title={s.nombre}>{s.nombre}</th>;
                                 })}
+                                <th className="col-acciones">Acción</th>
                             </tr>
                         </thead>
                         <tbody>
                             {usuariosFiltrados.map(function (u) {
+                                var cambiado = tieneRolCambiado(u);
+                                var modsPreview = cambiado ? modulosPreview(u) : u.modulos || [];
                                 return (
-                                    <tr key={u.id_accs}>
+                                    <tr key={u.id_accs} className={cambiado ? 'fila-con-cambios' : ''}>
                                         <td className="col-usuario">
                                             <div className="usuario-celda">
                                                 {u.foto
@@ -259,11 +353,19 @@ export default function GestionPermisos() {
                                             <div className="info-nombre">{u.nombre_completo}</div>
                                             <div className="info-area">{u.area}</div>
                                         </td>
-                                        <td className="col-rol">
-                                            <span className={'badge-rol badge-' + (u.rol || '').toLowerCase().replace(/_/g, '')}>{u.rol}</span>
+                                        <td className="col-rol-asignar">
+                                            <select
+                                                className={'rol-select' + (cambiado ? ' cambiado' : '')}
+                                                value={rolActualUsuario(u)}
+                                                onChange={function (e) { onCambioRol(u, e.target.value); }}
+                                            >
+                                                {roles.map(function (r) {
+                                                    return <option key={r.id_rol} value={r.id_rol}>{r.nombre}</option>;
+                                                })}
+                                            </select>
                                         </td>
                                         {submodulos.map(function (s) {
-                                            var activo = u.modulos && u.modulos.indexOf(s.nombre) >= 0;
+                                            var activo = modsPreview.indexOf(s.nombre) >= 0;
                                             return (
                                                 <td key={s.id} className="col-modulo">
                                                     <span className={'estado-indicador' + (activo ? ' si' : ' no')} title={activo ? 'Tiene acceso' : 'Sin acceso'}>
@@ -272,6 +374,20 @@ export default function GestionPermisos() {
                                                 </td>
                                             );
                                         })}
+                                        <td className="col-acciones">
+                                            {cambiado ? (
+                                                <button
+                                                    className="btn-mini btn-guardar"
+                                                    onClick={function () { guardarRolUsuario(u); }}
+                                                    disabled={guardandoUser === u.id_accs}
+                                                >
+                                                    <IconoFa icono={guardandoUser === u.id_accs ? faSpinner : faExchangeAlt} clase={guardandoUser === u.id_accs ? 'spin' : ''} />
+                                                    Cambiar
+                                                </button>
+                                            ) : (
+                                                <span className="sin-cambios">—</span>
+                                            )}
+                                        </td>
                                     </tr>
                                 );
                             })}

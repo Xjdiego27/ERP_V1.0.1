@@ -7,7 +7,7 @@ try:
     from database import Ticket
 except ImportError:
     Ticket = None
-from mongodb import coleccion_menus, coleccion_eventos, coleccion_asistencia, coleccion_justificaciones
+from mongodb import coleccion_menus, coleccion_eventos, coleccion_asistencia, coleccion_justificaciones, coleccion_notif_tickets
 from auth_token import verificar_token
 
 router = APIRouter()
@@ -240,8 +240,30 @@ async def obtener_notificaciones(db: Session = Depends(get_db), token: dict = De
                 "urgente": False,
             })
 
+    # ── 7. Notificaciones personales de tickets (MongoDB) ──
+    # Obtener id_personal del usuario actual
+    id_accs = token.get("id_accs")
+    persona_actual = db.query(Personal).filter(Personal.ID_ACCS == id_accs).first() if id_accs else None
+    if persona_actual:
+        # Traer notificaciones no leídas de las últimas 24 horas
+        hace_24h = datetime.now() - timedelta(hours=24)
+        cursor_notif = coleccion_notif_tickets.find({
+            "id_personal": persona_actual.ID_PERSONAL,
+            "leido": False,
+            "fecha": {"$gte": hace_24h},
+        }).sort("fecha", -1).limit(20)
+        notifs_ticket = await cursor_notif.to_list(length=20)
+        for nt in notifs_ticket:
+            items.append({
+                "tipo": nt.get("tipo", "ticket"),
+                "texto": nt.get("texto", "Actualización de ticket"),
+                "icono": "ticket",
+                "urgente": False,
+                "id_notif": str(nt["_id"]),
+            })
+
     # Ordenar: urgentes primero, luego por tipo
-    prioridad = {"contrato": 0, "falta": 1, "ticket_nuevo": 2, "ticket": 3, "cumpleanos": 4, "evento": 5, "menu": 6}
+    prioridad = {"contrato": 0, "falta": 1, "ticket_creado": 2, "ticket_nuevo": 2, "ticket_estado": 3, "ticket": 4, "cumpleanos": 5, "evento": 6, "menu": 7}
     items.sort(key=lambda x: (0 if x.get("urgente") else 1, prioridad.get(x["tipo"], 9)))
 
     return {
