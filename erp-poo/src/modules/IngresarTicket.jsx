@@ -245,6 +245,8 @@ export default function IngresarTicket() {
 
         // CREAR ARTICULO
         if (subId === SUB_ARTICULO) {
+            // Filtrar grupos: solo los que tienen cod_serv_art === 1 (artículos)
+            var gruposArticulo = cats.grupos_articulos.filter(function (g) { return g.cod_serv_art === 1; });
             return (
                 <div className="sap-campos-extra">
                     <div className="sap-seccion-titulo">Datos del Artículo SAP</div>
@@ -253,7 +255,7 @@ export default function IngresarTicket() {
                             <label>Grupo de artículos *</label>
                             <select value={sapForm.id_grp_art || ''} onChange={function (e) { handleSapChange('id_grp_art', e.target.value); }}>
                                 <option value="">Seleccionar grupo</option>
-                                {cats.grupos_articulos.map(function (g) { return <option key={g.id} value={g.id}>{g.nombre}</option>; })}
+                                {gruposArticulo.map(function (g) { return <option key={g.id} value={g.id}>{g.nombre}</option>; })}
                             </select>
                         </div>
                         <div className="form-grupo">
@@ -328,6 +330,8 @@ export default function IngresarTicket() {
 
         // CREAR SERVICIO
         if (subId === SUB_SERVICIO) {
+            // Filtrar grupos: solo los que tienen cod_serv_art === 0 (servicios)
+            var gruposServicio = cats.grupos_articulos.filter(function (g) { return g.cod_serv_art === 0; });
             return (
                 <div className="sap-campos-extra">
                     <div className="sap-seccion-titulo">Datos del Servicio SAP</div>
@@ -335,7 +339,7 @@ export default function IngresarTicket() {
                         <label>Grupo de artículos *</label>
                         <select value={sapForm.id_grp_art || ''} onChange={function (e) { handleSapChange('id_grp_art', e.target.value); }}>
                             <option value="">Seleccionar grupo</option>
-                            {cats.grupos_articulos.map(function (g) { return <option key={g.id} value={g.id}>{g.nombre}</option>; })}
+                            {gruposServicio.map(function (g) { return <option key={g.id} value={g.id}>{g.nombre}</option>; })}
                         </select>
                     </div>
                     <div className="form-grupo">

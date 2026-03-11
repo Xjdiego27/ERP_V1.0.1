@@ -11,6 +11,7 @@ import EquiposCrear from './modules/EquiposCrear';
 import EquiposAsignar from './modules/EquiposAsignar';
 import IngresarTicket from './modules/IngresarTicket';
 import Tickets from './modules/Tickets';
+import GestionPermisos from './modules/GestionPermisos';
 import './styles/DarkMode.css';
 import './styles/TemaEmpresa1.css';
 import './styles/TemaEmpresa2.css';
@@ -35,6 +36,7 @@ function App() {
                         <Route path="equipos/asignacion" element={<EquiposAsignar />} />
                         <Route path="tickets" element={<Tickets />} />
                         <Route path="tickets/nuevo" element={<IngresarTicket />} />
+                        <Route path="permisos" element={<GestionPermisos />} />
                     </Route>
                     <Route path="*" element={<Navigate to="/" />} />
                 </Routes>

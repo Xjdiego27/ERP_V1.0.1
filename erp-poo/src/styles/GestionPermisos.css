@@ -1,0 +1,398 @@
+/* ===================================================
+   GestionPermisos.css — Módulo de gestión de permisos
+   =================================================== */
+
+.gestion-permisos-page {
+    max-width: 100%;
+    padding: 0 0 2rem 0;
+}
+
+.permisos-header {
+    display: flex;
+    align-items: center;
+    gap: .75rem;
+    margin-bottom: 1.25rem;
+}
+.permisos-header-icon {
+    font-size: 1.5rem;
+    color: var(--color-primario, #3b82f6);
+}
+.permisos-header h2 {
+    margin: 0;
+    font-size: 1.35rem;
+    font-weight: 700;
+}
+
+/* Mensaje de estado */
+.permisos-mensaje {
+    padding: .65rem 1rem;
+    border-radius: 8px;
+    margin-bottom: 1rem;
+    font-size: .88rem;
+    font-weight: 500;
+}
+.permisos-mensaje.exito {
+    background: #dcfce7;
+    color: #166534;
+    border: 1px solid #86efac;
+}
+.permisos-mensaje.error {
+    background: #fee2e2;
+    color: #991b1b;
+    border: 1px solid #fca5a5;
+}
+
+/* Título de sección */
+.seccion-titulo {
+    display: flex;
+    align-items: center;
+    gap: .6rem;
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: var(--color-texto, #1e293b);
+    margin: 1.5rem 0 .75rem 0;
+    padding-bottom: .5rem;
+    border-bottom: 2px solid var(--color-primario, #3b82f6);
+}
+.seccion-titulo:first-of-type {
+    margin-top: .5rem;
+}
+.seccion-personal {
+    margin-top: 2.5rem;
+}
+
+/* Columna nombre de rol (en la matriz) */
+.col-rol-nombre {
+    text-align: left !important;
+    min-width: 160px;
+}
+
+/* Indicador de estado (lectura, para lista de personal) */
+.estado-indicador {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    font-size: .7rem;
+}
+.estado-indicador.si {
+    color: #22c55e;
+}
+.estado-indicador.no {
+    color: #cbd5e1;
+}
+
+/* Tabla de personal (solo lectura, mas compacta) */
+.tabla-personal td {
+    padding: .45rem .5rem;
+}
+
+/* Buscador */
+.permisos-buscador {
+    display: flex;
+    align-items: center;
+    gap: .6rem;
+    background: var(--color-superficie, #fff);
+    border: 1px solid var(--color-borde, #e2e8f0);
+    border-radius: 10px;
+    padding: .55rem 1rem;
+    margin-bottom: 1rem;
+}
+.buscador-icono {
+    color: #94a3b8;
+    font-size: .95rem;
+}
+.permisos-buscador input {
+    flex: 1;
+    border: none;
+    outline: none;
+    font-size: .92rem;
+    background: transparent;
+    color: var(--color-texto, #1e293b);
+}
+.permisos-contador {
+    font-size: .8rem;
+    color: #94a3b8;
+    white-space: nowrap;
+}
+
+/* Tabla wrapper */
+.permisos-tabla-wrapper {
+    overflow-x: auto;
+    border-radius: 12px;
+    border: 1px solid var(--color-borde, #e2e8f0);
+    background: var(--color-superficie, #fff);
+}
+
+/* Tabla */
+.permisos-tabla {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: .85rem;
+}
+.permisos-tabla thead {
+    background: var(--color-primario, #3b82f6);
+    color: #fff;
+    position: sticky;
+    top: 0;
+    z-index: 2;
+}
+.permisos-tabla th {
+    padding: .7rem .5rem;
+    text-align: center;
+    font-weight: 600;
+    font-size: .78rem;
+    white-space: nowrap;
+    letter-spacing: .02em;
+}
+.permisos-tabla th.col-usuario,
+.permisos-tabla th.col-info {
+    text-align: left;
+}
+.permisos-tabla td {
+    padding: .55rem .5rem;
+    border-bottom: 1px solid var(--color-borde, #f1f5f9);
+    vertical-align: middle;
+}
+.permisos-tabla tbody tr:hover {
+    background: #f8fafc;
+}
+.permisos-tabla tbody tr.fila-con-cambios {
+    background: #fffbeb;
+}
+
+/* Columna usuario */
+.usuario-celda {
+    display: flex;
+    align-items: center;
+    gap: .5rem;
+}
+.avatar-mini {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    object-fit: cover;
+    flex-shrink: 0;
+}
+.avatar-placeholder {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #e2e8f0;
+    color: #64748b;
+    font-size: .85rem;
+}
+.usuario-code {
+    font-weight: 600;
+    font-size: .82rem;
+    color: var(--color-texto, #334155);
+}
+
+/* Info nombre/area */
+.info-nombre {
+    font-weight: 500;
+    font-size: .83rem;
+    color: var(--color-texto, #1e293b);
+}
+.info-area {
+    font-size: .75rem;
+    color: #94a3b8;
+}
+
+/* Badge de rol */
+.badge-rol {
+    display: inline-block;
+    padding: .2rem .55rem;
+    border-radius: 6px;
+    font-size: .72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .03em;
+}
+.badge-administrador, .badge-admin {
+    background: #dbeafe;
+    color: #1d4ed8;
+}
+.badge-soporte {
+    background: #fef3c7;
+    color: #92400e;
+}
+.badge-usuario {
+    background: #e2e8f0;
+    color: #475569;
+}
+.badge-recursoshumanos, .badge-recursos_humanos {
+    background: #d1fae5;
+    color: #065f46;
+}
+
+/* Checkboxes de módulo */
+.col-modulo {
+    text-align: center !important;
+}
+.check-btn {
+    width: 30px;
+    height: 30px;
+    border-radius: 7px;
+    border: 2px solid #cbd5e1;
+    background: #f8fafc;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: .75rem;
+    color: #cbd5e1;
+    transition: all .15s ease;
+}
+.check-btn.activo {
+    background: #22c55e;
+    border-color: #22c55e;
+    color: #fff;
+}
+.check-btn:not(.activo):hover {
+    border-color: #94a3b8;
+    color: #94a3b8;
+}
+.check-btn:disabled {
+    cursor: default;
+    opacity: .5;
+}
+.check-btn.activo:disabled {
+    background: #3b82f6;
+    border-color: #3b82f6;
+    opacity: .7;
+}
+
+/* Acciones */
+.col-acciones {
+    min-width: 170px;
+    text-align: center !important;
+}
+.acciones-grupo {
+    display: flex;
+    gap: .35rem;
+    align-items: center;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+.btn-mini {
+    padding: .25rem .55rem;
+    border-radius: 6px;
+    border: 1px solid #e2e8f0;
+    font-size: .72rem;
+    font-weight: 600;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: .25rem;
+    transition: all .15s ease;
+}
+.btn-todos {
+    background: #eff6ff;
+    color: #2563eb;
+    border-color: #bfdbfe;
+}
+.btn-todos:hover {
+    background: #dbeafe;
+}
+.btn-ninguno {
+    background: #fef2f2;
+    color: #dc2626;
+    border-color: #fecaca;
+}
+.btn-ninguno:hover {
+    background: #fee2e2;
+}
+.btn-guardar {
+    background: #22c55e;
+    color: #fff;
+    border-color: #22c55e;
+}
+.btn-guardar:hover {
+    background: #16a34a;
+}
+.btn-guardar:disabled {
+    opacity: .6;
+    cursor: wait;
+}
+.admin-badge {
+    display: inline-block;
+    padding: .2rem .5rem;
+    background: #dbeafe;
+    color: #1d4ed8;
+    border-radius: 6px;
+    font-size: .7rem;
+    font-weight: 700;
+}
+
+.sin-resultados {
+    text-align: center;
+    color: #94a3b8;
+    padding: 2rem;
+    font-size: .92rem;
+}
+
+/* Spin animation */
+@keyframes spin { to { transform: rotate(360deg); } }
+.spin { animation: spin .8s linear infinite; }
+
+/* Dark mode */
+.dark-mode .permisos-tabla-wrapper {
+    background: var(--color-superficie, #1e293b);
+    border-color: var(--color-borde, #334155);
+}
+.dark-mode .permisos-tabla td {
+    border-color: var(--color-borde, #334155);
+}
+.dark-mode .permisos-tabla tbody tr:hover {
+    background: #334155;
+}
+.dark-mode .permisos-tabla tbody tr.fila-con-cambios {
+    background: #422006;
+}
+.dark-mode .permisos-buscador {
+    background: var(--color-superficie, #1e293b);
+    border-color: var(--color-borde, #334155);
+}
+.dark-mode .permisos-buscador input {
+    color: var(--color-texto, #e2e8f0);
+}
+.dark-mode .check-btn {
+    background: #334155;
+    border-color: #475569;
+    color: #475569;
+}
+.dark-mode .check-btn.activo {
+    background: #22c55e;
+    border-color: #22c55e;
+    color: #fff;
+}
+.dark-mode .permisos-mensaje.exito {
+    background: #052e16;
+    color: #86efac;
+    border-color: #166534;
+}
+.dark-mode .permisos-mensaje.error {
+    background: #450a0a;
+    color: #fca5a5;
+    border-color: #991b1b;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .permisos-tabla {
+        font-size: .75rem;
+    }
+    .permisos-tabla th, .permisos-tabla td {
+        padding: .4rem .3rem;
+    }
+    .check-btn {
+        width: 26px;
+        height: 26px;
+        font-size: .65rem;
+    }
+    .col-info .info-nombre { font-size: .76rem; }
+    .btn-mini { font-size: .65rem; padding: .2rem .4rem; }
+}

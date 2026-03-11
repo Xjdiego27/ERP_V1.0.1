@@ -4,7 +4,7 @@
 
 from database import (
     Personal, Acceso, RolAccs, Empresa, Contrato, Cargo,
-    Horario, HorarioDetalle
+    Horario, HorarioDetalle, AsignacionAccs, PermisoAccs
 )
 
 # ──────────────────────────────────────────
@@ -86,6 +86,19 @@ def construir_respuesta_usuario(db, acceso, id_empresa):
             if cargo_obj:
                 cargo_nombre = cargo_obj.DESCRIP
 
+    # Módulos permitidos para este usuario (por rol)
+    modulos = None
+    if AsignacionAccs and PermisoAccs:
+        asigs = db.query(AsignacionAccs).filter(
+            AsignacionAccs.ID_ROL == acceso.ID_ROL
+        ).all()
+        perm_ids = [a.ID_PERM for a in asigs]
+        if perm_ids:
+            perms = db.query(PermisoAccs).filter(
+                PermisoAccs.ID_PERM.in_(perm_ids)
+            ).all()
+            modulos = [p.DESCRIP for p in perms]
+
     return {
         "nombre": personal.NOMBRES if personal else acceso.USUARIO,
         "apellido": f"{personal.APE_PATERNO} {personal.APE_MATERNO}" if personal else "",
@@ -99,4 +112,5 @@ def construir_respuesta_usuario(db, acceso, id_empresa):
         "rol": rol.DESCRIP if rol else None,
         "cargo": cargo_nombre,
         "usuario": acceso.USUARIO,
+        "modulos": modulos,
     }

@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import IconoFa from './IconoFa'; 
-import { faBars, faHouse, faFileLines, faBoxArchive, faUsers, faRightFromBracket, faChevronDown, faChevronRight, faPeopleGroup, faUserTie, faCalendarCheck, faClock, faLaptop, faPlus, faArrowsRotate, faTicket, faListCheck } from '@fortawesome/free-solid-svg-icons';
+import { faBars, faHouse, faFileLines, faBoxArchive, faUsers, faRightFromBracket, faChevronDown, faChevronRight, faPeopleGroup, faUserTie, faCalendarCheck, faClock, faLaptop, faPlus, faArrowsRotate, faTicket, faListCheck, faShieldHalved } from '@fortawesome/free-solid-svg-icons';
 import '../styles/Sidebar.css';
 
 export default function Sidebar({ isOpen, onToggleMenu }) {
@@ -58,35 +58,48 @@ export default function Sidebar({ isOpen, onToggleMenu }) {
         navigate('/');
     };
 
-    // Items simples (sin hijos)
+    // Items simples (sin hijos) — cada uno con su clave de permiso
     const menuSimple = [
-        { nombre: 'Inicio',     ruta: '/dashboard',              icono: faHouse },
-        { nombre: 'Inventario', ruta: '/dashboard/inventario',   icono: faBoxArchive },
-        { nombre: 'Clientes',   ruta: '/dashboard/clientes',     icono: faUsers },
+        { nombre: 'Inicio',     ruta: '/dashboard',              icono: faHouse,      modulo: 'INICIO' },
+        { nombre: 'Inventario', ruta: '/dashboard/inventario',   icono: faBoxArchive, modulo: 'INVENTARIO' },
+        { nombre: 'Clientes',   ruta: '/dashboard/clientes',     icono: faUsers,      modulo: 'CLIENTES' },
     ];
 
     // Sub-opciones de RRHH
-    const subMenuRRHH = [
-        { nombre: 'Personal',     ruta: '/dashboard/personal',    icono: faUserTie },
-        { nombre: 'Asistencias',  ruta: '/dashboard/asistencias', icono: faCalendarCheck },
-        { nombre: 'Horarios',     ruta: '/dashboard/horarios',    icono: faClock },
-    ];
-
-    // Sub-opciones de Equipos
-    const subMenuEquipos = [
-        { nombre: 'Crear Equipo',  ruta: '/dashboard/equipos/crear',      icono: faPlus },
-        { nombre: 'Asignación',    ruta: '/dashboard/equipos/asignacion', icono: faArrowsRotate },
-    ];
-
     // Detectar rol TI desde la sesión
     const sessionData = JSON.parse(localStorage.getItem('session'));
     const rolUsuario = (sessionData && sessionData.usuario && sessionData.usuario.rol || '').toUpperCase();
     const esRolTI = ['ADMINISTRADOR', 'ADMIN', 'SOPORTE'].indexOf(rolUsuario) >= 0;
 
-    // Sub-opciones de Tickets (Mis Tickets solo para TI)
-    const subMenuTickets = [
-        { nombre: 'Nuevo Ticket',  ruta: '/dashboard/tickets/nuevo',  icono: faPlus },
-    ].concat(esRolTI ? [{ nombre: 'Tickets', ruta: '/dashboard/tickets', icono: faListCheck }] : []);
+    // Módulos permitidos para este usuario (viene del login)
+    const modulosPermitidos = (sessionData && sessionData.usuario && sessionData.usuario.modulos) || null;
+    // Función helper: ¿tiene acceso a un módulo?
+    function tieneAcceso(clave) {
+        // Si no hay restricciones (null), mostrar todo
+        if (!modulosPermitidos) return true;
+        return modulosPermitidos.indexOf(clave) >= 0;
+    }
+
+    // Sub-opciones de RRHH (filtradas por permisos)
+    const subMenuRRHHBase = [
+        { nombre: 'Personal',     ruta: '/dashboard/personal',    icono: faUserTie,       modulo: 'PERSONAL' },
+        { nombre: 'Asistencias',  ruta: '/dashboard/asistencias', icono: faCalendarCheck, modulo: 'ASISTENCIA' },
+        { nombre: 'Horarios',     ruta: '/dashboard/horarios',    icono: faClock,         modulo: 'HORARIOS' },
+    ];
+    const subMenuRRHH = subMenuRRHHBase.filter(function (s) { return tieneAcceso(s.modulo); });
+
+    // Sub-opciones de Equipos (filtradas)
+    const subMenuEquiposBase = [
+        { nombre: 'Crear Equipo',  ruta: '/dashboard/equipos/crear',      icono: faPlus,           modulo: 'EQUIPOS_CREAR' },
+        { nombre: 'Asignación',    ruta: '/dashboard/equipos/asignacion', icono: faArrowsRotate,   modulo: 'EQUIPOS_ASIGNACION' },
+    ];
+    const subMenuEquipos = subMenuEquiposBase.filter(function (s) { return tieneAcceso(s.modulo); });
+
+    // Sub-opciones de Tickets (filtradas)
+    const subMenuTicketsBase = [
+        { nombre: 'Nuevo Ticket',  ruta: '/dashboard/tickets/nuevo',  icono: faPlus,      modulo: 'TICKETS_NUEVO' },
+    ].concat(esRolTI ? [{ nombre: 'Tickets', ruta: '/dashboard/tickets', icono: faListCheck, modulo: 'TICKETS_PANEL' }] : []);
+    const subMenuTickets = subMenuTicketsBase.filter(function (s) { return tieneAcceso(s.modulo); });
 
     // ¿Alguna sub-ruta de RRHH está activa?
     var rrhhActivo = location.pathname.indexOf('/dashboard/personal') === 0 || location.pathname.indexOf('/dashboard/asistencias') === 0 || location.pathname.indexOf('/dashboard/horarios') === 0;
@@ -137,6 +150,7 @@ export default function Sidebar({ isOpen, onToggleMenu }) {
 
             <nav className="sidebar-nav">
                 {/* Inicio */}
+                {tieneAcceso(menuSimple[0].modulo) && (
                 <Link 
                     to={menuSimple[0].ruta} 
                     className={`menu-link ${location.pathname === menuSimple[0].ruta ? 'active' : ''}`}
@@ -146,8 +160,10 @@ export default function Sidebar({ isOpen, onToggleMenu }) {
                     <IconoFa icono={menuSimple[0].icono} />
                     {isOpen && <span className="menu-text">{menuSimple[0].nombre}</span>}
                 </Link>
+                )}
 
-                {/* === RRHH con submenú === */}
+                {/* === RRHH con submenú (oculto si no tiene hijos visibles) === */}
+                {subMenuRRHH.length > 0 && (
                 <div className={'menu-grupo ' + (rrhhActivo ? 'grupo-activo' : '')}>
                     {/* Botón padre: click abre/cierra submenú */}
                     <button ref={rrhhBtnRef} className={'menu-link menu-padre ' + (rrhhActivo ? 'active' : '')} onClick={toggleRRHH} title={!isOpen ? 'RRHH' : undefined}>
@@ -199,8 +215,10 @@ export default function Sidebar({ isOpen, onToggleMenu }) {
                         </div>
                     )}
                 </div>
+                )}
 
                 {/* === Equipos con submenú === */}
+                {subMenuEquipos.length > 0 && (
                 <div className={'menu-grupo ' + (equiposActivo ? 'grupo-activo' : '')}>
                     <button ref={equiposBtnRef} className={'menu-link menu-padre ' + (equiposActivo ? 'active' : '')} onClick={toggleEquipos} title={!isOpen ? 'Equipos' : undefined}>
                         <IconoFa icono={faLaptop} />
@@ -249,8 +267,10 @@ export default function Sidebar({ isOpen, onToggleMenu }) {
                         </div>
                     )}
                 </div>
+                )}
 
                 {/* === Tickets con submenú === */}
+                {subMenuTickets.length > 0 && (
                 <div className={'menu-grupo ' + (ticketsActivo ? 'grupo-activo' : '')}>
                     <button ref={ticketsBtnRef} className={'menu-link menu-padre ' + (ticketsActivo ? 'active' : '')} onClick={toggleTickets} title={!isOpen ? 'Tickets' : undefined}>
                         <IconoFa icono={faTicket} />
@@ -299,9 +319,23 @@ export default function Sidebar({ isOpen, onToggleMenu }) {
                         </div>
                     )}
                 </div>
+                )}
 
-                {/* Inventario, Clientes */}
-                {menuSimple.slice(1).map(function (item) {
+                {/* === Permisos (ADMIN + tiene permiso PERMISOS) === */}
+                {(['ADMINISTRADOR', 'ADMIN'].indexOf(rolUsuario) >= 0) && tieneAcceso('PERMISOS') && (
+                    <Link
+                        to="/dashboard/permisos"
+                        className={'menu-link ' + (location.pathname === '/dashboard/permisos' ? 'active' : '')}
+                        title={!isOpen ? 'Permisos' : undefined}
+                        onClick={handleNavClick}
+                    >
+                        <IconoFa icono={faShieldHalved} />
+                        {isOpen && <span className="menu-text">Permisos</span>}
+                    </Link>
+                )}
+
+                {/* Inventario, Clientes (filtrados por permisos) */}
+                {menuSimple.slice(1).filter(function (item) { return tieneAcceso(item.modulo); }).map(function (item) {
                     return (
                         <Link 
                             key={item.ruta} 

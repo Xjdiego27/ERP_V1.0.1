@@ -28,6 +28,7 @@ from rutas_documentos import router as rutas_documentos
 from rutas_password import router as rutas_password
 from rutas_equipo import router as rutas_equipo
 from rutas_tickets import router as rutas_tickets
+from rutas_permisos import router as rutas_permisos
 
 load_dotenv()
 
@@ -71,6 +72,7 @@ app.include_router(rutas_documentos)
 app.include_router(rutas_password)
 app.include_router(rutas_equipo)
 app.include_router(rutas_tickets)
+app.include_router(rutas_permisos)
 
 
 # ── Helpers locales ──────────────────────────────
