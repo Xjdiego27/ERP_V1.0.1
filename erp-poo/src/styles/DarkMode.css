@@ -1,0 +1,745 @@
+:root {
+  --bg-page: #f5f7fa;
+  --bg-card: #ffffff;
+  --bg-input: #f8f9fa;
+  --bg-hover: #f0f0f0;
+  --text-primary: #2c3e50;
+  --text-secondary: #555;
+  --text-muted: #999;
+  --border-color: #e0e0e0;
+  --card-top-1: #e8f4f8;
+  --card-top-2: #dbeafe;
+  --active-bg: #e8f0fe;
+  --active-color: #1a73e8;
+  --accent-btn: #007bff;
+  --accent-btn-hover: #0056b3;
+  --logout-hover: #fee;
+  --primary-color: #3498db;
+  --primary-hover: #2980b9;
+  --border-card: #e8ecf1;
+  --border-row: #f0f2f5;
+  --bg-subtle: #f0f4f8;
+  --bg-header: #f7f9fc;
+  /* Aliases para módulos Tickets */
+  --texto-primario: #2c3e50;
+  --texto-secundario: #555;
+  --fondo-card: #ffffff;
+  --fondo-input: #f8f9fa;
+  --fondo-hover: #f0f0f0;
+  --borde: #e0e0e0;
+  --fondo-tarjeta: #ffffff;
+  --color-primario: #3498db;
+  --color-primario-hover: #2980b9;
+}
+
+body.dark-mode {
+  --bg-page: #1a1d23;
+  --bg-card: #23272e;
+  --bg-input: #2c3038;
+  --bg-hover: #2e333b;
+  --text-primary: #e0e4ea;
+  --text-secondary: #b0b8c4;
+  --text-muted: #7a8494;
+  --border-color: #3a3f48;
+  --card-top-1: #252a33;
+  --card-top-2: #1e2a3a;
+  --active-bg: #1e2a3a;
+  --active-color: #7cb3f0;
+  --accent-btn: #4a90d9;
+  --accent-btn-hover: #3a7cc0;
+  --logout-hover: #3a1b1b;
+  --primary-color: #4a90d9;
+  --primary-hover: #3a7cc0;
+  --border-card: #3a3f48;
+  --border-row: #2e333b;
+  --bg-subtle: #252a33;
+  --bg-header: #2a2f38;
+  /* Aliases para módulos Tickets */
+  --texto-primario: #e0e4ea;
+  --texto-secundario: #b0b8c4;
+  --fondo-card: #23272e;
+  --fondo-input: #2c3038;
+  --fondo-hover: #2e333b;
+  --borde: #3a3f48;
+  --fondo-tarjeta: #23272e;
+  --color-primario: #4a90d9;
+  --color-primario-hover: #3a7cc0;
+}
+
+body.dark-mode {
+  background-color: #1a1d23;
+  color: #e0e4ea;
+}
+
+body.dark-mode ::-webkit-scrollbar {
+  width: 8px;
+}
+
+body.dark-mode ::-webkit-scrollbar-track {
+  background: #1a1d23;
+}
+
+body.dark-mode ::-webkit-scrollbar-thumb {
+  background: #3a3f48;
+  border-radius: 4px;
+}
+
+body.dark-mode ::-webkit-scrollbar-thumb:hover {
+  background: #4a5060;
+}
+
+body.dark-mode .menu-link.active {
+  background-color: var(--active-bg);
+  color: var(--active-color);
+}
+
+body.dark-mode .submenu-link.active {
+  background-color: var(--active-bg) !important;
+  color: var(--active-color) !important;
+}
+
+body.dark-mode .submenu-link:hover {
+  background-color: #2e333b !important;
+}
+
+body.dark-mode .tarjeta-estado.estado-activo {
+  background: #1b3a2a;
+  color: #5cae7b;
+  border-color: #2e6b45;
+}
+
+body.dark-mode .tarjeta-estado.estado-inactivo {
+  background: #3a1b1b;
+  color: #e88;
+  border-color: #6b2e2e;
+}
+
+body.dark-mode .detalle-estado-badge.estado-activo {
+  background: #1b3a2a;
+  color: #5cae7b;
+}
+
+body.dark-mode .detalle-estado-badge.estado-inactivo {
+  background: #3a1b1b;
+  color: #e88;
+}
+
+body.dark-mode .det-btn-editar {
+  background: var(--active-bg);
+  color: var(--active-color);
+}
+
+body.dark-mode .det-btn-guardar {
+  background: #1b3a2a;
+  color: #5cae7b;
+}
+
+body.dark-mode .det-btn-cancelar {
+  background: #2e333b;
+  color: #b0b8c4;
+}
+
+body.dark-mode .det-btn-desactivar {
+  background: #3a2a1b;
+  color: #e8a060;
+}
+
+body.dark-mode .det-btn-reactivar {
+  background: #1b3a2a;
+  color: #5cae7b;
+}
+
+body.dark-mode .personal-btn-nuevo {
+  background: #2e7d4a;
+}
+
+body.dark-mode .personal-btn-nuevo:hover {
+  background: #3a9060;
+}
+
+body.dark-mode .det-tab.activa {
+  color: var(--active-color);
+}
+
+body.dark-mode .det-tab.activa::after {
+  background: var(--active-color);
+}
+
+body.dark-mode .workspace-area {
+  background: var(--bg-page);
+}
+
+body.dark-mode .toggle-panel-btn {
+  background-color: var(--accent-btn);
+}
+
+body.dark-mode .tarjeta-foto-vacia,
+body.dark-mode .detalle-foto-vacia {
+  color: #555;
+}
+
+body.dark-mode select option {
+  background: #23272e;
+  color: #e0e4ea;
+}
+
+body.dark-mode .dark-toggle svg {
+  color: #f0c040 !important;
+}
+
+body.dark-mode .aside-right-panel {
+  box-shadow: -2px 0 8px rgba(0, 0, 0, 0.3);
+}
+
+body.dark-mode .panel-close-btn:hover {
+  color: #ff6b6b;
+}
+
+body.dark-mode .sidebar-logout {
+  color: #ff6b6b;
+}
+
+body.dark-mode .white-card {
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+}
+
+body.dark-mode .cumple-dia {
+  background: #c0392b;
+}
+
+body.dark-mode .det-contactos-lista li {
+  color: var(--text-secondary);
+}
+
+body.dark-mode .det-sin-datos {
+  color: var(--text-muted);
+}
+
+body.dark-mode .det-tab {
+  color: var(--text-secondary);
+}
+
+body.dark-mode .det-tab:hover {
+  color: var(--text-primary);
+}
+
+body.dark-mode .det-btn-sync {
+  background: var(--active-bg);
+  color: var(--active-color);
+}
+
+body.dark-mode .det-btn-sync:hover {
+  background: var(--bg-hover);
+}
+
+body.dark-mode .det-btn-filtrar {
+  background: var(--active-bg);
+  color: var(--active-color);
+}
+
+body.dark-mode .det-btn-filtrar:hover {
+  background: var(--bg-hover);
+}
+
+body.dark-mode .det-btn-justificar {
+  background: #3a2a1b;
+  color: #e8a060;
+}
+
+body.dark-mode .det-btn-justificar:hover {
+  background: #4a351f;
+}
+
+body.dark-mode .asist-res-asist {
+  background: #1b3a2a;
+  color: #5cae7b;
+}
+
+body.dark-mode .asist-res-tard {
+  background: #3a3320;
+  color: #e8c040;
+}
+
+body.dark-mode .asist-res-min {
+  background: #3a1b2a;
+  color: #e07070;
+}
+
+body.dark-mode .asist-res-falt {
+  background: #3a2218;
+  color: #e8805a;
+}
+
+body.dark-mode .asist-nombre-empleado {
+  color: #64b5f6;
+}
+
+body.dark-mode .asist-fila-descanso td {
+  background: #2a2d33;
+  color: #7a8494;
+}
+
+body.dark-mode .asist-fila-falta td {
+  background: #3a1b1b;
+  color: #e88;
+}
+
+body.dark-mode .asist-fila-tardanza td {
+  background: #33301a;
+}
+
+body.dark-mode .asist-td-tardanza {
+  color: #e8a060;
+}
+
+body.dark-mode .asist-cat {
+  background: var(--bg-hover);
+  color: var(--text-secondary);
+}
+
+body.dark-mode .asist-cat-asistio {
+  background: #1b3a2a;
+  color: #5cae7b;
+}
+
+body.dark-mode .asist-cat-falta,
+body.dark-mode .asist-cat-ausentismo {
+  background: #3a1b1b;
+  color: #e88;
+}
+
+body.dark-mode .asist-cat-feriado {
+  background: #1a2a3a;
+  color: #70a8e0;
+}
+
+body.dark-mode .asist-cat-vacaciones {
+  background: #252040;
+  color: #9090e0;
+}
+
+body.dark-mode .asist-cat-descanso {
+  background: #2a2d33;
+  color: #7a8494;
+}
+
+body.dark-mode .asist-cat-permisopersonal,
+body.dark-mode .asist-cat-permisodesalud {
+  background: #3a2a1b;
+  color: #e8a060;
+}
+
+body.dark-mode .asist-cat-compensacionhoras {
+  background: #1a3330;
+  color: #50b8a0;
+}
+
+body.dark-mode .asist-cat-comision {
+  background: #30203a;
+  color: #c090e0;
+}
+
+body.dark-mode .asist-cat-licencia {
+  background: #3a1b2a;
+  color: #e07070;
+}
+
+body.dark-mode .asist-cat-viajelaboral {
+  background: #1a2a3a;
+  color: #60b8e8;
+}
+
+body.dark-mode .asist-modal-overlay {
+  background: rgba(0, 0, 0, 0.65);
+}
+
+body.dark-mode .asist-modal {
+  background: var(--bg-card);
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.5);
+}
+
+body.dark-mode .asist-modal h4 {
+  color: var(--text-primary);
+}
+
+body.dark-mode .fila-descanso { background: #1e2233 !important; }
+body.dark-mode .fila-descanso td { color: #8899bb !important; }
+body.dark-mode .fila-falta { background: #2a1a1a !important; }
+body.dark-mode .fila-falta td { color: #e57373 !important; }
+body.dark-mode .fila-tardanza { background: #2a2518 !important; }
+body.dark-mode .fila-pendiente { background: #1e2025 !important; }
+body.dark-mode .fila-pendiente td { color: #555 !important; }
+
+body.dark-mode .catga-descanso { background: #1e2240; color: #7986cb; }
+body.dark-mode .catga-ausentismo { background: #3a1a1a; color: #ef9a9a; }
+body.dark-mode .catga-normal,
+body.dark-mode .catga-puntual { background: #1a2e1a; color: #81c784; }
+body.dark-mode .catga-tardanza { background: #2e2210; color: #ffb74d; }
+body.dark-mode .catga-vacio { background: #2a2d33; color: #666; }
+body.dark-mode .catga-vacaciones { background: #152535; color: #64b5f6; }
+body.dark-mode .catga-permiso { background: #251530; color: #ce93d8; }
+body.dark-mode .catga-licencia { background: #152520; color: #80cbc4; }
+
+body.dark-mode .modo-btn { background: var(--bg-input); color: var(--text-secondary); }
+body.dark-mode .modo-btn.activo { background: var(--primary-color); color: #fff; }
+body.dark-mode .filtro-date { background: var(--bg-input); color: var(--text-primary); border-color: var(--border-color); }
+
+/* ═══ Tickets / IngresarTicket — dark mode ═══ */
+body.dark-mode .tickets-dash-title h2 {
+  color: var(--text-primary);
+}
+body.dark-mode .tickets-dash-icon {
+  color: var(--active-color);
+}
+body.dark-mode .ticket-header-icon {
+  color: var(--active-color);
+}
+body.dark-mode .ticket-header h2 {
+  color: var(--text-primary);
+}
+body.dark-mode .stat-card {
+  background: var(--bg-card);
+  border-color: var(--border-color);
+}
+body.dark-mode .stat-num {
+  color: var(--text-primary);
+}
+body.dark-mode .stat-label {
+  color: var(--text-secondary);
+}
+body.dark-mode .stat-icon {
+  background: var(--bg-subtle) !important;
+  opacity: 1;
+}
+body.dark-mode .stat-icono-svg {
+  filter: brightness(1.3) saturate(1.2);
+}
+body.dark-mode .donut-card {
+  background: var(--bg-card);
+  border-color: var(--border-color);
+}
+body.dark-mode .donut-leg-item {
+  color: var(--text-secondary);
+}
+body.dark-mode .donut-leg-pct {
+  color: var(--text-primary);
+}
+body.dark-mode .sap-campos-extra {
+  background: color-mix(in srgb, var(--primary-color) 6%, var(--bg-card));
+  border-color: var(--primary-color);
+}
+body.dark-mode .sap-seccion-titulo {
+  color: var(--active-color);
+  border-color: var(--border-color);
+}
+body.dark-mode .tickets-tabla-wrap {
+  border-color: var(--border-color);
+}
+body.dark-mode .tickets-tabla th {
+  background: var(--bg-subtle);
+  border-color: var(--border-color);
+  color: var(--text-secondary);
+}
+body.dark-mode .tickets-tabla td {
+  border-color: var(--border-row);
+  color: var(--text-primary);
+}
+body.dark-mode .td-id {
+  color: var(--active-color);
+}
+body.dark-mode .td-nombre {
+  color: var(--text-primary);
+}
+body.dark-mode .td-tiempo {
+  color: var(--text-muted);
+}
+body.dark-mode .sin-datos {
+  color: var(--text-muted);
+}
+body.dark-mode .btn-cerrar-panel {
+  color: var(--text-secondary);
+}
+body.dark-mode .ticket-fila:hover {
+  background: var(--bg-hover);
+}
+body.dark-mode .ticket-fila.activa {
+  background: var(--active-bg);
+}
+body.dark-mode .ticket-detalle-panel {
+  background: var(--bg-card);
+  border-color: var(--border-color);
+}
+body.dark-mode .detalle-asunto {
+  color: var(--text-primary);
+}
+body.dark-mode .detalle-label {
+  color: var(--text-secondary);
+}
+body.dark-mode .detalle-valor {
+  color: var(--text-primary);
+}
+body.dark-mode .detalle-codigo {
+  color: var(--active-color);
+}
+body.dark-mode .detalle-descripcion p {
+  color: var(--text-secondary);
+}
+body.dark-mode .detalle-mensaje-cierre p {
+  color: var(--text-secondary);
+}
+body.dark-mode .btn-exportar {
+  background: var(--bg-card);
+  border-color: var(--border-color);
+  color: var(--text-primary);
+}
+body.dark-mode .btn-exportar:hover {
+  border-color: var(--primary-color);
+  color: var(--primary-color);
+}
+body.dark-mode .tickets-search-box {
+  background: var(--bg-input);
+  border-color: var(--border-color);
+}
+body.dark-mode .tickets-search-box input {
+  color: var(--text-primary);
+}
+body.dark-mode .tickets-search-box .search-icon {
+  color: var(--text-muted);
+}
+body.dark-mode .filtro-activo-badge {
+  background: var(--primary-color);
+}
+body.dark-mode .detalle-asignar select {
+  background: var(--bg-input);
+  border-color: var(--border-color);
+  color: var(--text-primary);
+}
+body.dark-mode .detalle-cerrar textarea {
+  background: var(--bg-input);
+  border-color: var(--border-color);
+  color: var(--text-primary);
+}
+body.dark-mode .detalle-mensaje-cierre {
+  background: var(--bg-input);
+  border-color: var(--border-color);
+}
+body.dark-mode .btn-cerrar-ticket {
+  background: #b91c1c;
+}
+body.dark-mode .btn-cerrar-ticket:hover:not(:disabled) {
+  background: #991b1b;
+}
+body.dark-mode .estado-badge {
+  filter: brightness(0.75) saturate(1.3);
+}
+body.dark-mode .btn-estado-cambio {
+  filter: brightness(0.8) saturate(1.2);
+}
+body.dark-mode .tickets-msg-exito {
+  background: #1b3a2a;
+  color: #5cae7b;
+}
+
+/* ── IngresarTicket dark mode ── */
+body.dark-mode .ticket-form input,
+body.dark-mode .ticket-form select,
+body.dark-mode .ticket-form textarea {
+  background: var(--bg-input);
+  border-color: var(--border-color);
+  color: var(--text-primary);
+}
+body.dark-mode .ticket-form input:focus,
+body.dark-mode .ticket-form select:focus,
+body.dark-mode .ticket-form textarea:focus {
+  border-color: var(--primary-color);
+}
+body.dark-mode .ticket-form label {
+  color: var(--text-secondary);
+}
+body.dark-mode .prioridad-badge {
+  filter: brightness(0.9);
+}
+body.dark-mode .prioridad-badge.seleccionado {
+  filter: brightness(1);
+}
+body.dark-mode .foto-upload {
+  background: var(--bg-input);
+  border-color: var(--border-color);
+}
+body.dark-mode .foto-upload:hover {
+  border-color: var(--primary-color);
+}
+body.dark-mode .foto-placeholder {
+  color: var(--text-muted);
+}
+body.dark-mode .mis-tickets-panel {
+  background: var(--bg-card);
+  border-color: var(--border-color);
+}
+body.dark-mode .mis-tickets-panel h3 {
+  color: var(--text-primary);
+}
+body.dark-mode .ticket-card-mini {
+  background: var(--bg-input);
+  border-color: var(--border-color);
+}
+body.dark-mode .ticket-card-mini:hover {
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.3);
+}
+body.dark-mode .ticket-card-asunto {
+  color: var(--text-primary);
+}
+body.dark-mode .ticket-card-tiempo {
+  color: var(--text-muted);
+}
+body.dark-mode .ticket-codigo {
+  color: var(--text-secondary);
+}
+body.dark-mode .ticket-codigo b {
+  color: var(--active-color);
+}
+body.dark-mode .sin-tickets {
+  color: var(--text-muted);
+}
+/* Valoración modal dark (IngresarTicket) */
+body.dark-mode .valoracion-modal {
+  background: var(--bg-card);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.5);
+}
+body.dark-mode .valoracion-titulo {
+  color: var(--text-primary);
+}
+body.dark-mode .valoracion-desc {
+  color: var(--text-secondary);
+}
+body.dark-mode .val-lento {
+  background: #3a1a1a; border-color: #5a2020; color: #f87171;
+}
+body.dark-mode .val-lento:hover { background: #4a2020; }
+body.dark-mode .val-normal {
+  background: #3a3520; border-color: #5a5020; color: #fbbf24;
+}
+body.dark-mode .val-normal:hover { background: #4a4025; }
+body.dark-mode .val-rapido {
+  background: #1a3a20; border-color: #205a30; color: #4ade80;
+}
+body.dark-mode .val-rapido:hover { background: #204a28; }
+body.dark-mode .ticket-mensaje.exito {
+  background: #1b3a2a;
+  color: #5cae7b;
+}
+body.dark-mode .ticket-mensaje.error {
+  background: #3a1b1b;
+  color: #e88;
+}
+body.dark-mode .btn-crear-ticket {
+  background: var(--primary-color);
+}
+body.dark-mode .btn-crear-ticket:hover:not(:disabled) {
+  background: var(--primary-hover);
+}
+body.dark-mode .step-dot {
+  background: var(--border-color);
+}
+body.dark-mode .step-line {
+  background: var(--border-color);
+}
+body.dark-mode .step-mini.activo .step-dot {
+  background: #22c55e;
+}
+body.dark-mode .step-mini.activo .step-line {
+  background: #22c55e;
+}
+body.dark-mode .step-label {
+  color: var(--text-muted);
+}
+body.dark-mode .step-label.activo {
+  color: #22c55e;
+}
+/* Stepper detalle panel (green) */
+body.dark-mode .step-det-dot {
+  background: var(--border-color);
+}
+body.dark-mode .step-det-line {
+  background: var(--border-color);
+}
+body.dark-mode .step-det.activo .step-det-dot {
+  background: #22c55e;
+}
+body.dark-mode .step-det.activo .step-det-line {
+  background: #22c55e;
+}
+body.dark-mode .step-det-label {
+  color: var(--text-muted);
+}
+body.dark-mode .step-det-label.activo {
+  color: #22c55e;
+}
+body.dark-mode .detalle-stepper-card {
+  background: var(--bg-input);
+  border-color: var(--border-color);
+}
+body.dark-mode .detalle-asunto-stepper {
+  color: var(--text-primary);
+}
+/* SAP code input in detail */
+body.dark-mode .detalle-sap-code input {
+  background: var(--bg-input);
+  border-color: var(--border-color);
+  color: var(--text-primary);
+}
+body.dark-mode .detalle-sap-code input:focus {
+  border-color: var(--primary-color);
+}
+/* Valoracion display */
+body.dark-mode .detalle-valoracion {
+  background: #3a3520;
+  border-color: #5a5020;
+}
+body.dark-mode .val-star-inactive {
+  color: var(--border-color);
+}
+/* Ticket card mensaje TI */
+body.dark-mode .ticket-card-mensaje {
+  background: color-mix(in srgb, var(--primary-color) 8%, var(--bg-card));
+  border-color: var(--border-color);
+}
+body.dark-mode .ticket-msg-label {
+  color: var(--active-color);
+}
+body.dark-mode .ticket-msg-text {
+  color: var(--text-primary);
+}
+/* Estado badge dark mode */
+body.dark-mode .ticket-estado-badge[data-estado="abierto"] {
+  background: rgba(180, 83, 9, 0.18);
+  color: #fbbf24;
+}
+body.dark-mode .ticket-estado-badge[data-estado="cerrado"] {
+  background: rgba(22, 163, 74, 0.18);
+  color: #4ade80;
+}
+/* Ticket vigente card dark mode */
+body.dark-mode .ticket-vigente-card {
+  background: var(--bg-card);
+  border-color: var(--border-color);
+}
+body.dark-mode .btn-cerrar-vigente {
+  background: var(--bg-hover);
+  color: var(--text-secondary);
+}
+body.dark-mode .btn-cerrar-vigente:hover {
+  background: rgba(220, 38, 38, 0.15);
+  color: #f87171;
+}
+body.dark-mode .vigente-asunto {
+  color: var(--text-primary);
+}
+body.dark-mode .detalle-foto-square img {
+  border-color: var(--border-color);
+}
+body.dark-mode .detalle-asignar textarea {
+  background: var(--bg-input);
+  border-color: var(--border-color);
+  color: var(--text-primary);
+}

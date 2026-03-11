@@ -1,0 +1,86 @@
+
+body.empresa-1 {
+    --color-primario: #003c69;          
+    --color-primario-hover: #012642;    
+    --color-secundario: #003C69;        
+    --color-secundario-claro: #0d5a9e; 
+    --color-texto: #003c69;             
+    --color-texto-secundario: #5a6a7a;  
+    --color-fondo: #ffffff;             
+    --color-fondo-claro: #f5f7fa;       
+    --color-gris-claro: #e8ecf0;        
+    --color-borde: #d40000;
+
+    --primary-color: #f63b31;
+    --primary-hover: #d10a00;
+    --accent-btn: #f63b31;
+    --accent-btn-hover: #d10a00;
+    --active-bg: #fde8e6;
+    --active-color: #f63b31;
+    --logout-hover: #fee;
+    --border-card: #f0d0ce;
+    --border-row: #faf0ef;
+    --bg-subtle: #fef5f4;
+    --bg-header: #fdf0ef;
+
+    --bg-page: #f0f4f8;
+    --bg-card: #ffffff;
+    --bg-input: #f5f7fa;
+    --bg-hover: #edf1f7;
+    --text-primary: #003c69;
+    --text-secondary: #5a6a7a;
+    --text-muted: #8a96a4;
+    --border-color: #d0d8e0;
+    --card-top-1: #fde8e6;
+    --card-top-2: #dce8f4;
+}
+
+body.dark-mode.empresa-1 {
+    --color-primario: #f63b31;          
+    --color-primario-hover: #d10a00;    
+    --color-secundario: #003C69;        
+    --color-secundario-claro: #0d5a9e; 
+    --color-texto: #ffffff;             
+    --color-texto-secundario: #b0b0b0;  
+    --color-fondo: #012e4d;             
+    --color-fondo-claro: #000000;       
+    --color-gris-claro: #1a1a1a;        
+    --color-borde: #d40000;
+
+    --primary-color: #f63b31;
+    --primary-hover: #d10a00;
+    --accent-btn: #f63b31;
+    --accent-btn-hover: #d10a00;
+    --active-bg: #3a1b1b;
+    --active-color: #f63b31;
+    --logout-hover: #3a1b1b;
+    --border-card: #3a2020;
+    --border-row: #2e1a1a;
+    --bg-subtle: #2a1515;
+    --bg-header: #2e1a1a;
+
+    --bg-page: #0a1929;
+    --bg-card: #0e2640;
+    --bg-input: #132f50;
+    --bg-hover: #163658;
+    --text-primary: #e0e8f0;
+    --text-secondary: #a0b0c0;
+    --text-muted: #607080;
+    --border-color: #1a3d5c;
+    --card-top-1: #2a1515;
+    --card-top-2: #0e2640;
+}
+
+
+body.empresa-1 .login-form-container form button {
+    background-color: #f63b31 !important;
+    color: #ffffff;
+    border: none;
+    cursor: pointer;
+    padding: 10px 20px; 
+    border-radius: 4px; 
+}
+
+body.empresa-1 .login-form-container form button:hover {
+    background-color: #d62f2a !important;
+}

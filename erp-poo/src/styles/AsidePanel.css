@@ -1,0 +1,87 @@
+.aside-right-panel {
+    background-color: var(--bg-card, #ffffff);
+    border-left: 1px solid var(--border-color, #ddd);
+    height: 100%;
+    flex-shrink: 0;
+    transition: width 0.3s ease, background-color 0.3s, border-color 0.3s;
+    overflow-y: auto;
+    overflow-x: hidden;
+}
+
+.aside-right-panel.open {
+    width: 300px;
+}
+
+.aside-right-panel.closed {
+    width: 0;
+    border: none;
+}
+
+.panel-close-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 18px;
+    color: var(--text-secondary, #555);
+    float: right;
+}
+
+.panel-close-btn:hover {
+    color: #d32f2f;
+}
+
+/* ── Mobile: panel derecho se sobrepone como overlay ── */
+@media (max-width: 768px) {
+    .aside-right-panel {
+        position: fixed;
+        top: 54px;
+        right: 0;
+        height: calc(100vh - 54px);
+        z-index: 95;
+        box-shadow: -4px 0 20px rgba(0,0,0,0.15);
+        transition: transform 0.3s ease, background-color 0.3s;
+        width: 85vw;
+        max-width: 320px;
+    }
+
+    .aside-right-panel.open {
+        transform: translateX(0);
+        width: 85vw;
+        max-width: 320px;
+    }
+
+    .aside-right-panel.closed {
+        transform: translateX(100%);
+        width: 85vw;
+        max-width: 320px;
+        border-left: 1px solid var(--border-color, #ddd);
+    }
+
+    /* Asegurar que el contenido interno no desborde */
+    .aside-right-panel > div {
+        width: 100%;
+        box-sizing: border-box;
+        overflow-x: hidden;
+    }
+
+    .aside-right-panel img {
+        max-width: 100%;
+        height: auto;
+    }
+
+    .aside-panel-overlay {
+        display: block;
+        position: fixed;
+        top: 54px;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0,0,0,0.35);
+        z-index: 90;
+    }
+}
+
+/* Ocultar overlay en desktop */
+.aside-panel-overlay {
+    display: none;
+}

@@ -1,0 +1,2190 @@
+-- phpMyAdmin SQL Dump
+-- version 5.2.1
+-- https://www.phpmyadmin.net/
+--
+-- Servidor: 127.0.0.1
+-- Tiempo de generación: 09-03-2026 a las 16:56:50
+-- Versión del servidor: 10.4.32-MariaDB
+-- Versión de PHP: 8.2.12
+
+SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
+START TRANSACTION;
+SET time_zone = "+00:00";
+
+
+/*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
+/*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
+/*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;
+/*!40101 SET NAMES utf8mb4 */;
+
+--
+-- Base de datos: `erp_prueba`
+--
+
+-- --------------------------------------------------------
+
+--
+-- Estructura de tabla para la tabla `acceso`
+--
+
+CREATE TABLE `acceso` (
+  `ID_ACCS` int(11) NOT NULL,
+  `FECH` datetime DEFAULT current_timestamp(),
+  `ID_USERC` int(11) DEFAULT NULL,
+  `USUARIO` varchar(100) NOT NULL,
+  `PASSWORD` varchar(255) NOT NULL,
+  `RESET_PASS` tinyint(1) DEFAULT 0,
+  `INTENT_LOGIN` int(11) DEFAULT 0,
+  `ID_ESTADO` int(11) NOT NULL,
+  `ID_ROL` int(11) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Volcado de datos para la tabla `acceso`
+--
+
+INSERT INTO `acceso` (`ID_ACCS`, `FECH`, `ID_USERC`, `USUARIO`, `PASSWORD`, `RESET_PASS`, `INTENT_LOGIN`, `ID_ESTADO`, `ID_ROL`) VALUES
+(1, '2026-02-23 09:27:07', NULL, 'FDELGADO', '1234', 0, 0, 1, 1),
+(2, '2026-02-23 09:27:07', NULL, 'HPEREZ', '1234', 0, 0, 1, 1),
+(3, '2026-02-23 09:27:07', NULL, 'NBUTILER', '$argon2id$v=19$m=65536,t=3,p=4$RTv1qlbRfqMCZP29BTRMHQ$QlcQC6nr7djRNX1ZUXm8imhIR5F+Jrt2afehWnyLA1E', 0, 0, 1, 1),
+(4, '2026-02-23 09:27:07', NULL, 'LHUAMANI', '$argon2id$v=19$m=65536,t=3,p=4$d3gOERjgpQx4Pjr1Mn8aYw$9xy6Qa6yoiNBbl6n9wxZx2cgBlofUCmvHc6td0eRtMI', 0, 0, 2, 1),
+(5, '2026-02-23 09:27:07', NULL, 'JFERNANDEZ', '$argon2id$v=19$m=65536,t=3,p=4$MYeNnjbLLvOuD/bwzVHBhg$0bPM225TFC0vvt+7Grtbhaetk55YvwW8jSQb6b7s3yY', 0, 0, 1, 1),
+(6, '2026-02-23 09:27:07', NULL, 'FGIL', '1234', 0, 0, 2, 1),
+(7, '2026-02-23 09:27:07', NULL, 'LMENA', '1234', 0, 0, 1, 1),
+(8, '2026-02-23 09:27:07', NULL, 'EALVINO', '1234', 0, 0, 1, 1),
+(9, '2026-02-23 09:27:07', NULL, 'CSECLEN', '1234', 0, 0, 1, 1),
+(10, '2026-02-23 09:27:07', NULL, 'FANDIA', '1234', 0, 0, 1, 1),
+(11, '2026-02-23 09:27:07', NULL, 'SBENITES', '1234', 0, 0, 1, 1),
+(12, '2026-02-23 09:27:07', NULL, 'ZCAMARGO', '1234', 0, 0, 1, 1),
+(13, '2026-02-23 09:27:07', NULL, 'JMAYTA', '1234', 0, 0, 1, 1),
+(14, '2026-02-23 09:27:07', NULL, 'MALDAY', '1234', 0, 0, 1, 1),
+(15, '2026-02-23 09:27:07', NULL, 'BBACA', '1234', 0, 0, 1, 1),
+(16, '2026-02-23 09:27:07', NULL, 'KCALLA', '1234', 0, 0, 1, 1),
+(17, '2026-02-23 09:27:07', NULL, 'FCHILON', '1234', 0, 0, 1, 1),
+(18, '2026-02-23 09:27:07', NULL, 'BCONDESO', '1234', 0, 0, 1, 1),
+(19, '2026-02-23 09:27:07', NULL, 'EGUTIERREZ', '1234', 0, 0, 1, 1),
+(20, '2026-02-23 09:27:07', NULL, 'AHINOJOSA', '1234', 0, 0, 1, 1),
+(21, '2026-02-23 09:27:07', NULL, 'SJAUREGUI', '1234', 0, 0, 1, 1),
+(22, '2026-02-23 09:27:07', NULL, 'MJULCA', '1234', 0, 0, 1, 1),
+(23, '2026-02-23 09:27:07', NULL, 'RMANAYAY', '1234', 0, 0, 1, 1),
+(24, '2026-02-23 09:27:07', NULL, 'MORTIZ', '1234', 0, 0, 1, 1),
+(25, '2026-02-23 09:27:07', NULL, 'EOCHOA', '1234', 0, 0, 1, 1),
+(26, '2026-02-23 09:27:07', NULL, 'GRAMIREZ', '$argon2id$v=19$m=65536,t=3,p=4$T9NMwfOnOCd55oN31hcKSA$XqHPeyYQNwTfsY8xRvXfofguDfwJRPXPua4zIqhlpLs', 0, 0, 1, 1),
+(27, '2026-02-23 09:27:07', NULL, 'PROMERO', '1234', 0, 0, 1, 1),
+(28, '2026-02-23 09:27:07', NULL, 'ASINCHE', '1234', 0, 0, 1, 1),
+(29, '2026-02-23 09:27:07', NULL, 'TTORRES', '1234', 0, 0, 1, 1),
+(30, '2026-02-23 09:27:07', NULL, 'SVARGAS', '1234', 0, 0, 1, 1),
+(31, '2026-02-23 09:27:07', NULL, 'CVASQUEZ', '1234', 0, 0, 1, 1),
+(32, '2026-02-23 09:27:07', NULL, 'LVICENTE', '1234', 0, 0, 1, 1),
+(33, '2026-02-23 09:27:07', NULL, 'CVIDAURRE', '1234', 0, 0, 1, 1),
+(34, '2026-02-23 09:27:07', NULL, 'GZUNIGA', '1234', 0, 0, 1, 1),
+(35, '2026-02-27 16:21:34', NULL, 'AHUAMANI', '76936089', 1, 0, 1, 3),
+(36, '2026-03-03 15:10:27', NULL, 'JCARRASCO', '71723837', 1, 0, 1, 3),
+(39, '2026-03-04 10:59:33', NULL, 'VVILCA', '74705575', 1, 0, 1, 3),
+(40, '2026-03-04 11:26:09', NULL, 'FDURAN', '73098918', 1, 0, 1, 3);
+
+-- --------------------------------------------------------
+
+--
+-- Estructura de tabla para la tabla `afp`
+--
+
+CREATE TABLE `afp` (
+  `ID_AFP` int(11) NOT NULL,
+  `DESCRIP` varchar(100) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Volcado de datos para la tabla `afp`
+--
+
+INSERT INTO `afp` (`ID_AFP`, `DESCRIP`) VALUES
+(1, 'AFP PRIMA'),
+(2, 'ONP'),
+(3, 'AFP INTEGRA'),
+(4, 'AFP HORIZONTE'),
+(5, 'AFP PROFUTURO'),
+(6, 'AFP HABITAT');
+
+-- --------------------------------------------------------
+
+--
+-- Estructura de tabla para la tabla `almacenamiento`
+--
+
+CREATE TABLE `almacenamiento` (
+  `ID_ALMC` int(11) NOT NULL,
+  `ID_EQUIPO` int(11) NOT NULL,
+  `ID_DISCO` int(11) NOT NULL,
+  `DESCRIP` varchar(255) DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Volcado de datos para la tabla `almacenamiento`
+--
+
+INSERT INTO `almacenamiento` (`ID_ALMC`, `ID_EQUIPO`, `ID_DISCO`, `DESCRIP`) VALUES
+(1, 1, 1, 'Principal');
+
+-- --------------------------------------------------------
+
+--
+-- Estructura de tabla para la tabla `anexos`
+--
+
+CREATE TABLE `anexos` (
+  `ID_DOCUMENT` int(11) NOT NULL,
+  `ID_CONTR` int(11) DEFAULT NULL,
+  `ID_TDOCUMENT` int(11) DEFAULT NULL,
+  `ID_TMOTIVO` int(11) DEFAULT NULL,
+  `FECHA_INICIO` date DEFAULT NULL,
+  `FECHA_FIN` date DEFAULT NULL,
+  `SUELDO` varchar(50) DEFAULT NULL,
+  `ID_AREA` int(11) NOT NULL,
+  `ID_CARGO` int(11) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Volcado de datos para la tabla `anexos`
+--
+
+INSERT INTO `anexos` (`ID_DOCUMENT`, `ID_CONTR`, `ID_TDOCUMENT`, `ID_TMOTIVO`, `FECHA_INICIO`, `FECHA_FIN`, `SUELDO`, `ID_AREA`, `ID_CARGO`) VALUES
+(1, 35, 1, NULL, '2026-03-02', '2026-06-01', '1300', 3, 29),
+(2, 37, 1, NULL, '2026-03-02', '2026-09-01', '1700', 5, 25),
+(3, 38, 1, NULL, '2026-03-02', '2026-06-01', '1500', 5, 25);
+
+-- --------------------------------------------------------
+
+--
+-- Estructura de tabla para la tabla `area`
+--
+
+CREATE TABLE `area` (
+  `ID_AREA` int(11) NOT NULL,
+  `DESCRIP` varchar(100) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Volcado de datos para la tabla `area`
+--
+
+INSERT INTO `area` (`ID_AREA`, `DESCRIP`) VALUES
+(2, 'ADMINISTRACION'),
+(3, 'COMERCIAL'),
+(4, 'CONTROL CALIDAD'),
+(1, 'GERENCIA'),
+(5, 'OPERACIONES');
+
+-- --------------------------------------------------------
+
+--
+-- Estructura de tabla para la tabla `asignacion_accs`
+--
+
+CREATE TABLE `asignacion_accs` (
+  `ID_ROL` int(11) NOT NULL,
+  `ID_PERM` int(11) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Volcado de datos para la tabla `asignacion_accs`
+--
+
+INSERT INTO `asignacion_accs` (`ID_ROL`, `ID_PERM`) VALUES
+(1, 1),
+(1, 2),
+(2, 1),
+(2, 2),
+(4, 1),
+(4, 2);
+
+-- --------------------------------------------------------
+
+--
+-- Estructura de tabla para la tabla `asignacion_emp`
+--
+
+CREATE TABLE `asignacion_emp` (
+  `ID_ACCS` int(11) NOT NULL,
+  `ID_EMP` int(11) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Volcado de datos para la tabla `asignacion_emp`
+--
+
+INSERT INTO `asignacion_emp` (`ID_ACCS`, `ID_EMP`) VALUES
+(1, 1),
+(1, 2),
+(1, 3),
+(2, 3),
+(3, 3),
+(4, 1),
+(4, 2),
+(4, 3),
+(5, 1),
+(5, 2),
+(5, 3),
+(6, 2),
+(7, 2),
+(8, 2),
+(9, 2),
+(10, 2),
+(11, 2),
+(12, 2),
+(13, 2),
+(14, 1),
+(15, 1),
+(16, 1),
+(17, 1),
+(18, 1),
+(19, 1),
+(20, 1),
+(21, 1),
+(22, 1),
+(23, 1),
+(24, 1),
+(25, 1),
+(26, 1),
+(26, 2),
+(26, 3),
+(27, 1),
+(28, 1),
+(29, 1),
+(30, 1),
+(31, 1),
+(32, 1),
+(33, 1),
+(34, 1),
+(35, 2),
+(36, 3);
+
+-- --------------------------------------------------------
+
+--
+-- Estructura de tabla para la tabla `asignacion_equipo`
+--
+
+CREATE TABLE `asignacion_equipo` (
+  `ID_ASIG_EQUIPO` int(11) NOT NULL,
+  `ID_EQUIPO` int(11) NOT NULL,
+  `ID_PERSONAL` int(11) NOT NULL,
+  `FECHA_ASIG` date NOT NULL,
+  `FECHA_DEVOL` date DEFAULT NULL,
+  `OBSERVACION` varchar(500) DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Volcado de datos para la tabla `asignacion_equipo`
+--
+
+INSERT INTO `asignacion_equipo` (`ID_ASIG_EQUIPO`, `ID_EQUIPO`, `ID_PERSONAL`, `FECHA_ASIG`, `FECHA_DEVOL`, `OBSERVACION`) VALUES
+(1, 1, 5, '2026-03-06', '2026-03-06', '');
+
+-- --------------------------------------------------------
+
+--
+-- Estructura de tabla para la tabla `banco`
+--
+
+CREATE TABLE `banco` (
+  `ID_BANCO` int(11) NOT NULL,
+  `DESCRIP` varchar(100) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Volcado de datos para la tabla `banco`
+--
+
+INSERT INTO `banco` (`ID_BANCO`, `DESCRIP`) VALUES
+(1, 'BANCO DE CREDITO'),
+(2, 'BANCO CONTINENTAL'),
+(3, 'BANCO FINANCIERO'),
+(4, 'BANCO DE LA NACION'),
+(5, 'BANCO PICHINCHA'),
+(6, 'INTERBANK'),
+(7, 'SCOTIABANK'),
+(8, 'BIF');
+
+-- --------------------------------------------------------
+
+--
+-- Estructura de tabla para la tabla `capacidad_disco`
+--
+
+CREATE TABLE `capacidad_disco` (
+  `ID_CAPDISCO` int(11) NOT NULL,
+  `DESCRIP` varchar(100) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Volcado de datos para la tabla `capacidad_disco`
+--
+
+INSERT INTO `capacidad_disco` (`ID_CAPDISCO`, `DESCRIP`) VALUES
+(1, '240 GB'),
+(2, '256 GB'),
+(3, '1TR');
+
+-- --------------------------------------------------------
+
+--
+-- Estructura de tabla para la tabla `cargo`
+--
+
+CREATE TABLE `cargo` (
+  `ID_CARGO` int(11) NOT NULL,
+  `DESCRIP` varchar(100) NOT NULL,
+  `ID_DEPART` int(11) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Volcado de datos para la tabla `cargo`
+--
+
+INSERT INTO `cargo` (`ID_CARGO`, `DESCRIP`, `ID_DEPART`) VALUES
+(1, 'Asesor de Ventas', 13),
+(2, 'Asistente de Almacén', 2),
+(3, 'Asistente de Comercio exterior', 4),
+(4, 'Asistente de Contabilidad', 5),
+(5, 'Asistente de Facturación', 13),
+(6, 'Asistente de Logística', 4),
+(7, 'Asistente de Reglamento interno', 7),
+(8, 'Asistente de Servicios', 10),
+(9, 'Asistente de Tesorería', 5),
+(10, 'Asistente de TI', 12),
+(11, 'Auxiliar Contable', 5),
+(12, 'Auxiliar de Calidad', 6),
+(13, 'Coordinador de Calidad', 6),
+(14, 'Coordinador de Licitaciones', 8),
+(15, 'Coordinador de Operaciones', 9),
+(16, 'Gerente Comercial', 3),
+(17, 'Gerente de Administración', 1),
+(18, 'Gerente de Operaciones', 9),
+(19, 'Gestor de Ventas', 13),
+(20, 'Jefe Comercial', 13),
+(21, 'Jefe de Finanzas', 5),
+(22, 'Jefe de Ingeniería', 11),
+(23, 'Operario de Ensamble', 11),
+(24, 'Operario de Soldadura', 11),
+(25, 'Auxiliar Instrumentista', 9),
+(116, 'Coordinador de Gestión Humana y Administrativa', 7),
+(117, 'Coordinador de Procesos y TI', 12),
+(118, 'Coordinador de Control de Calidad y Metrología', 6),
+(119, 'Coordinador de Aprovisionamiento', 1),
+(120, 'Coordinador de Contabilidad', 5),
+(121, 'Coordinador de Comunicación e Imagen Corporativa', 3),
+(122, 'Coordinador de Línea', 3),
+(123, 'Coordinador de Post Venta y Servicios', 13),
+(124, 'Coordinador de Almacén y Despacho', 2),
+(125, 'Gestor Comercial', 3),
+(126, 'Asistente de Recursos Humanos y Bienestar Social', 7),
+(127, 'Asistente de Control de Calidad', 6),
+(128, 'Asistente de Guías y Compras Locales', 4),
+(129, 'Asistente de Compras Exterior', 4),
+(130, 'Asistente de Cobranzas', 5),
+(131, 'Asistente de Licitaciones', 8),
+(132, 'Asistente de Marketing', 3),
+(133, 'Asistente de Comunicación y Publicidad', 3),
+(134, 'Asistente de Almacén y Despacho', 2),
+(135, 'Asistente de Instrumentación', 3),
+(136, 'Asistente de Servicios Baterías', 3),
+(137, 'Asistente de Soporte', 3),
+(138, 'Auxiliar de Recursos Humanos', 7),
+(139, 'Auxiliar de Bienestar Social', 7),
+(140, 'Auxiliar Administrativo', 1),
+(141, 'Auxiliar de TI', 12),
+(142, 'Auxiliar de Control de Calidad', 6),
+(143, 'Auxiliar de Guias y Compras Locales', 3),
+(144, 'Auxiliar de Compras Exterior', 3),
+(145, 'Auxiliar de Cobranzas', 5),
+(146, 'Auxiliar de Tesorería', 5),
+(147, 'Auxiliar de Licitaciones', 8),
+(148, 'Auxiliar de Facturación', 3),
+(149, 'Auxiliar de Marketing', 3),
+(150, 'Auxiliar de Comunicación', 3),
+(151, 'Auxiliar de Almacén', 2),
+(152, 'Auxiliar de Despacho', 2),
+(153, 'Auxiliar de Instrumentación', 3),
+(154, 'Auxiliar de Servicios Técnicos', 3),
+(155, 'Auxiliar de Soporte Técnico', 3),
+(156, 'Auxiliar de Reglamento Interno', 3),
+(157, 'Operario de Pintura', 9),
+(158, 'Operario de Almacén', 9),
+(159, 'Operario de Transporte y Despacho', 9);
+
+-- --------------------------------------------------------
+
+--
+-- Estructura de tabla para la tabla `catg_asistencia`
+--
+
+CREATE TABLE `catg_asistencia` (
+  `ID_CATGA` int(11) NOT NULL,
+  `DESCRIP` varchar(100) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Volcado de datos para la tabla `catg_asistencia`
+--
+
+INSERT INTO `catg_asistencia` (`ID_CATGA`, `DESCRIP`) VALUES
+(1, 'PUNTUAL'),
+(2, 'TARDANZA'),
+(3, 'FALTA'),
+(4, 'PERMISO'),
+(5, 'VACACIONES'),
+(6, 'PERMISO PERSONAL'),
+(7, 'COMPENSACION HORAS'),
+(8, 'COMISION'),
+(9, 'LICENCIA'),
+(10, 'VIAJE LABORAL'),
+(11, 'DESCANSO'),
+(12, 'DIA LIBRE'),
+(13, 'INCONSISTENCIA');
+
+-- --------------------------------------------------------
+
+--
+-- Estructura de tabla para la tabla `contacto`
+--
+
+CREATE TABLE `contacto` (
+  `ID_CONTAC` int(11) NOT NULL,
+  `ID_PERSONAL` int(11) NOT NULL,
+  `ID_TIPFAM` int(11) NOT NULL,
+  `NOMBRES` varchar(100) NOT NULL,
+  `CELULAR` varchar(12) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Estructura de tabla para la tabla `contrato`
+--
+
+CREATE TABLE `contrato` (
+  `ID_CONTR` int(11) NOT NULL,
+  `ID_PERSONAL` int(11) NOT NULL,
+  `ID_EMP` int(11) NOT NULL,
+  `ID_ESTADO_CONTRATO` int(11) NOT NULL DEFAULT 1,
+  `ID_TIPOCONTR` int(11) NOT NULL,
+  `SUELDO` varchar(50) DEFAULT NULL,
+  `ASIG_FAM` tinyint(1) DEFAULT 0,
+  `FECH_INGR` date DEFAULT NULL,
+  `FECH_CESE` date DEFAULT NULL,
+  `ID_AREA` int(11) NOT NULL,
+  `ID_CARGO` int(11) NOT NULL,
+  `ID_MODALID` int(11) DEFAULT NULL,
+  `ID_HORARIO` int(11) DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Volcado de datos para la tabla `contrato`
+--
+
+INSERT INTO `contrato` (`ID_CONTR`, `ID_PERSONAL`, `ID_EMP`, `ID_ESTADO_CONTRATO`, `ID_TIPOCONTR`, `SUELDO`, `ASIG_FAM`, `FECH_INGR`, `FECH_CESE`, `ID_AREA`, `ID_CARGO`, `ID_MODALID`, `ID_HORARIO`) VALUES
+(1, 1, 3, 1, 2, '3500', 0, '2023-01-15', NULL, 1, 17, 1, 5),
+(2, 2, 3, 1, 2, '2800', 0, '2023-03-01', NULL, 2, 10, 1, 5),
+(3, 3, 3, 1, 1, '2500', 0, '2024-06-01', NULL, 2, 7, 1, 5),
+(4, 4, 3, 1, 2, '2200', 1, '2023-09-15', NULL, 2, 5, 1, 5),
+(5, 5, 3, 1, 2, '100', 0, '2022-05-10', NULL, 1, 10, 1, 5),
+(6, 6, 2, 1, 2, '2600', 0, '2024-01-10', NULL, 3, 1, 1, 4),
+(7, 7, 2, 1, 2, '1500', 1, '2025-09-12', '2026-06-30', 5, 157, 1, 4),
+(8, 8, 2, 1, 1, '2200', 0, '2024-08-15', NULL, 5, 8, 1, 4),
+(9, 9, 2, 1, 2, '2500', 0, '2023-04-20', NULL, 2, 9, 1, 4),
+(10, 10, 2, 1, 2, '2400', 0, '2023-11-01', NULL, 5, 6, 1, 4),
+(11, 11, 2, 1, 1, '2600', 0, '2024-03-01', NULL, 3, 19, 1, 4),
+(12, 12, 2, 1, 2, '2300', 0, '2023-07-15', NULL, 2, 7, 1, 4),
+(13, 13, 2, 1, 1, '2000', 0, '2024-10-01', NULL, 5, 23, 1, 4),
+(14, 14, 1, 1, 2, '2500', 0, '2023-02-01', NULL, 2, 4, 1, 1),
+(15, 15, 1, 1, 1, '2600', 0, '2021-09-01', NULL, 3, 1, 2, 1),
+(16, 16, 1, 1, 2, '2200', 1, '2023-02-01', NULL, 2, 5, 2, 1),
+(17, 17, 1, 1, 1, '1500', 0, '2024-01-20', NULL, 3, 3, 2, 1),
+(18, 18, 1, 1, 2, '2000', 0, '2023-11-05', NULL, 5, 23, 1, 2),
+(19, 19, 1, 1, 2, '2300', 0, '2023-03-15', NULL, 2, 9, 1, 1),
+(20, 20, 1, 1, 2, '2800', 0, '2022-09-01', NULL, 4, 13, 1, 1),
+(21, 21, 1, 1, 1, '2600', 0, '2024-04-10', NULL, 3, 14, 1, 1),
+(22, 22, 1, 1, 2, '2000', 0, '2023-06-20', NULL, 5, 24, 1, 2),
+(23, 23, 1, 1, 2, '2200', 0, '2023-01-10', NULL, 5, 2, 1, 1),
+(24, 24, 1, 1, 2, '3200', 1, '2021-05-01', NULL, 2, 21, 1, 1),
+(25, 25, 1, 1, 2, '2300', 0, '2023-10-15', NULL, 2, 7, 1, 1),
+(26, 26, 1, 1, 2, '1600', 0, '2022-11-22', NULL, 2, 10, 1, 1),
+(27, 27, 1, 1, 2, '3000', 0, '2022-08-15', NULL, 5, 22, 1, 2),
+(28, 28, 1, 1, 2, '3200', 0, '2022-03-01', NULL, 3, 20, 1, 1),
+(29, 29, 1, 1, 2, '2400', 0, '2023-05-10', NULL, 5, 6, 1, 1),
+(30, 30, 1, 1, 2, '2500', 0, '2023-09-01', NULL, 2, 10, 1, 1),
+(31, 31, 1, 1, 2, '2200', 0, '2023-12-01', NULL, 5, 8, 1, 1),
+(32, 32, 1, 1, 1, '2600', 0, '2024-02-15', NULL, 3, 19, 1, 1),
+(33, 33, 1, 1, 2, '3500', 0, '2022-01-10', NULL, 1, 17, 1, 1),
+(34, 34, 1, 1, 2, '2800', 0, '2022-07-20', NULL, 5, 15, 1, 1),
+(35, 36, 3, 1, 1, '1300', 0, '2026-03-02', '2026-06-01', 3, 12, 1, NULL),
+(36, 35, 2, 1, 1, '1400', 0, '2026-03-02', '2026-09-01', 3, 1, 1, NULL),
+(37, 39, 2, 1, 1, '1700', 0, '2026-03-02', '2026-09-01', 5, 25, 1, NULL),
+(38, 40, 2, 1, 1, '1500', 0, '2026-03-02', '2026-06-01', 5, 25, 1, NULL);
+
+-- --------------------------------------------------------
+
+--
+-- Estructura de tabla para la tabla `cuenta_banca`
+--
+
+CREATE TABLE `cuenta_banca` (
+  `ID_CBANCA` int(11) NOT NULL,
+  `ID_PERSONAL` int(11) NOT NULL,
+  `ID_TIPO_CUENTA` int(11) NOT NULL,
+  `ID_BANCO` int(11) NOT NULL,
+  `CUENTA_BANC` varchar(50) DEFAULT NULL,
+  `ID_MONEDA` int(11) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Volcado de datos para la tabla `cuenta_banca`
+--
+
+INSERT INTO `cuenta_banca` (`ID_CBANCA`, `ID_PERSONAL`, `ID_TIPO_CUENTA`, `ID_BANCO`, `CUENTA_BANC`, `ID_MONEDA`) VALUES
+(1, 35, 1, 1, '19174989296060', 1),
+(2, 40, 2, 1, '19493245783057', 1);
+
+-- --------------------------------------------------------
+
+--
+-- Estructura de tabla para la tabla `departamento`
+--
+
+CREATE TABLE `departamento` (
+  `ID_DEPART` int(11) NOT NULL,
+  `DESCRIP` varchar(100) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Volcado de datos para la tabla `departamento`
+--
+
+INSERT INTO `departamento` (`ID_DEPART`, `DESCRIP`) VALUES
+(1, 'ADMINISTRACION'),
+(2, 'ALMACEN Y DESPACHO'),
+(3, 'COMERCIAL'),
+(4, 'COMPRAS'),
+(5, 'CONTABILIDAD Y FINANZAS'),
+(6, 'CONTROL DE CALIDAD'),
+(7, 'GESTION HUMANA Y ADMINISTRATIVA'),
+(8, 'LICITACIONES'),
+(9, 'OPERACIONES'),
+(10, 'POSTVENTA Y SERVICIOS'),
+(11, 'PROCESOS INDUSTRIALES'),
+(12, 'TI'),
+(13, 'VENTAS');
+
+-- --------------------------------------------------------
+
+--
+-- Estructura de tabla para la tabla `disco`
+--
+
+CREATE TABLE `disco` (
+  `ID_DISCO` int(11) NOT NULL,
+  `ID_TDISCO` int(11) NOT NULL,
+  `ID_CAPDISCO` int(11) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Volcado de datos para la tabla `disco`
+--
+
+INSERT INTO `disco` (`ID_DISCO`, `ID_TDISCO`, `ID_CAPDISCO`) VALUES
+(1, 3, 3);
+
+-- --------------------------------------------------------
+
+--
+-- Estructura de tabla para la tabla `distrito`
+--
+
+CREATE TABLE `distrito` (
+  `ID_DISTR` int(11) NOT NULL,
+  `DESCRIP` varchar(100) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Volcado de datos para la tabla `distrito`
+--
+
+INSERT INTO `distrito` (`ID_DISTR`, `DESCRIP`) VALUES
+(1, 'ANCÓN'),
+(2, 'ATE'),
+(3, 'BARRANCO'),
+(4, 'BREÑA'),
+(5, 'CARABAYLLO'),
+(6, 'CHACLACAYO'),
+(7, 'CHORRILLOS'),
+(8, 'CIENEGUILLA'),
+(9, 'COMAS'),
+(10, 'EL AGUSTINO'),
+(11, 'INDEPENDENCIA'),
+(12, 'JESÚS MARÍA'),
+(13, 'LA MOLINA'),
+(14, 'LA VICTORIA'),
+(15, 'LIMA (CERCADO)'),
+(16, 'LINCE'),
+(17, 'LOS OLIVOS'),
+(18, 'LURIGANCHO-CHOSICA'),
+(19, 'LURÍN'),
+(20, 'MAGDALENA DEL MAR'),
+(21, 'MIRAFLORES'),
+(22, 'PACHACAMAC'),
+(23, 'PUCUSANA'),
+(24, 'PUEBLO LIBRE'),
+(25, 'PUENTE PIEDRA'),
+(26, 'PUNTA HERMOSA'),
+(27, 'PUNTA NEGRA'),
+(28, 'RÍMAC'),
+(29, 'SAN BARTOLO'),
+(30, 'SAN BORJA'),
+(31, 'SAN ISIDRO'),
+(32, 'SAN JUAN DE LURIGANCHO'),
+(33, 'SAN JUAN DE MIRAFLORES'),
+(34, 'SAN LUIS'),
+(35, 'SAN MARTÍN DE PORRES'),
+(36, 'SAN MIGUEL'),
+(37, 'SANTA ANITA'),
+(38, 'SANTA MARÍA DEL MAR'),
+(39, 'SANTA ROSA'),
+(40, 'SANTIAGO DE SURCO'),
+(41, 'SURCO'),
+(42, 'SURQUILLO'),
+(43, 'VILLA EL SALVADOR'),
+(44, 'VILLA MARÍA DEL TRIUNFO');
+
+-- --------------------------------------------------------
+
+--
+-- Estructura de tabla para la tabla `documento`
+--
+
+CREATE TABLE `documento` (
+  `ID_DOC` int(11) NOT NULL,
+  `CODIGO` varchar(10) NOT NULL,
+  `DESCRIP` varchar(50) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Volcado de datos para la tabla `documento`
+--
+
+INSERT INTO `documento` (`ID_DOC`, `CODIGO`, `DESCRIP`) VALUES
+(1, 'DNI', 'Documento Nacional de Identidad'),
+(2, 'CE', 'Carnet de Extranjer??a'),
+(3, 'PAS', 'Pasaporte');
+
+-- --------------------------------------------------------
+
+--
+-- Estructura de tabla para la tabla `documentos`
+--
+
+CREATE TABLE `documentos` (
+  `ID_DOCUMENT` int(11) NOT NULL,
+  `ID_CONTR` int(11) DEFAULT NULL,
+  `ID_TDOCUMENT` int(11) DEFAULT NULL,
+  `ID_TMOTIVO` int(11) DEFAULT NULL,
+  `FECHA_INICIO` date DEFAULT NULL,
+  `FECHA_FIN` date DEFAULT NULL,
+  `SUELDO` varchar(50) DEFAULT NULL,
+  `ID_AREA` int(11) NOT NULL,
+  `ID_CARGO` int(11) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Volcado de datos para la tabla `documentos`
+--
+
+INSERT INTO `documentos` (`ID_DOCUMENT`, `ID_CONTR`, `ID_TDOCUMENT`, `ID_TMOTIVO`, `FECHA_INICIO`, `FECHA_FIN`, `SUELDO`, `ID_AREA`, `ID_CARGO`) VALUES
+(3, 1, 1, 1, '3288-02-25', '2888-05-08', '1500', 2, 10);
+
+-- --------------------------------------------------------
+
+--
+-- Estructura de tabla para la tabla `empresa`
+--
+
+CREATE TABLE `empresa` (
+  `ID_EMP` int(11) NOT NULL,
+  `NOMBRE` varchar(150) NOT NULL,
+  `RUC` varchar(50) DEFAULT NULL,
+  `DIREC` varchar(255) DEFAULT NULL,
+  `LOGO` varchar(255) DEFAULT NULL,
+  `LOGO_DARK` varchar(255) DEFAULT NULL,
+  `ESTADO` tinyint(1) DEFAULT 1,
+  `SELECCION` tinyint(1) DEFAULT 1
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Volcado de datos para la tabla `empresa`
+--
+
+INSERT INTO `empresa` (`ID_EMP`, `NOMBRE`, `RUC`, `DIREC`, `LOGO`, `LOGO_DARK`, `ESTADO`, `SELECCION`) VALUES
+(1, 'ENERQUIMICA', '20208473523', 'CAL.CARLOS PEDEMONTE NRO. 142 URB. EL MERCURIO (FRENTE AL MCDO DE FRUTAS- MAESTRO ARRIOL) LIMA - LIMA - SAN LUIS', 'Enerquimica_logo_blanco.webp', 'Enerquimica_logo_negro.webp', 1, 1),
+(2, 'EQCORPORACION', '20517072495', 'CAL.LEONIDAS LA SERRE NRO. 322 URB. EL PINO (ALT CDRA 29 NICOLAS ARRIOLA) LIMA - LIMA - SAN LUIS', 'eq.webp', 'eq_negro.webp', 1, 0),
+(3, 'SIDSYS', '20538461815', 'CAL.LEONIDAS LA SERRE NRO. 322 URB. EL PINO (ALT CDRA 29 NICOLAS ARRIOLA) LIMA - LIMA - SAN LUIS', 'sidsys.webp', 'sidsys_negro.webp', 1, 0);
+
+-- --------------------------------------------------------
+
+--
+-- Estructura de tabla para la tabla `equipo`
+--
+
+CREATE TABLE `equipo` (
+  `ID_EQUIPO` int(11) NOT NULL,
+  `SERIE_EQUIPO` varchar(200) NOT NULL,
+  `ID_TEQUIPO` int(11) NOT NULL,
+  `ID_EST_EQUIPO` int(11) NOT NULL,
+  `ID_ESPEC` int(11) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Volcado de datos para la tabla `equipo`
+--
+
+INSERT INTO `equipo` (`ID_EQUIPO`, `SERIE_EQUIPO`, `ID_TEQUIPO`, `ID_EST_EQUIPO`, `ID_ESPEC`) VALUES
+(1, '12345', 1, 1, 1);
+
+-- --------------------------------------------------------
+
+--
+-- Estructura de tabla para la tabla `especificaciones_tec`
+--
+
+CREATE TABLE `especificaciones_tec` (
+  `ID_ESPEC` int(11) NOT NULL,
+  `FECH_COMPRA` date DEFAULT NULL,
+  `GARANTIA` int(11) DEFAULT NULL,
+  `CODIGOE` varchar(100) DEFAULT NULL,
+  `ID_GAMA` int(11) NOT NULL,
+  `ID_MARCA` int(11) NOT NULL,
+  `ID_MODELO` int(11) NOT NULL,
+  `ID_PROCESADOR` int(11) NOT NULL,
+  `ID_TIPO_RAM` int(11) NOT NULL,
+  `ID_RAM` int(11) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Volcado de datos para la tabla `especificaciones_tec`
+--
+
+INSERT INTO `especificaciones_tec` (`ID_ESPEC`, `FECH_COMPRA`, `GARANTIA`, `CODIGOE`, `ID_GAMA`, `ID_MARCA`, `ID_MODELO`, `ID_PROCESADOR`, `ID_TIPO_RAM`, `ID_RAM`) VALUES
+(1, '2024-01-01', 1, 'ENERQ112024', 1, 1, 1, 1, 2, 2);
+
+-- --------------------------------------------------------
+
+--
+-- Estructura de tabla para la tabla `estado_accs`
+--
+
+CREATE TABLE `estado_accs` (
+  `ID_ESTADO` int(11) NOT NULL,
+  `DESCRIP` varchar(50) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Volcado de datos para la tabla `estado_accs`
+--
+
+INSERT INTO `estado_accs` (`ID_ESTADO`, `DESCRIP`) VALUES
+(1, 'ACTIVO'),
+(2, 'BLOQUEADO'),
+(3, 'DESACTIVADO');
+
+-- --------------------------------------------------------
+
+--
+-- Estructura de tabla para la tabla `estado_civil`
+--
+
+CREATE TABLE `estado_civil` (
+  `ID_ESTCIVIL` int(11) NOT NULL,
+  `DESCRIP` varchar(100) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Volcado de datos para la tabla `estado_civil`
+--
+
+INSERT INTO `estado_civil` (`ID_ESTCIVIL`, `DESCRIP`) VALUES
+(1, 'SOLTERO'),
+(2, 'CASADO'),
+(3, 'VIUDO'),
+(4, 'DIVORCIADO');
+
+-- --------------------------------------------------------
+
+--
+-- Estructura de tabla para la tabla `estado_contrato`
+--
+
+CREATE TABLE `estado_contrato` (
+  `ID_ESTADO_CONTRATO` int(11) NOT NULL,
+  `DESCRIP` varchar(50) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Volcado de datos para la tabla `estado_contrato`
+--
+
+INSERT INTO `estado_contrato` (`ID_ESTADO_CONTRATO`, `DESCRIP`) VALUES
+(1, 'VIGENTE'),
+(2, 'CESADO');
+
+-- --------------------------------------------------------
+
+--
+-- Estructura de tabla para la tabla `estado_equipo`
+--
+
+CREATE TABLE `estado_equipo` (
+  `ID_EST_EQUIPO` int(11) NOT NULL,
+  `DESCRIP` varchar(100) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Volcado de datos para la tabla `estado_equipo`
+--
+
+INSERT INTO `estado_equipo` (`ID_EST_EQUIPO`, `DESCRIP`) VALUES
+(1, 'DISPONIBLE'),
+(2, 'ASIGNADO'),
+(3, 'BAJA');
+
+-- --------------------------------------------------------
+
+--
+-- Estructura de tabla para la tabla `gama`
+--
+
+CREATE TABLE `gama` (
+  `ID_GAMA` int(11) NOT NULL,
+  `DESCRIP` varchar(255) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Volcado de datos para la tabla `gama`
+--
+
+INSERT INTO `gama` (`ID_GAMA`, `DESCRIP`) VALUES
+(1, 'ALTA'),
+(2, 'MEDIA'),
+(3, 'BAJA');
+
+-- --------------------------------------------------------
+
+--
+-- Estructura de tabla para la tabla `grado_academico`
+--
+
+CREATE TABLE `grado_academico` (
+  `ID_ACADM` int(11) NOT NULL,
+  `DESCRIP` varchar(100) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Volcado de datos para la tabla `grado_academico`
+--
+
+INSERT INTO `grado_academico` (`ID_ACADM`, `DESCRIP`) VALUES
+(1, 'SECUNDARIA COMPLETA'),
+(2, 'TECNICO COMPLETO'),
+(3, 'UNIVERSITARIO'),
+(4, 'MAESTRIA'),
+(5, 'TECNICO INCOMPLETO'),
+(6, 'BACHILLER'),
+(7, 'EGRESADO'),
+(8, 'TITULADO'),
+(9, 'DOCTORADO'),
+(10, 'UNIV. INCOMPLETO\r\n'),
+(11, 'UNIV. EN CURSO\r\n'),
+(12, 'TEC. EN CURSO\r\n');
+
+-- --------------------------------------------------------
+
+--
+-- Estructura de tabla para la tabla `horario`
+--
+
+CREATE TABLE `horario` (
+  `ID_HORARIO` int(11) NOT NULL,
+  `NOMBRE` varchar(100) NOT NULL,
+  `DESCRIP` varchar(100) DEFAULT NULL,
+  `ESTADO` tinyint(4) DEFAULT 1,
+  `ID_EMP` int(11) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Volcado de datos para la tabla `horario`
+--
+
+INSERT INTO `horario` (`ID_HORARIO`, `NOMBRE`, `DESCRIP`, `ESTADO`, `ID_EMP`) VALUES
+(1, 'Horario General', 'Lun-Vie 08:00-17:30, Sab 08:00-12:15', 1, 1),
+(2, 'Horario Exonerado', 'L-V 6:00-2:00, S 9:00-12:00', 1, 1),
+(3, 'Horario Personalizado', 'L 7:00-17:30 M-V 7:45-17:30 S 8:00-12:15', 1, 1),
+(4, 'EQ - Horario General', 'Lun-Vie 08:00-17:30, Sab 08:00-12:15', 1, 2),
+(5, 'SID - Horario General', 'Lun-Vie 08:00-17:30, Sab 08:00-12:15', 1, 3);
+
+-- --------------------------------------------------------
+
+--
+-- Estructura de tabla para la tabla `horario_detalle`
+--
+
+CREATE TABLE `horario_detalle` (
+  `ID_HDET` int(11) NOT NULL,
+  `ID_HORARIO` int(11) NOT NULL,
+  `DIA` tinyint(4) NOT NULL,
+  `HORA_E` time DEFAULT NULL,
+  `HORA_S` time DEFAULT NULL,
+  `DIA_DESC` tinyint(1) NOT NULL DEFAULT 0
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Volcado de datos para la tabla `horario_detalle`
+--
+
+INSERT INTO `horario_detalle` (`ID_HDET`, `ID_HORARIO`, `DIA`, `HORA_E`, `HORA_S`, `DIA_DESC`) VALUES
+(1, 1, 1, '08:00:00', '17:30:00', 0),
+(2, 1, 2, '08:00:00', '17:30:00', 0),
+(3, 1, 3, '08:00:00', '17:30:00', 0),
+(4, 1, 4, '08:00:00', '17:30:00', 0),
+(5, 1, 5, '08:00:00', '17:30:00', 0),
+(6, 1, 6, '08:00:00', '12:15:00', 0),
+(7, 1, 7, NULL, NULL, 1),
+(36, 3, 1, '07:00:00', '17:30:00', 0),
+(37, 3, 2, '07:45:00', '17:30:00', 0),
+(38, 3, 3, '07:45:00', '17:30:00', 0),
+(39, 3, 4, '07:45:00', '17:30:00', 0),
+(40, 3, 5, '07:45:00', '17:30:00', 0),
+(41, 3, 6, NULL, NULL, 1),
+(42, 3, 7, NULL, NULL, 1),
+(43, 2, 1, NULL, NULL, 1),
+(44, 2, 2, NULL, NULL, 1),
+(45, 2, 3, NULL, NULL, 1),
+(46, 2, 4, NULL, NULL, 1),
+(47, 2, 5, NULL, NULL, 1),
+(48, 2, 6, NULL, NULL, 1),
+(49, 2, 7, NULL, NULL, 1),
+(57, 4, 1, '08:00:00', '17:30:00', 0),
+(58, 4, 2, '08:00:00', '17:30:00', 0),
+(59, 4, 3, '08:00:00', '17:30:00', 0),
+(60, 4, 4, '08:00:00', '17:30:00', 0),
+(61, 4, 5, '08:00:00', '17:30:00', 0),
+(62, 4, 6, '08:00:00', '12:15:00', 0),
+(63, 4, 7, NULL, NULL, 1),
+(64, 5, 1, '08:00:00', '17:30:00', 0),
+(65, 5, 2, '08:00:00', '17:30:00', 0),
+(66, 5, 3, '08:00:00', '17:30:00', 0),
+(67, 5, 4, '08:00:00', '17:30:00', 0),
+(68, 5, 5, '08:00:00', '17:30:00', 0),
+(69, 5, 6, '08:00:00', '12:15:00', 0),
+(70, 5, 7, NULL, NULL, 1);
+
+-- --------------------------------------------------------
+
+--
+-- Estructura de tabla para la tabla `marca`
+--
+
+CREATE TABLE `marca` (
+  `ID_MARCA` int(11) NOT NULL,
+  `DESCRIP` varchar(255) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Volcado de datos para la tabla `marca`
+--
+
+INSERT INTO `marca` (`ID_MARCA`, `DESCRIP`) VALUES
+(1, 'HP');
+
+-- --------------------------------------------------------
+
+--
+-- Estructura de tabla para la tabla `modalidad`
+--
+
+CREATE TABLE `modalidad` (
+  `ID_MODALID` int(11) NOT NULL,
+  `DESCRIP` varchar(100) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Volcado de datos para la tabla `modalidad`
+--
+
+INSERT INTO `modalidad` (`ID_MODALID`, `DESCRIP`) VALUES
+(1, 'PRESENCIAL'),
+(2, 'REMOTO'),
+(3, 'HIBRIDO');
+
+-- --------------------------------------------------------
+
+--
+-- Estructura de tabla para la tabla `modelo`
+--
+
+CREATE TABLE `modelo` (
+  `ID_MODELO` int(11) NOT NULL,
+  `DESCRIP` varchar(255) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Volcado de datos para la tabla `modelo`
+--
+
+INSERT INTO `modelo` (`ID_MODELO`, `DESCRIP`) VALUES
+(1, '255-G10 NOTEBOOK');
+
+-- --------------------------------------------------------
+
+--
+-- Estructura de tabla para la tabla `moneda`
+--
+
+CREATE TABLE `moneda` (
+  `ID_MONEDA` int(11) NOT NULL,
+  `DESCRIP` varchar(100) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Volcado de datos para la tabla `moneda`
+--
+
+INSERT INTO `moneda` (`ID_MONEDA`, `DESCRIP`) VALUES
+(1, 'SOLES'),
+(2, 'DOLARES AMERICANOS'),
+(3, 'EUROS');
+
+-- --------------------------------------------------------
+
+--
+-- Estructura de tabla para la tabla `motivo`
+--
+
+CREATE TABLE `motivo` (
+  `ID_TMOTIVO` int(11) NOT NULL,
+  `DESCRIP` varchar(100) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Volcado de datos para la tabla `motivo`
+--
+
+INSERT INTO `motivo` (`ID_TMOTIVO`, `DESCRIP`) VALUES
+(1, 'AUMENTO DE SUELDO'),
+(2, 'CAMBIO DE AREA'),
+(3, 'CAMBIO DE CARGO'),
+(4, 'RENOVACION DE CONTRATO');
+
+-- --------------------------------------------------------
+
+--
+-- Estructura de tabla para la tabla `permiso_accs`
+--
+
+CREATE TABLE `permiso_accs` (
+  `ID_PERM` int(11) NOT NULL,
+  `DESCRIP` varchar(100) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Volcado de datos para la tabla `permiso_accs`
+--
+
+INSERT INTO `permiso_accs` (`ID_PERM`, `DESCRIP`) VALUES
+(1, 'ASISTENCIA'),
+(2, 'PERSONAL');
+
+-- --------------------------------------------------------
+
+--
+-- Estructura de tabla para la tabla `personal`
+--
+
+CREATE TABLE `personal` (
+  `ID_PERSONAL` int(11) NOT NULL,
+  `ID_ACCS` int(11) NOT NULL,
+  `ID_DOC` int(11) NOT NULL,
+  `NUM_DOC` varchar(50) NOT NULL,
+  `APE_PATERNO` varchar(100) NOT NULL,
+  `APE_MATERNO` varchar(100) NOT NULL,
+  `NOMBRES` varchar(100) NOT NULL,
+  `GENERO_PERS` tinyint(1) DEFAULT 1,
+  `FECH_NAC` date DEFAULT NULL,
+  `EMAIL` varchar(100) DEFAULT NULL,
+  `CELULAR` varchar(12) DEFAULT NULL,
+  `FOTO` varchar(255) DEFAULT NULL,
+  `ID_ESTCIVIL` int(11) DEFAULT NULL,
+  `ID_ACADM` int(11) DEFAULT NULL,
+  `ID_DISTR` int(11) DEFAULT NULL,
+  `DIRECCION` varchar(255) DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Volcado de datos para la tabla `personal`
+--
+
+INSERT INTO `personal` (`ID_PERSONAL`, `ID_ACCS`, `ID_DOC`, `NUM_DOC`, `APE_PATERNO`, `APE_MATERNO`, `NOMBRES`, `GENERO_PERS`, `FECH_NAC`, `EMAIL`, `CELULAR`, `FOTO`, `ID_ESTCIVIL`, `ID_ACADM`, `ID_DISTR`, `DIRECCION`) VALUES
+(1, 1, 1, '71869165', 'DELGADO', 'ALCANTARA', 'FABIOLA YAMILE', 0, NULL, 'test@test.com', NULL, NULL, NULL, NULL, NULL, NULL),
+(2, 2, 1, '75926435', 'PEREZ', 'CHICHIPE', 'HERNAN', 1, NULL, 'test@test.com', NULL, NULL, NULL, NULL, NULL, NULL),
+(3, 3, 1, '73238796', 'BUTILER', 'LEYVA', 'NAYDELIN LORENA', 2, NULL, 'test@test.com', NULL, NULL, NULL, NULL, NULL, NULL),
+(4, 4, 1, '75379416', 'HUAMANI', 'MOZOMBITE', 'LILIANA ISABEL', 0, NULL, 'test@test.com', NULL, NULL, NULL, NULL, NULL, NULL),
+(5, 5, 1, '72353181', 'FERNANDEZ', 'VILLEGAS', 'JORGE', 1, NULL, 'test@test.com', NULL, NULL, NULL, NULL, NULL, NULL),
+(6, 6, 1, '74719115', 'GIL', 'SANCHEZ', 'FRANCO VICENT', 1, NULL, 'test@test.com', NULL, NULL, NULL, NULL, NULL, NULL),
+(7, 7, 1, '78847461', 'MENA', 'MONTE??EZ', 'LUIS MANUEL', 1, '1999-10-13', 'menaluis131099@gmail.com', '936350822', NULL, 1, 1, 10, 'PSJ. MOROCHA 105 ASENT. H. 7 DE OCTUBRE '),
+(8, 8, 1, '70029383', 'ALVINO', 'LLANO', 'EMANUEL SEBASTIAN', 1, NULL, 'test@test.com', NULL, NULL, NULL, NULL, NULL, NULL),
+(9, 9, 1, '47001860', 'SECLEN', 'CASTILLO', 'CRISTIAN ELOY', 1, '1991-02-06', 'test@test.com', NULL, NULL, NULL, NULL, NULL, NULL),
+(10, 10, 1, '72884168', 'ANDIA', 'CANTORIN', 'FORTUNATO', 1, NULL, 'test@test.com', NULL, NULL, NULL, NULL, NULL, NULL),
+(11, 11, 1, '73769458', 'BENITES', 'PEIXOTO', 'SERGIO', 1, NULL, 'test@test.com', NULL, NULL, NULL, NULL, NULL, NULL),
+(12, 12, 1, '70112905', 'CAMARGO', 'POMEOPE', 'ZOILA ENCARNACION', 0, NULL, 'test@test.com', NULL, NULL, NULL, NULL, NULL, NULL),
+(13, 13, 1, '74455910', 'MAYTA', 'ORTEGA', 'JHORDAN', 1, NULL, 'test@test.com', NULL, NULL, NULL, NULL, NULL, NULL),
+(14, 14, 1, '60548584', 'ALDAY', 'CHIRE', 'MAYRA DANICKA FIORELLA', 0, NULL, 'test@test.com', NULL, NULL, NULL, NULL, NULL, NULL),
+(15, 15, 1, '74884503', 'BACA', 'MENDOZA', 'BRIGITTE', 0, '1994-10-10', 'test@test.com', '980 958 274', NULL, 1, NULL, NULL, NULL),
+(16, 16, 1, '48434107', 'CALLA', 'ACERO', 'KARELY ANABEL', 0, '1994-07-02', 'test@test.com', NULL, NULL, NULL, NULL, NULL, NULL),
+(17, 17, 1, '77203368', 'CHILON', 'HUAMAN', 'FANNY JHOANNA', 0, NULL, 'test@test.com', NULL, NULL, 2, NULL, 34, NULL),
+(18, 18, 1, '74757342', 'CONDESO', 'CARRIZALES', 'BRYAM ALONSO', 1, NULL, 'test@test.com', NULL, NULL, NULL, NULL, NULL, NULL),
+(19, 19, 1, '71979880', 'GUTIERREZ', 'MENDOSA', 'ROSARIO ESTEFANI', 0, NULL, 'test@test.com', NULL, NULL, NULL, NULL, NULL, NULL),
+(20, 20, 1, '77422005', 'HINOJOSA', 'RIVAS', 'ANDREA', 0, NULL, 'test@test.com', NULL, NULL, NULL, NULL, NULL, NULL),
+(21, 21, 1, '74892568', 'JAUREGUI', 'VELASQUEZ', 'SANDRA ALLISON', 0, NULL, 'test@test.com', NULL, NULL, NULL, NULL, NULL, NULL),
+(22, 22, 1, '72163850', 'JULCA', 'LALUPU', 'MICHAEL ALONSO', 1, '2001-02-10', 'test@test.com', NULL, NULL, NULL, NULL, NULL, NULL),
+(23, 23, 1, '75231010', 'MANAYAY', 'SANCHEZ', 'ROSALIA', 0, NULL, 'test@test.com', NULL, NULL, NULL, NULL, NULL, NULL),
+(24, 24, 1, '8547322', 'ORTIZ', 'MEDINA', 'MANUELA', 0, NULL, 'test@test.com', NULL, NULL, NULL, NULL, NULL, NULL),
+(25, 25, 1, '75602262', 'OCHOA', 'CHILCON', 'ERLITA', 0, NULL, 'test@test.com', NULL, NULL, NULL, NULL, NULL, NULL),
+(26, 26, 1, '46676998', 'RAMIREZ', 'HUAMALIES', 'GARY CARLOS', 1, '1990-12-30', 'gary.system2018@gmail.com', '910 455 943', 'GARY_RAMIREZ_26.webp', 1, 2, 34, 'Jr.Enrique Nerine 969'),
+(27, 27, 1, '70123396', 'ROMERO', 'SANCHEZ', 'PHILL ARNOLD', 1, NULL, 'test@test.com', NULL, NULL, NULL, NULL, NULL, NULL),
+(28, 28, 1, '43251756', 'SINCHE', 'CCAHUANA', 'ANDRES', 1, '1985-02-07', 'test@test.com', NULL, NULL, NULL, NULL, NULL, NULL),
+(29, 29, 1, '72953015', 'TORRES', 'MALDONADO', 'TATIANA', 0, NULL, 'test@test.com', NULL, NULL, NULL, NULL, NULL, NULL),
+(30, 30, 1, '42746880', 'VARGAS', 'SOTO', 'SUSSY KARINA', 0, NULL, 'test@test.com', NULL, NULL, NULL, NULL, NULL, NULL),
+(31, 31, 1, '47369260', 'VASQUEZ', 'TAPIA', 'CLEVER', 1, NULL, 'test@test.com', NULL, NULL, NULL, NULL, NULL, NULL),
+(32, 32, 1, '46680880', 'VICENTE', 'MEZA', 'ROSA LIZET', 0, NULL, 'test@test.com', NULL, NULL, NULL, NULL, NULL, NULL),
+(33, 33, 1, '45419847', 'VIDAURRE', 'SANTAMARIA', 'CARMEN ELENA', 0, NULL, 'test@test.com', NULL, NULL, NULL, NULL, NULL, NULL),
+(34, 34, 1, '43109783', 'ZU??IGA', 'DE LA CRUZ', 'GISSELA SUSANA', 0, NULL, 'test@test.com', NULL, NULL, NULL, NULL, NULL, NULL),
+(35, 35, 1, '76936089', 'HUAMANI', 'VARGAS', 'ANA LUISA', 2, '2003-08-15', 'huamani.vargas.analuisa@gmail.com', '908 987 131', NULL, 1, NULL, 18, 'Mz 45 lt 3b nicolas de pierola'),
+(36, 36, 1, '71723837', 'CARRASCO', 'CHAVEZ', 'JOSEPH EITAN', 1, '2003-09-17', 'JOSEPEYT76@GMAIL.COM', '989 732 795', NULL, 1, 3, 2, 'Jr. huasta Block E Dpto. 505 Urb. Parque Naranjal Mz. D-2 Lt. 1 Los Olivos'),
+(39, 39, 1, '74705575', 'VILCA', 'QUISPE', 'VICTOR ', 1, '0002-03-22', 'victovilca2002@gmail.com', '942 986 801', NULL, 1, 6, 7, 'DEFENSORES DEL MORRO 1475 BLOCK 2 DPTO. 601'),
+(40, 40, 1, '73098918', 'DURAN', 'ESQUIVEL', 'FRANK ANDREE', 1, '2001-04-23', 'frank.duran@utec.edu.pe', '930 457 022', NULL, 1, 7, 36, '-');
+
+-- --------------------------------------------------------
+
+--
+-- Estructura de tabla para la tabla `procesador`
+--
+
+CREATE TABLE `procesador` (
+  `ID_PROCESADOR` int(11) NOT NULL,
+  `DESCRIP` varchar(255) NOT NULL,
+  `NUCLEOS` varchar(100) DEFAULT NULL,
+  `HILOS` varchar(100) DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Volcado de datos para la tabla `procesador`
+--
+
+INSERT INTO `procesador` (`ID_PROCESADOR`, `DESCRIP`, `NUCLEOS`, `HILOS`) VALUES
+(1, 'AMD Ryzen 3 7330U 2.3GHz 4.3GHz', '4', '8');
+
+-- --------------------------------------------------------
+
+--
+-- Estructura de tabla para la tabla `ram`
+--
+
+CREATE TABLE `ram` (
+  `ID_RAM` int(11) NOT NULL,
+  `DESCRIP` varchar(255) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Volcado de datos para la tabla `ram`
+--
+
+INSERT INTO `ram` (`ID_RAM`, `DESCRIP`) VALUES
+(1, '16 GB'),
+(2, '32 GB');
+
+-- --------------------------------------------------------
+
+--
+-- Estructura de tabla para la tabla `rol_accs`
+--
+
+CREATE TABLE `rol_accs` (
+  `ID_ROL` int(11) NOT NULL,
+  `DESCRIP` varchar(50) NOT NULL,
+  `ESTADO_ROL` tinyint(1) DEFAULT 1
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Volcado de datos para la tabla `rol_accs`
+--
+
+INSERT INTO `rol_accs` (`ID_ROL`, `DESCRIP`, `ESTADO_ROL`) VALUES
+(1, 'ADMINISTRADOR', 1),
+(2, 'SOPORTE', 1),
+(3, 'USUARIO', 1),
+(4, 'RECURSOS_HUMANOS', 1);
+
+-- --------------------------------------------------------
+
+--
+-- Estructura de tabla para la tabla `seguros_aportaciones`
+--
+
+CREATE TABLE `seguros_aportaciones` (
+  `ID_SEGAPORT` int(11) NOT NULL,
+  `ID_PERSONAL` int(11) NOT NULL,
+  `ID_AFP` int(11) NOT NULL,
+  `COD_AFP` varchar(20) NOT NULL,
+  `COMISION_AFP` tinyint(1) DEFAULT 0,
+  `APORTACION` tinyint(1) DEFAULT 0
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Volcado de datos para la tabla `seguros_aportaciones`
+--
+
+INSERT INTO `seguros_aportaciones` (`ID_SEGAPORT`, `ID_PERSONAL`, `ID_AFP`, `COD_AFP`, `COMISION_AFP`, `APORTACION`) VALUES
+(1, 39, 3, '673351VVQCS0', 0, 1);
+
+-- --------------------------------------------------------
+
+--
+-- Estructura de tabla para la tabla `tipo_contrato`
+--
+
+CREATE TABLE `tipo_contrato` (
+  `ID_TIPOCONTR` int(11) NOT NULL,
+  `DESCRIP` varchar(100) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Volcado de datos para la tabla `tipo_contrato`
+--
+
+INSERT INTO `tipo_contrato` (`ID_TIPOCONTR`, `DESCRIP`) VALUES
+(1, 'PLAZO FIJO'),
+(2, 'INDETERMINADO'),
+(3, 'PRACTICAS');
+
+-- --------------------------------------------------------
+
+--
+-- Estructura de tabla para la tabla `tipo_cuenta`
+--
+
+CREATE TABLE `tipo_cuenta` (
+  `ID_TIPO_CUENTA` int(11) NOT NULL,
+  `DESCRIP` varchar(100) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Volcado de datos para la tabla `tipo_cuenta`
+--
+
+INSERT INTO `tipo_cuenta` (`ID_TIPO_CUENTA`, `DESCRIP`) VALUES
+(1, 'AHORROS'),
+(2, 'CORRIENTE'),
+(3, 'CTS');
+
+-- --------------------------------------------------------
+
+--
+-- Estructura de tabla para la tabla `tipo_disco`
+--
+
+CREATE TABLE `tipo_disco` (
+  `ID_TDISCO` int(11) NOT NULL,
+  `DESCRIP` varchar(100) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Volcado de datos para la tabla `tipo_disco`
+--
+
+INSERT INTO `tipo_disco` (`ID_TDISCO`, `DESCRIP`) VALUES
+(1, 'HDD'),
+(2, 'SSD'),
+(3, 'M.2');
+
+-- --------------------------------------------------------
+
+--
+-- Estructura de tabla para la tabla `tipo_documento`
+--
+
+CREATE TABLE `tipo_documento` (
+  `ID_TDOCUMENT` int(11) NOT NULL,
+  `DESCRIP` varchar(100) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Volcado de datos para la tabla `tipo_documento`
+--
+
+INSERT INTO `tipo_documento` (`ID_TDOCUMENT`, `DESCRIP`) VALUES
+(1, 'CONTRATO INICIAL'),
+(2, 'ADENDA'),
+(3, 'RENOVACION'),
+(4, 'MEMO');
+
+-- --------------------------------------------------------
+
+--
+-- Estructura de tabla para la tabla `tipo_equipo`
+--
+
+CREATE TABLE `tipo_equipo` (
+  `ID_TEQUIPO` int(11) NOT NULL,
+  `DESCRIP` varchar(100) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Volcado de datos para la tabla `tipo_equipo`
+--
+
+INSERT INTO `tipo_equipo` (`ID_TEQUIPO`, `DESCRIP`) VALUES
+(1, 'LAPTOP'),
+(2, 'PC'),
+(3, 'SERVIDOR'),
+(4, 'TABLET'),
+(5, 'CELULAR'),
+(6, 'IMPRESODA');
+
+-- --------------------------------------------------------
+
+--
+-- Estructura de tabla para la tabla `tipo_familiar`
+--
+
+CREATE TABLE `tipo_familiar` (
+  `ID_TIPFAM` int(11) NOT NULL,
+  `DESCRIP` varchar(50) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Volcado de datos para la tabla `tipo_familiar`
+--
+
+INSERT INTO `tipo_familiar` (`ID_TIPFAM`, `DESCRIP`) VALUES
+(1, 'PADRE'),
+(2, 'MADRE'),
+(3, 'CONYUGE'),
+(4, 'HIJO/A');
+
+-- --------------------------------------------------------
+
+--
+-- Estructura de tabla para la tabla `tipo_ram`
+--
+
+CREATE TABLE `tipo_ram` (
+  `ID_TIPO_RAM` int(11) NOT NULL,
+  `DESCRIP` varchar(255) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Volcado de datos para la tabla `tipo_ram`
+--
+
+INSERT INTO `tipo_ram` (`ID_TIPO_RAM`, `DESCRIP`) VALUES
+(1, 'DDR3'),
+(2, 'DDR4'),
+(3, 'DDR5');
+
+--
+-- Índices para tablas volcadas
+--
+
+--
+-- Indices de la tabla `acceso`
+--
+ALTER TABLE `acceso`
+  ADD PRIMARY KEY (`ID_ACCS`),
+  ADD UNIQUE KEY `USUARIO` (`USUARIO`),
+  ADD KEY `FK_ACCESO_ESTADO_ACCS` (`ID_ESTADO`),
+  ADD KEY `FK_ACCESO_ROL` (`ID_ROL`);
+
+--
+-- Indices de la tabla `afp`
+--
+ALTER TABLE `afp`
+  ADD PRIMARY KEY (`ID_AFP`);
+
+--
+-- Indices de la tabla `almacenamiento`
+--
+ALTER TABLE `almacenamiento`
+  ADD PRIMARY KEY (`ID_ALMC`),
+  ADD KEY `FK_ALMACENAMIENTO_EQUIPO` (`ID_EQUIPO`),
+  ADD KEY `FK_ALMACENAMIENTO_DISCO` (`ID_DISCO`);
+
+--
+-- Indices de la tabla `anexos`
+--
+ALTER TABLE `anexos`
+  ADD PRIMARY KEY (`ID_DOCUMENT`),
+  ADD KEY `FK_ANEXOS_CONTRATO` (`ID_CONTR`),
+  ADD KEY `FK_ANEXOS_TIPO_DOCUMENTO` (`ID_TDOCUMENT`),
+  ADD KEY `FK_ANEXOS_MOTIVO` (`ID_TMOTIVO`);
+
+--
+-- Indices de la tabla `area`
+--
+ALTER TABLE `area`
+  ADD PRIMARY KEY (`ID_AREA`),
+  ADD UNIQUE KEY `DESCRIP` (`DESCRIP`);
+
+--
+-- Indices de la tabla `asignacion_accs`
+--
+ALTER TABLE `asignacion_accs`
+  ADD PRIMARY KEY (`ID_ROL`,`ID_PERM`),
+  ADD KEY `FK_ASIGNACION_ACCS_PERMISO_ACCS` (`ID_PERM`);
+
+--
+-- Indices de la tabla `asignacion_emp`
+--
+ALTER TABLE `asignacion_emp`
+  ADD PRIMARY KEY (`ID_ACCS`,`ID_EMP`),
+  ADD KEY `FK_ASIGNACION_EMP_EMPRESA` (`ID_EMP`);
+
+--
+-- Indices de la tabla `asignacion_equipo`
+--
+ALTER TABLE `asignacion_equipo`
+  ADD PRIMARY KEY (`ID_ASIG_EQUIPO`),
+  ADD KEY `FK_ASIG_EQUIPO` (`ID_EQUIPO`),
+  ADD KEY `FK_ASIG_PERSONAL` (`ID_PERSONAL`);
+
+--
+-- Indices de la tabla `banco`
+--
+ALTER TABLE `banco`
+  ADD PRIMARY KEY (`ID_BANCO`);
+
+--
+-- Indices de la tabla `capacidad_disco`
+--
+ALTER TABLE `capacidad_disco`
+  ADD PRIMARY KEY (`ID_CAPDISCO`);
+
+--
+-- Indices de la tabla `cargo`
+--
+ALTER TABLE `cargo`
+  ADD PRIMARY KEY (`ID_CARGO`),
+  ADD UNIQUE KEY `DESCRIP` (`DESCRIP`),
+  ADD KEY `FK_CARGO_DEPARTAMENTO` (`ID_DEPART`);
+
+--
+-- Indices de la tabla `catg_asistencia`
+--
+ALTER TABLE `catg_asistencia`
+  ADD PRIMARY KEY (`ID_CATGA`);
+
+--
+-- Indices de la tabla `contacto`
+--
+ALTER TABLE `contacto`
+  ADD PRIMARY KEY (`ID_CONTAC`),
+  ADD KEY `FK_CONTACTO_PERSONAL` (`ID_PERSONAL`),
+  ADD KEY `FK_CONTACTO_TIPO_FAMILIAR` (`ID_TIPFAM`);
+
+--
+-- Indices de la tabla `contrato`
+--
+ALTER TABLE `contrato`
+  ADD PRIMARY KEY (`ID_CONTR`),
+  ADD KEY `FK_CONTRATO_PERSONAL` (`ID_PERSONAL`),
+  ADD KEY `FK_CONTRATO_EMPRESA` (`ID_EMP`),
+  ADD KEY `FK_CONTRATO_ESTADO_CONTR` (`ID_ESTADO_CONTRATO`),
+  ADD KEY `FK_CONTRATO_TIPO_CONTRATO` (`ID_TIPOCONTR`),
+  ADD KEY `FK_CONTRATO_AREA` (`ID_AREA`),
+  ADD KEY `FK_CONTRATO_CARGO` (`ID_CARGO`),
+  ADD KEY `FK_CONTRATO_MODALIDAD` (`ID_MODALID`),
+  ADD KEY `FK_CONTRATO_HORARIO` (`ID_HORARIO`);
+
+--
+-- Indices de la tabla `cuenta_banca`
+--
+ALTER TABLE `cuenta_banca`
+  ADD PRIMARY KEY (`ID_CBANCA`),
+  ADD KEY `FK_CUENTA_BANCA_PERSONAL` (`ID_PERSONAL`),
+  ADD KEY `FK_CUENTA_BANCA_TIPO_CUENTA` (`ID_TIPO_CUENTA`),
+  ADD KEY `FK_CUENTA_BANCA_BANCO` (`ID_BANCO`),
+  ADD KEY `FK_CUENTA_BANCA_MONEDA` (`ID_MONEDA`);
+
+--
+-- Indices de la tabla `departamento`
+--
+ALTER TABLE `departamento`
+  ADD PRIMARY KEY (`ID_DEPART`),
+  ADD UNIQUE KEY `DESCRIP` (`DESCRIP`);
+
+--
+-- Indices de la tabla `disco`
+--
+ALTER TABLE `disco`
+  ADD PRIMARY KEY (`ID_DISCO`),
+  ADD KEY `FK_DISCO_TDISCO` (`ID_TDISCO`),
+  ADD KEY `FK_DISCO_CAPACIDAD_DISCO` (`ID_CAPDISCO`);
+
+--
+-- Indices de la tabla `distrito`
+--
+ALTER TABLE `distrito`
+  ADD PRIMARY KEY (`ID_DISTR`);
+
+--
+-- Indices de la tabla `documento`
+--
+ALTER TABLE `documento`
+  ADD PRIMARY KEY (`ID_DOC`);
+
+--
+-- Indices de la tabla `documentos`
+--
+ALTER TABLE `documentos`
+  ADD PRIMARY KEY (`ID_DOCUMENT`),
+  ADD KEY `FK_DOCUMENTOS_CONTRATO` (`ID_CONTR`),
+  ADD KEY `FK_DOCUMENTOS_TIPO_DOCUMENTO` (`ID_TDOCUMENT`),
+  ADD KEY `FK_DOCUMENTOS_MOTIVO` (`ID_TMOTIVO`);
+
+--
+-- Indices de la tabla `empresa`
+--
+ALTER TABLE `empresa`
+  ADD PRIMARY KEY (`ID_EMP`);
+
+--
+-- Indices de la tabla `equipo`
+--
+ALTER TABLE `equipo`
+  ADD PRIMARY KEY (`ID_EQUIPO`),
+  ADD KEY `FK_EQUIPO_TIPO_EQUIPO` (`ID_TEQUIPO`),
+  ADD KEY `FK_EQUIPO_ESTADO_EQUIPO` (`ID_EST_EQUIPO`),
+  ADD KEY `FK_EQUIPO_ESPECIFICACIONES_TEC` (`ID_ESPEC`);
+
+--
+-- Indices de la tabla `especificaciones_tec`
+--
+ALTER TABLE `especificaciones_tec`
+  ADD PRIMARY KEY (`ID_ESPEC`),
+  ADD KEY `FK_ESPECIFICACIONES_TEC_GAMA` (`ID_GAMA`),
+  ADD KEY `FK_ESPECIFICACIONES_TEC_MARCA` (`ID_MARCA`),
+  ADD KEY `FK_ESPECIFICACIONES_TEC_MODELO` (`ID_MODELO`),
+  ADD KEY `FK_ESPECIFICACIONES_TEC_PROCESADOR` (`ID_PROCESADOR`),
+  ADD KEY `FK_ESPECIFICACIONES_TEC_TIPO_RAM` (`ID_TIPO_RAM`),
+  ADD KEY `FK_ESPECIFICACIONES_TEC_RAM` (`ID_RAM`);
+
+--
+-- Indices de la tabla `estado_accs`
+--
+ALTER TABLE `estado_accs`
+  ADD PRIMARY KEY (`ID_ESTADO`),
+  ADD UNIQUE KEY `DESCRIP` (`DESCRIP`);
+
+--
+-- Indices de la tabla `estado_civil`
+--
+ALTER TABLE `estado_civil`
+  ADD PRIMARY KEY (`ID_ESTCIVIL`);
+
+--
+-- Indices de la tabla `estado_contrato`
+--
+ALTER TABLE `estado_contrato`
+  ADD PRIMARY KEY (`ID_ESTADO_CONTRATO`);
+
+--
+-- Indices de la tabla `estado_equipo`
+--
+ALTER TABLE `estado_equipo`
+  ADD PRIMARY KEY (`ID_EST_EQUIPO`);
+
+--
+-- Indices de la tabla `gama`
+--
+ALTER TABLE `gama`
+  ADD PRIMARY KEY (`ID_GAMA`);
+
+--
+-- Indices de la tabla `grado_academico`
+--
+ALTER TABLE `grado_academico`
+  ADD PRIMARY KEY (`ID_ACADM`);
+
+--
+-- Indices de la tabla `horario`
+--
+ALTER TABLE `horario`
+  ADD PRIMARY KEY (`ID_HORARIO`),
+  ADD KEY `FK_HORARIO_EMPRESA` (`ID_EMP`);
+
+--
+-- Indices de la tabla `horario_detalle`
+--
+ALTER TABLE `horario_detalle`
+  ADD PRIMARY KEY (`ID_HDET`),
+  ADD KEY `FK_HORARIO_DETALLE_HORARIO` (`ID_HORARIO`);
+
+--
+-- Indices de la tabla `marca`
+--
+ALTER TABLE `marca`
+  ADD PRIMARY KEY (`ID_MARCA`);
+
+--
+-- Indices de la tabla `modalidad`
+--
+ALTER TABLE `modalidad`
+  ADD PRIMARY KEY (`ID_MODALID`);
+
+--
+-- Indices de la tabla `modelo`
+--
+ALTER TABLE `modelo`
+  ADD PRIMARY KEY (`ID_MODELO`);
+
+--
+-- Indices de la tabla `moneda`
+--
+ALTER TABLE `moneda`
+  ADD PRIMARY KEY (`ID_MONEDA`);
+
+--
+-- Indices de la tabla `motivo`
+--
+ALTER TABLE `motivo`
+  ADD PRIMARY KEY (`ID_TMOTIVO`);
+
+--
+-- Indices de la tabla `permiso_accs`
+--
+ALTER TABLE `permiso_accs`
+  ADD PRIMARY KEY (`ID_PERM`),
+  ADD UNIQUE KEY `DESCRIP` (`DESCRIP`);
+
+--
+-- Indices de la tabla `personal`
+--
+ALTER TABLE `personal`
+  ADD PRIMARY KEY (`ID_PERSONAL`),
+  ADD UNIQUE KEY `NUM_DOC` (`NUM_DOC`),
+  ADD KEY `FK_PERSONAL_ACCESO` (`ID_ACCS`),
+  ADD KEY `FK_PERSONAL_DOCUMENTO` (`ID_DOC`),
+  ADD KEY `FK_PERSONAL_ESTADO_CIVIL` (`ID_ESTCIVIL`),
+  ADD KEY `FK_PERSONAL_GRADO_ACADEMICO` (`ID_ACADM`),
+  ADD KEY `FK_PERSONAL_DISTRITO` (`ID_DISTR`);
+
+--
+-- Indices de la tabla `procesador`
+--
+ALTER TABLE `procesador`
+  ADD PRIMARY KEY (`ID_PROCESADOR`);
+
+--
+-- Indices de la tabla `ram`
+--
+ALTER TABLE `ram`
+  ADD PRIMARY KEY (`ID_RAM`);
+
+--
+-- Indices de la tabla `rol_accs`
+--
+ALTER TABLE `rol_accs`
+  ADD PRIMARY KEY (`ID_ROL`),
+  ADD UNIQUE KEY `DESCRIP` (`DESCRIP`);
+
+--
+-- Indices de la tabla `seguros_aportaciones`
+--
+ALTER TABLE `seguros_aportaciones`
+  ADD PRIMARY KEY (`ID_SEGAPORT`),
+  ADD KEY `FK_SEGUROS_APORTACIONES_PERSONAL` (`ID_PERSONAL`),
+  ADD KEY `FK_SEGUROS_APORTACIONES_AFP` (`ID_AFP`);
+
+--
+-- Indices de la tabla `tipo_contrato`
+--
+ALTER TABLE `tipo_contrato`
+  ADD PRIMARY KEY (`ID_TIPOCONTR`);
+
+--
+-- Indices de la tabla `tipo_cuenta`
+--
+ALTER TABLE `tipo_cuenta`
+  ADD PRIMARY KEY (`ID_TIPO_CUENTA`);
+
+--
+-- Indices de la tabla `tipo_disco`
+--
+ALTER TABLE `tipo_disco`
+  ADD PRIMARY KEY (`ID_TDISCO`);
+
+--
+-- Indices de la tabla `tipo_documento`
+--
+ALTER TABLE `tipo_documento`
+  ADD PRIMARY KEY (`ID_TDOCUMENT`);
+
+--
+-- Indices de la tabla `tipo_equipo`
+--
+ALTER TABLE `tipo_equipo`
+  ADD PRIMARY KEY (`ID_TEQUIPO`);
+
+--
+-- Indices de la tabla `tipo_familiar`
+--
+ALTER TABLE `tipo_familiar`
+  ADD PRIMARY KEY (`ID_TIPFAM`);
+
+--
+-- Indices de la tabla `tipo_ram`
+--
+ALTER TABLE `tipo_ram`
+  ADD PRIMARY KEY (`ID_TIPO_RAM`);
+
+--
+-- AUTO_INCREMENT de las tablas volcadas
+--
+
+--
+-- AUTO_INCREMENT de la tabla `acceso`
+--
+ALTER TABLE `acceso`
+  MODIFY `ID_ACCS` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=41;
+
+--
+-- AUTO_INCREMENT de la tabla `afp`
+--
+ALTER TABLE `afp`
+  MODIFY `ID_AFP` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
+
+--
+-- AUTO_INCREMENT de la tabla `almacenamiento`
+--
+ALTER TABLE `almacenamiento`
+  MODIFY `ID_ALMC` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+
+--
+-- AUTO_INCREMENT de la tabla `anexos`
+--
+ALTER TABLE `anexos`
+  MODIFY `ID_DOCUMENT` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+
+--
+-- AUTO_INCREMENT de la tabla `area`
+--
+ALTER TABLE `area`
+  MODIFY `ID_AREA` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
+
+--
+-- AUTO_INCREMENT de la tabla `asignacion_equipo`
+--
+ALTER TABLE `asignacion_equipo`
+  MODIFY `ID_ASIG_EQUIPO` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+
+--
+-- AUTO_INCREMENT de la tabla `banco`
+--
+ALTER TABLE `banco`
+  MODIFY `ID_BANCO` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
+
+--
+-- AUTO_INCREMENT de la tabla `capacidad_disco`
+--
+ALTER TABLE `capacidad_disco`
+  MODIFY `ID_CAPDISCO` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+
+--
+-- AUTO_INCREMENT de la tabla `cargo`
+--
+ALTER TABLE `cargo`
+  MODIFY `ID_CARGO` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=160;
+
+--
+-- AUTO_INCREMENT de la tabla `catg_asistencia`
+--
+ALTER TABLE `catg_asistencia`
+  MODIFY `ID_CATGA` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=14;
+
+--
+-- AUTO_INCREMENT de la tabla `contacto`
+--
+ALTER TABLE `contacto`
+  MODIFY `ID_CONTAC` int(11) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT de la tabla `contrato`
+--
+ALTER TABLE `contrato`
+  MODIFY `ID_CONTR` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=39;
+
+--
+-- AUTO_INCREMENT de la tabla `cuenta_banca`
+--
+ALTER TABLE `cuenta_banca`
+  MODIFY `ID_CBANCA` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+
+--
+-- AUTO_INCREMENT de la tabla `departamento`
+--
+ALTER TABLE `departamento`
+  MODIFY `ID_DEPART` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=14;
+
+--
+-- AUTO_INCREMENT de la tabla `disco`
+--
+ALTER TABLE `disco`
+  MODIFY `ID_DISCO` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+
+--
+-- AUTO_INCREMENT de la tabla `distrito`
+--
+ALTER TABLE `distrito`
+  MODIFY `ID_DISTR` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=45;
+
+--
+-- AUTO_INCREMENT de la tabla `documento`
+--
+ALTER TABLE `documento`
+  MODIFY `ID_DOC` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+
+--
+-- AUTO_INCREMENT de la tabla `documentos`
+--
+ALTER TABLE `documentos`
+  MODIFY `ID_DOCUMENT` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+
+--
+-- AUTO_INCREMENT de la tabla `empresa`
+--
+ALTER TABLE `empresa`
+  MODIFY `ID_EMP` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+
+--
+-- AUTO_INCREMENT de la tabla `equipo`
+--
+ALTER TABLE `equipo`
+  MODIFY `ID_EQUIPO` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+
+--
+-- AUTO_INCREMENT de la tabla `especificaciones_tec`
+--
+ALTER TABLE `especificaciones_tec`
+  MODIFY `ID_ESPEC` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+
+--
+-- AUTO_INCREMENT de la tabla `estado_accs`
+--
+ALTER TABLE `estado_accs`
+  MODIFY `ID_ESTADO` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+
+--
+-- AUTO_INCREMENT de la tabla `estado_civil`
+--
+ALTER TABLE `estado_civil`
+  MODIFY `ID_ESTCIVIL` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
+
+--
+-- AUTO_INCREMENT de la tabla `estado_contrato`
+--
+ALTER TABLE `estado_contrato`
+  MODIFY `ID_ESTADO_CONTRATO` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+
+--
+-- AUTO_INCREMENT de la tabla `estado_equipo`
+--
+ALTER TABLE `estado_equipo`
+  MODIFY `ID_EST_EQUIPO` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+
+--
+-- AUTO_INCREMENT de la tabla `gama`
+--
+ALTER TABLE `gama`
+  MODIFY `ID_GAMA` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+
+--
+-- AUTO_INCREMENT de la tabla `grado_academico`
+--
+ALTER TABLE `grado_academico`
+  MODIFY `ID_ACADM` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=13;
+
+--
+-- AUTO_INCREMENT de la tabla `horario`
+--
+ALTER TABLE `horario`
+  MODIFY `ID_HORARIO` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
+
+--
+-- AUTO_INCREMENT de la tabla `horario_detalle`
+--
+ALTER TABLE `horario_detalle`
+  MODIFY `ID_HDET` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=71;
+
+--
+-- AUTO_INCREMENT de la tabla `marca`
+--
+ALTER TABLE `marca`
+  MODIFY `ID_MARCA` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+
+--
+-- AUTO_INCREMENT de la tabla `modalidad`
+--
+ALTER TABLE `modalidad`
+  MODIFY `ID_MODALID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+
+--
+-- AUTO_INCREMENT de la tabla `modelo`
+--
+ALTER TABLE `modelo`
+  MODIFY `ID_MODELO` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+
+--
+-- AUTO_INCREMENT de la tabla `moneda`
+--
+ALTER TABLE `moneda`
+  MODIFY `ID_MONEDA` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+
+--
+-- AUTO_INCREMENT de la tabla `motivo`
+--
+ALTER TABLE `motivo`
+  MODIFY `ID_TMOTIVO` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
+
+--
+-- AUTO_INCREMENT de la tabla `permiso_accs`
+--
+ALTER TABLE `permiso_accs`
+  MODIFY `ID_PERM` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+
+--
+-- AUTO_INCREMENT de la tabla `personal`
+--
+ALTER TABLE `personal`
+  MODIFY `ID_PERSONAL` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=41;
+
+--
+-- AUTO_INCREMENT de la tabla `procesador`
+--
+ALTER TABLE `procesador`
+  MODIFY `ID_PROCESADOR` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+
+--
+-- AUTO_INCREMENT de la tabla `ram`
+--
+ALTER TABLE `ram`
+  MODIFY `ID_RAM` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+
+--
+-- AUTO_INCREMENT de la tabla `rol_accs`
+--
+ALTER TABLE `rol_accs`
+  MODIFY `ID_ROL` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
+
+--
+-- AUTO_INCREMENT de la tabla `seguros_aportaciones`
+--
+ALTER TABLE `seguros_aportaciones`
+  MODIFY `ID_SEGAPORT` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+
+--
+-- AUTO_INCREMENT de la tabla `tipo_contrato`
+--
+ALTER TABLE `tipo_contrato`
+  MODIFY `ID_TIPOCONTR` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+
+--
+-- AUTO_INCREMENT de la tabla `tipo_cuenta`
+--
+ALTER TABLE `tipo_cuenta`
+  MODIFY `ID_TIPO_CUENTA` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+
+--
+-- AUTO_INCREMENT de la tabla `tipo_disco`
+--
+ALTER TABLE `tipo_disco`
+  MODIFY `ID_TDISCO` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+
+--
+-- AUTO_INCREMENT de la tabla `tipo_documento`
+--
+ALTER TABLE `tipo_documento`
+  MODIFY `ID_TDOCUMENT` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
+
+--
+-- AUTO_INCREMENT de la tabla `tipo_equipo`
+--
+ALTER TABLE `tipo_equipo`
+  MODIFY `ID_TEQUIPO` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
+
+--
+-- AUTO_INCREMENT de la tabla `tipo_familiar`
+--
+ALTER TABLE `tipo_familiar`
+  MODIFY `ID_TIPFAM` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
+
+--
+-- AUTO_INCREMENT de la tabla `tipo_ram`
+--
+ALTER TABLE `tipo_ram`
+  MODIFY `ID_TIPO_RAM` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+
+--
+-- Restricciones para tablas volcadas
+--
+
+--
+-- Filtros para la tabla `acceso`
+--
+ALTER TABLE `acceso`
+  ADD CONSTRAINT `FK_ACCESO_ESTADO_ACCS` FOREIGN KEY (`ID_ESTADO`) REFERENCES `estado_accs` (`ID_ESTADO`),
+  ADD CONSTRAINT `FK_ACCESO_ROL` FOREIGN KEY (`ID_ROL`) REFERENCES `rol_accs` (`ID_ROL`);
+
+--
+-- Filtros para la tabla `almacenamiento`
+--
+ALTER TABLE `almacenamiento`
+  ADD CONSTRAINT `FK_ALMACENAMIENTO_DISCO` FOREIGN KEY (`ID_DISCO`) REFERENCES `disco` (`ID_DISCO`),
+  ADD CONSTRAINT `FK_ALMACENAMIENTO_EQUIPO` FOREIGN KEY (`ID_EQUIPO`) REFERENCES `equipo` (`ID_EQUIPO`);
+
+--
+-- Filtros para la tabla `anexos`
+--
+ALTER TABLE `anexos`
+  ADD CONSTRAINT `FK_ANEXOS_CONTRATO` FOREIGN KEY (`ID_CONTR`) REFERENCES `contrato` (`ID_CONTR`),
+  ADD CONSTRAINT `FK_ANEXOS_MOTIVO` FOREIGN KEY (`ID_TMOTIVO`) REFERENCES `motivo` (`ID_TMOTIVO`),
+  ADD CONSTRAINT `FK_ANEXOS_TIPO_DOCUMENTO` FOREIGN KEY (`ID_TDOCUMENT`) REFERENCES `tipo_documento` (`ID_TDOCUMENT`);
+
+--
+-- Filtros para la tabla `asignacion_accs`
+--
+ALTER TABLE `asignacion_accs`
+  ADD CONSTRAINT `FK_ASIGNACION_ACCS_PERMISO_ACCS` FOREIGN KEY (`ID_PERM`) REFERENCES `permiso_accs` (`ID_PERM`),
+  ADD CONSTRAINT `FK_ASIGNACION_ACCS_ROL_ACCS` FOREIGN KEY (`ID_ROL`) REFERENCES `rol_accs` (`ID_ROL`);
+
+--
+-- Filtros para la tabla `asignacion_emp`
+--
+ALTER TABLE `asignacion_emp`
+  ADD CONSTRAINT `FK_ASIGNACION_EMP_ACCESO` FOREIGN KEY (`ID_ACCS`) REFERENCES `acceso` (`ID_ACCS`),
+  ADD CONSTRAINT `FK_ASIGNACION_EMP_EMPRESA` FOREIGN KEY (`ID_EMP`) REFERENCES `empresa` (`ID_EMP`);
+
+--
+-- Filtros para la tabla `asignacion_equipo`
+--
+ALTER TABLE `asignacion_equipo`
+  ADD CONSTRAINT `FK_ASIG_EQUIPO` FOREIGN KEY (`ID_EQUIPO`) REFERENCES `equipo` (`ID_EQUIPO`),
+  ADD CONSTRAINT `FK_ASIG_PERSONAL` FOREIGN KEY (`ID_PERSONAL`) REFERENCES `personal` (`ID_PERSONAL`);
+
+--
+-- Filtros para la tabla `cargo`
+--
+ALTER TABLE `cargo`
+  ADD CONSTRAINT `FK_CARGO_DEPARTAMENTO` FOREIGN KEY (`ID_DEPART`) REFERENCES `departamento` (`ID_DEPART`);
+
+--
+-- Filtros para la tabla `contacto`
+--
+ALTER TABLE `contacto`
+  ADD CONSTRAINT `FK_CONTACTO_PERSONAL` FOREIGN KEY (`ID_PERSONAL`) REFERENCES `personal` (`ID_PERSONAL`),
+  ADD CONSTRAINT `FK_CONTACTO_TIPO_FAMILIAR` FOREIGN KEY (`ID_TIPFAM`) REFERENCES `tipo_familiar` (`ID_TIPFAM`);
+
+--
+-- Filtros para la tabla `contrato`
+--
+ALTER TABLE `contrato`
+  ADD CONSTRAINT `FK_CONTRATO_AREA` FOREIGN KEY (`ID_AREA`) REFERENCES `area` (`ID_AREA`),
+  ADD CONSTRAINT `FK_CONTRATO_CARGO` FOREIGN KEY (`ID_CARGO`) REFERENCES `cargo` (`ID_CARGO`),
+  ADD CONSTRAINT `FK_CONTRATO_EMPRESA` FOREIGN KEY (`ID_EMP`) REFERENCES `empresa` (`ID_EMP`),
+  ADD CONSTRAINT `FK_CONTRATO_ESTADO_CONTR` FOREIGN KEY (`ID_ESTADO_CONTRATO`) REFERENCES `estado_contrato` (`ID_ESTADO_CONTRATO`),
+  ADD CONSTRAINT `FK_CONTRATO_HORARIO` FOREIGN KEY (`ID_HORARIO`) REFERENCES `horario` (`ID_HORARIO`),
+  ADD CONSTRAINT `FK_CONTRATO_MODALIDAD` FOREIGN KEY (`ID_MODALID`) REFERENCES `modalidad` (`ID_MODALID`),
+  ADD CONSTRAINT `FK_CONTRATO_PERSONAL` FOREIGN KEY (`ID_PERSONAL`) REFERENCES `personal` (`ID_PERSONAL`),
+  ADD CONSTRAINT `FK_CONTRATO_TIPO_CONTRATO` FOREIGN KEY (`ID_TIPOCONTR`) REFERENCES `tipo_contrato` (`ID_TIPOCONTR`);
+
+--
+-- Filtros para la tabla `cuenta_banca`
+--
+ALTER TABLE `cuenta_banca`
+  ADD CONSTRAINT `FK_CUENTA_BANCA_BANCO` FOREIGN KEY (`ID_BANCO`) REFERENCES `banco` (`ID_BANCO`),
+  ADD CONSTRAINT `FK_CUENTA_BANCA_MONEDA` FOREIGN KEY (`ID_MONEDA`) REFERENCES `moneda` (`ID_MONEDA`),
+  ADD CONSTRAINT `FK_CUENTA_BANCA_PERSONAL` FOREIGN KEY (`ID_PERSONAL`) REFERENCES `personal` (`ID_PERSONAL`),
+  ADD CONSTRAINT `FK_CUENTA_BANCA_TIPO_CUENTA` FOREIGN KEY (`ID_TIPO_CUENTA`) REFERENCES `tipo_cuenta` (`ID_TIPO_CUENTA`);
+
+--
+-- Filtros para la tabla `disco`
+--
+ALTER TABLE `disco`
+  ADD CONSTRAINT `FK_DISCO_CAPACIDAD_DISCO` FOREIGN KEY (`ID_CAPDISCO`) REFERENCES `capacidad_disco` (`ID_CAPDISCO`),
+  ADD CONSTRAINT `FK_DISCO_TDISCO` FOREIGN KEY (`ID_TDISCO`) REFERENCES `tipo_disco` (`ID_TDISCO`);
+
+--
+-- Filtros para la tabla `documentos`
+--
+ALTER TABLE `documentos`
+  ADD CONSTRAINT `FK_DOCUMENTOS_CONTRATO` FOREIGN KEY (`ID_CONTR`) REFERENCES `contrato` (`ID_CONTR`),
+  ADD CONSTRAINT `FK_DOCUMENTOS_MOTIVO` FOREIGN KEY (`ID_TMOTIVO`) REFERENCES `motivo` (`ID_TMOTIVO`),
+  ADD CONSTRAINT `FK_DOCUMENTOS_TIPO_DOCUMENTO` FOREIGN KEY (`ID_TDOCUMENT`) REFERENCES `tipo_documento` (`ID_TDOCUMENT`);
+
+--
+-- Filtros para la tabla `equipo`
+--
+ALTER TABLE `equipo`
+  ADD CONSTRAINT `FK_EQUIPO_ESPECIFICACIONES_TEC` FOREIGN KEY (`ID_ESPEC`) REFERENCES `especificaciones_tec` (`ID_ESPEC`),
+  ADD CONSTRAINT `FK_EQUIPO_ESTADO_EQUIPO` FOREIGN KEY (`ID_EST_EQUIPO`) REFERENCES `estado_equipo` (`ID_EST_EQUIPO`),
+  ADD CONSTRAINT `FK_EQUIPO_TIPO_EQUIPO` FOREIGN KEY (`ID_TEQUIPO`) REFERENCES `tipo_equipo` (`ID_TEQUIPO`);
+
+--
+-- Filtros para la tabla `especificaciones_tec`
+--
+ALTER TABLE `especificaciones_tec`
+  ADD CONSTRAINT `FK_ESPECIFICACIONES_TEC_GAMA` FOREIGN KEY (`ID_GAMA`) REFERENCES `gama` (`ID_GAMA`),
+  ADD CONSTRAINT `FK_ESPECIFICACIONES_TEC_MARCA` FOREIGN KEY (`ID_MARCA`) REFERENCES `marca` (`ID_MARCA`),
+  ADD CONSTRAINT `FK_ESPECIFICACIONES_TEC_MODELO` FOREIGN KEY (`ID_MODELO`) REFERENCES `modelo` (`ID_MODELO`),
+  ADD CONSTRAINT `FK_ESPECIFICACIONES_TEC_PROCESADOR` FOREIGN KEY (`ID_PROCESADOR`) REFERENCES `procesador` (`ID_PROCESADOR`),
+  ADD CONSTRAINT `FK_ESPECIFICACIONES_TEC_RAM` FOREIGN KEY (`ID_RAM`) REFERENCES `ram` (`ID_RAM`),
+  ADD CONSTRAINT `FK_ESPECIFICACIONES_TEC_TIPO_RAM` FOREIGN KEY (`ID_TIPO_RAM`) REFERENCES `tipo_ram` (`ID_TIPO_RAM`);
+
+--
+-- Filtros para la tabla `horario`
+--
+ALTER TABLE `horario`
+  ADD CONSTRAINT `FK_HORARIO_EMPRESA` FOREIGN KEY (`ID_EMP`) REFERENCES `empresa` (`ID_EMP`);
+
+--
+-- Filtros para la tabla `horario_detalle`
+--
+ALTER TABLE `horario_detalle`
+  ADD CONSTRAINT `FK_HORARIO_DETALLE_HORARIO` FOREIGN KEY (`ID_HORARIO`) REFERENCES `horario` (`ID_HORARIO`);
+
+--
+-- Filtros para la tabla `personal`
+--
+ALTER TABLE `personal`
+  ADD CONSTRAINT `FK_PERSONAL_ACCESO` FOREIGN KEY (`ID_ACCS`) REFERENCES `acceso` (`ID_ACCS`),
+  ADD CONSTRAINT `FK_PERSONAL_DISTRITO` FOREIGN KEY (`ID_DISTR`) REFERENCES `distrito` (`ID_DISTR`),
+  ADD CONSTRAINT `FK_PERSONAL_DOCUMENTO` FOREIGN KEY (`ID_DOC`) REFERENCES `documento` (`ID_DOC`),
+  ADD CONSTRAINT `FK_PERSONAL_ESTADO_CIVIL` FOREIGN KEY (`ID_ESTCIVIL`) REFERENCES `estado_civil` (`ID_ESTCIVIL`),
+  ADD CONSTRAINT `FK_PERSONAL_GRADO_ACADEMICO` FOREIGN KEY (`ID_ACADM`) REFERENCES `grado_academico` (`ID_ACADM`);
+
+--
+-- Filtros para la tabla `seguros_aportaciones`
+--
+ALTER TABLE `seguros_aportaciones`
+  ADD CONSTRAINT `FK_SEGUROS_APORTACIONES_AFP` FOREIGN KEY (`ID_AFP`) REFERENCES `afp` (`ID_AFP`),
+  ADD CONSTRAINT `FK_SEGUROS_APORTACIONES_PERSONAL` FOREIGN KEY (`ID_PERSONAL`) REFERENCES `personal` (`ID_PERSONAL`);
+COMMIT;
+
+/*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
+/*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
+/*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;

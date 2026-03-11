@@ -1,0 +1,83 @@
+
+body.empresa-3 {
+    --color-primario: #e01b1d;        
+    --color-primario-hover: #c50003;  
+    --color-secundario: #004D40;      
+    --color-texto: #1A202C;           
+    --color-texto-suave: #718096;     
+    --color-fondo: #ffffff;           
+    --color-superficie: #FFFFFF;      
+    --color-verde-claro: #E8F5E9;
+
+    --primary-color: #e01b1d;
+    --primary-hover: #c50003;
+    --accent-btn: #e01b1d;
+    --accent-btn-hover: #c50003;
+    --active-bg: #fce4e4;
+    --active-color: #e01b1d;
+    --logout-hover: #fee;
+    --border-card: #f0c8c8;
+    --border-row: #faf0f0;
+    --bg-subtle: #fef5f5;
+    --bg-header: #fdf0f0;
+
+    --bg-page: #f7f5f5;
+    --bg-card: #ffffff;
+    --bg-input: #f8f6f6;
+    --bg-hover: #f0eded;
+    --text-primary: #1A202C;
+    --text-secondary: #4a5568;
+    --text-muted: #8a94a4;
+    --border-color: #e0d8d8;
+    --card-top-1: #fce4e4;
+    --card-top-2: #d8f0e8;
+}
+
+
+body.dark-mode.empresa-3 {
+    --color-primario: #e01b1d;        
+    --color-primario-hover: #c50003;  
+    --color-secundario: #004D40;      
+    --color-texto: #ffffff;           
+    --color-texto-suave: #718096;     
+    --color-fondo: #1f1f1f;           
+    --color-superficie: #FFFFFF;      
+    --color-verde-claro: #E8F5E9;
+
+    --primary-color: #e01b1d;
+    --primary-hover: #ff3538;
+    --accent-btn: #e01b1d;
+    --accent-btn-hover: #ff3538;
+    --active-bg: #3a1515;
+    --active-color: #ff5555;
+    --logout-hover: #3a1515;
+    --border-card: #3a1e1e;
+    --border-row: #2e1515;
+    --bg-subtle: #2a1212;
+    --bg-header: #2e1515;
+
+   
+    --bg-page: #161616;
+    --bg-card: #222222;
+    --bg-input: #2a2a2a;
+    --bg-hover: #333333;
+    --text-primary: #e8e4e0;
+    --text-secondary: #b0a8a0;
+    --text-muted: #707068;
+    --border-color: #3a3838;
+    --card-top-1: #2e1818;
+    --card-top-2: #182e22;
+}
+
+body.empresa-3 .login-form-container form button {
+    background-color: #f63b31 !important;
+    color: #ffffff;
+    border: none;
+    cursor: pointer;
+    padding: 10px 20px; 
+    border-radius: 4px; 
+}
+
+body.empresa-3 .login-form-container form button:hover {
+    background-color: #d62f2a !important;
+}

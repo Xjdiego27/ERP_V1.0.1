@@ -1,0 +1,409 @@
+/* ═══════════════════════════════════════════
+   Login.css — Modern Login Design
+   ═══════════════════════════════════════════ */
+
+.login-container {
+    display: flex;
+    min-height: 100vh;
+    background: var(--color-fondo, #f0f2f5);
+    overflow: hidden;
+}
+
+/* ── Lado izquierdo: Imagen/Banner ── */
+.login-imagen {
+    flex: 1.7;
+    background: var(--color-primario, #161616);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    overflow: hidden;
+}
+
+.login-imagen::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, rgba(0,0,0,0.2) 0%, rgba(0,0,0,0.05) 100%);
+    z-index: 1;
+}
+
+.login-imagen-contenido {
+    position: relative;
+    z-index: 2;
+    text-align: center;
+    padding: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: stretch;
+    justify-content: stretch;
+}
+
+.login-imagen-contenido img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+/* ── Lado derecho: Formulario ── */
+.login-form-container {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 40px 32px;
+    background: var(--color-fondo, #f0f2f5);
+    position: relative;
+}
+
+/* Card principal */
+.login-card {
+    width: 100%;
+    max-width: 400px;
+    background: var(--color-fondo, #ffffff);
+    border-radius: 20px;
+    padding: 40px 36px 36px;
+    box-shadow: 0 8px 40px rgba(0,0,0,0.08), 0 1px 3px rgba(0,0,0,0.04);
+    text-align: center;
+    animation: loginFadeIn 0.4s ease;
+}
+
+@keyframes loginFadeIn {
+    from { opacity: 0; transform: translateY(16px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+.logo-login {
+    width: 260px !important;
+    height: auto !important;
+    margin: 0 auto 12px !important;
+    display: block;
+}
+
+.login-titulo {
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--color-texto, #1a1a2e);
+    margin: 30px 0 4px;
+}
+
+.login-desc {
+    font-size: 13px;
+    color: var(--color-texto-suave, #888);
+    margin: 0 0 24px;
+}
+
+/* ── Form fields ── */
+.login-card form {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    text-align: left;
+}
+
+.login-field {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.login-field label {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--color-texto-suave, #555);
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.login-field label svg {
+    font-size: 12px;
+    opacity: 0.6;
+}
+
+.login-field input,
+.login-field select {
+    width: 100%;
+    padding: 11px 14px;
+    font-size: 14px;
+    color: var(--color-texto, #161616);
+    background: var(--bg-input, #f8f9fc);
+    border: 2px solid var(--color-borde, #e4e6eb);
+    border-radius: 10px;
+    outline: none;
+    transition: border-color 0.25s, box-shadow 0.25s, background 0.25s;
+    box-sizing: border-box;
+}
+
+#Input_Usuario {
+    text-transform: uppercase;
+}
+
+.login-field input:focus,
+.login-field select:focus {
+    border-color: var(--color-primario, #D71D27);
+    box-shadow: 0 0 0 3px rgba(215, 29, 39, 0.1);
+    background: var(--color-fondo, #fff);
+}
+
+/* ── Password eye toggle ── */
+.login-pw-wrap {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.login-pw-wrap input {
+    width: 100%;
+    padding-right: 42px;
+}
+
+.login-eye-btn {
+    position: absolute;
+    right: 10px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: var(--color-texto-suave, #999);
+    font-size: 15px;
+    padding: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: color 0.2s;
+}
+
+.login-eye-btn:hover {
+    color: var(--color-primario, #D71D27);
+}
+
+/* ── Error message ── */
+.error-mensaje {
+    background: #fff0f0;
+    color: #c62828;
+    font-size: 13px;
+    font-weight: 600;
+    text-align: center;
+    padding: 8px 12px;
+    border-radius: 8px;
+    margin: 0;
+    animation: loginShake 0.35s ease;
+}
+
+@keyframes loginShake {
+    0%, 100% { transform: translateX(0); }
+    20% { transform: translateX(-6px); }
+    40% { transform: translateX(6px); }
+    60% { transform: translateX(-4px); }
+    80% { transform: translateX(4px); }
+}
+
+/* ── Submit button ── */
+.login-btn {
+    width: 100%;
+    padding: 13px;
+    font-size: 15px;
+    font-weight: 700;
+    color: #fff;
+    background: var(--color-primario, #D71D27);
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: background 0.25s, transform 0.15s, box-shadow 0.25s;
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    margin-top: 4px;
+}
+
+.login-btn:hover {
+    background: var(--color-primario-hover, #b01620);
+    transform: translateY(-1px);
+    box-shadow: 0 6px 20px rgba(215, 29, 39, 0.25);
+}
+
+.login-btn:active {
+    transform: translateY(0);
+}
+
+.login-btn:disabled {
+    opacity: 0.65;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.login-btn svg {
+    font-size: 15px;
+}
+
+/* Spinner */
+.login-spinner {
+    width: 20px;
+    height: 20px;
+    border: 3px solid rgba(255,255,255,0.3);
+    border-top-color: #fff;
+    border-radius: 50%;
+    animation: loginSpin 0.6s linear infinite;
+}
+
+@keyframes loginSpin {
+    to { transform: rotate(360deg); }
+}
+
+/* ── Denied ── */
+.denied-msg {
+    display: block;
+    width: 100%;
+    padding: 13px;
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--color-primario, #D71D27);
+    background: #ffebee;
+    border: 2px solid var(--color-primario, #D71D27);
+    border-radius: 10px;
+    text-align: center;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    box-sizing: border-box;
+}
+
+/* ── Dark/Light toggle ── */
+.login-dark-toggle {
+    position: absolute;
+    top: 20px;
+    right: 24px;
+    z-index: 10;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255, 255, 255, 0.15);
+    backdrop-filter: blur(6px);
+    cursor: pointer;
+    transition: background 0.3s, transform 0.2s;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.login-dark-toggle:hover {
+    transform: scale(1.12);
+    background: rgba(255, 255, 255, 0.25);
+}
+
+.login-dark-toggle svg {
+    font-size: 17px;
+    color: #555;
+}
+
+/* ═══ DARK MODE ═══ */
+body.dark-mode .login-container {
+    background: var(--color-fondo, #13151a);
+}
+
+body.dark-mode .login-form-container {
+    background: var(--color-fondo, #13151a);
+}
+
+body.dark-mode .login-card {
+    background: var(--color-fondo, #1e2028);
+    box-shadow: 0 8px 40px rgba(0,0,0,0.25);
+}
+
+body.dark-mode .login-titulo {
+    color: var(--color-texto, #e0e4ea);
+}
+
+body.dark-mode .login-desc {
+    color: #777;
+}
+
+body.dark-mode .login-field label {
+    color: var(--color-texto, #aab0bc);
+}
+
+body.dark-mode .login-field input,
+body.dark-mode .login-field select {
+    color: var(--color-texto, #e0e4ea);
+    background: #272a33;
+    border-color: #3a3f4a;
+}
+
+body.dark-mode .login-field input:focus,
+body.dark-mode .login-field select:focus {
+    border-color: var(--color-primario);
+    box-shadow: 0 0 0 3px rgba(100, 150, 255, 0.12);
+    background: #2c3038;
+}
+
+body.dark-mode .login-eye-btn {
+    color: #666;
+}
+
+body.dark-mode .login-eye-btn:hover {
+    color: var(--color-primario);
+}
+
+body.dark-mode .error-mensaje {
+    background: #3a1515;
+    color: #ef9a9a;
+}
+
+body.dark-mode .login-dark-toggle {
+    background: rgba(255, 255, 255, 0.08);
+    border-color: rgba(255, 255, 255, 0.12);
+}
+
+body.dark-mode .login-dark-toggle:hover {
+    background: rgba(255, 255, 255, 0.15);
+}
+
+body.dark-mode .login-dark-toggle svg {
+    color: #f0c040;
+}
+
+body.dark-mode .denied-msg {
+    background: #3a1b1b;
+    color: #ff6b6b;
+    border-color: #6b2e2e;
+}
+
+body.dark-mode select option {
+    background: #23272e;
+    color: #e0e4ea;
+}
+
+/* ═══ RESPONSIVE ═══ */
+@media (max-width: 768px) {
+    .login-container {
+        flex-direction: column;
+    }
+
+    .login-imagen {
+        display: none;
+    }
+
+    .login-form-container {
+        padding: 24px 16px;
+        flex: 1;
+        justify-content: center;
+    }
+
+    .login-card {
+        padding: 32px 24px 28px;
+        border-radius: 16px;
+        box-shadow: 0 4px 24px rgba(0,0,0,0.06);
+    }
+
+    .login-dark-toggle {
+        top: 12px;
+        right: 12px;
+    }
+}

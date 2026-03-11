@@ -1,0 +1,560 @@
+/* IngresarTicket.css */
+
+.ingresar-ticket-page {
+    padding: 0;
+}
+
+.ticket-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 24px;
+}
+.ticket-header-icon {
+    font-size: 1.6rem;
+    color: var(--color-primario, #3b82f6);
+}
+.ticket-header h2 {
+    margin: 0;
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: var(--texto-primario, #1e293b);
+}
+
+/* Layout: mis tickets arriba, formulario abajo */
+.ticket-layout {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+/* ── Formulario ── */
+.ticket-form {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.form-grupo {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+.form-grupo label {
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: var(--texto-secundario, #64748b);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+.form-grupo input,
+.form-grupo select,
+.form-grupo textarea {
+    padding: 10px 14px;
+    border: 1.5px solid var(--borde, #e2e8f0);
+    border-radius: 8px;
+    font-size: 0.95rem;
+    background: var(--fondo-input, #f8fafc);
+    color: var(--texto-primario, #1e293b);
+    transition: border-color 0.2s;
+}
+.form-grupo input:focus,
+.form-grupo select:focus,
+.form-grupo textarea:focus {
+    outline: none;
+    border-color: var(--color-primario, #3b82f6);
+}
+.form-grupo textarea {
+    resize: vertical;
+    min-height: 80px;
+}
+
+.form-fila {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+}
+@media (max-width: 600px) {
+    .form-fila {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Selector de prioridad con badges */
+.prioridad-selector {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+.prioridad-badge {
+    padding: 6px 16px;
+    border-radius: 20px;
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    border: 2px solid var(--badge-color, #94a3b8);
+    background: transparent;
+    color: var(--badge-color, #94a3b8);
+    cursor: pointer;
+    transition: all 0.2s;
+}
+.prioridad-badge:hover {
+    background: color-mix(in srgb, var(--badge-color) 12%, transparent);
+}
+.prioridad-badge.seleccionado {
+    background: var(--badge-color);
+    color: #fff;
+}
+
+/* Foto upload */
+.foto-upload {
+    border: 2px dashed var(--borde, #cbd5e1);
+    border-radius: 10px;
+    padding: 20px;
+    text-align: center;
+    cursor: pointer;
+    transition: border-color 0.2s;
+    background: var(--fondo-input, #f8fafc);
+}
+.foto-upload:hover {
+    border-color: var(--color-primario, #3b82f6);
+}
+.foto-placeholder {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    color: var(--texto-secundario, #94a3b8);
+    font-size: 0.9rem;
+}
+.foto-placeholder svg {
+    font-size: 1.6rem;
+}
+.foto-preview {
+    max-width: 100%;
+    max-height: 180px;
+    border-radius: 8px;
+    object-fit: contain;
+}
+
+/* Mensaje */
+.ticket-mensaje {
+    padding: 10px 16px;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+.ticket-mensaje.exito {
+    background: #dcfce7;
+    color: #16a34a;
+}
+.ticket-mensaje.error {
+    background: #fef2f2;
+    color: #dc2626;
+}
+
+/* Botón crear */
+.btn-crear-ticket {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    padding: 12px 28px;
+    border: none;
+    border-radius: 10px;
+    font-size: 1rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    background: var(--color-primario, #3b82f6);
+    color: #fff;
+    cursor: pointer;
+    transition: background 0.2s, transform 0.15s;
+    align-self: flex-start;
+}
+.btn-crear-ticket:hover:not(:disabled) {
+    background: var(--color-primario-hover, #2563eb);
+    transform: translateY(-1px);
+}
+.btn-crear-ticket:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+.btn-crear-ticket .spin {
+    animation: spin-ticket 1s linear infinite;
+}
+@keyframes spin-ticket {
+    to { transform: rotate(360deg); }
+}
+
+/* ── Mis Tickets panel (arriba) ── */
+.mis-tickets-panel {
+    background: var(--fondo-card, #f8fafc);
+    border-radius: 12px;
+    padding: 24px;
+    border: 1px solid var(--borde, #e2e8f0);
+    width: 100%;
+    box-sizing: border-box;
+    min-width: 0;
+}
+.mis-tickets-panel h3 {
+    margin: 0 0 16px 0;
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--texto-primario, #1e293b);
+}
+.sin-tickets {
+    color: var(--texto-secundario, #94a3b8);
+    font-size: 0.9rem;
+    text-align: center;
+    padding: 20px 0;
+}
+.tickets-lista {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 14px;
+    width: 100%;
+    max-height: 520px;
+    overflow-y: auto;
+    padding: 2px;
+    box-sizing: border-box;
+}
+
+/* Scrollbar estilizado */
+.tickets-lista::-webkit-scrollbar {
+    width: 6px;
+}
+.tickets-lista::-webkit-scrollbar-thumb {
+    background: var(--borde, #cbd5e1);
+    border-radius: 3px;
+}
+.tickets-lista::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+/* Ticket card mini */
+.ticket-card-mini {
+    background: var(--fondo-tarjeta, #fff);
+    border-radius: 10px;
+    padding: 16px 18px;
+    border: 1px solid var(--borde, #e2e8f0);
+    border-left: 4px solid #94a3b8;
+    transition: box-shadow 0.2s;
+    box-sizing: border-box;
+    min-width: 0;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+}
+.ticket-card-mini:hover {
+    box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+}
+.ticket-card-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 8px;
+    gap: 10px;
+    min-width: 0;
+}
+.ticket-codigo {
+    font-weight: 600;
+    font-size: 0.82rem;
+    color: var(--texto-secundario, #64748b);
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+.ticket-codigo b {
+    color: var(--color-primario, #3b82f6);
+}
+.ticket-card-asunto {
+    font-size: 0.88rem;
+    font-weight: 700;
+    color: var(--texto-primario, #1e293b);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    margin: 0;
+    min-width: 0;
+    flex: 1;
+}
+
+/* Estado badge (ABIERTO / CERRADO) */
+.ticket-estado-badge {
+    display: inline-flex;
+    align-items: center;
+    margin-top: 10px;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    width: fit-content;
+}
+.ticket-estado-badge[data-estado="abierto"] {
+    background: #fef3c7;
+    color: #b45309;
+}
+.ticket-estado-badge[data-estado="cerrado"] {
+    background: #dcfce7;
+    color: #16a34a;
+}
+
+/* Mensaje TI en card */
+.ticket-card-mensaje {
+    margin-top: 10px;
+    padding: 8px 10px;
+    background: color-mix(in srgb, var(--color-primario, #3b82f6) 6%, var(--fondo-card, #fff));
+    border-radius: 6px;
+    border: 1px solid var(--borde, #e2e8f0);
+}
+.ticket-msg-label {
+    font-size: 0.7rem;
+    font-weight: 700;
+    color: var(--color-primario, #3b82f6);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+.ticket-msg-text {
+    margin: 2px 0 0 0;
+    font-size: 0.82rem;
+    color: var(--texto-primario, #1e293b);
+    line-height: 1.4;
+}
+
+/* Stepper mini */
+.stepper-mini {
+    display: flex;
+    align-items: center;
+    margin-top: 10px;
+    gap: 0;
+}
+.step-mini {
+    display: flex;
+    align-items: center;
+    flex: 1;
+}
+.step-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: var(--borde, #cbd5e1);
+    flex-shrink: 0;
+    transition: background 0.3s;
+}
+.step-mini.activo .step-dot {
+    background: #22c55e;
+}
+.step-line {
+    flex: 1;
+    height: 3px;
+    background: var(--borde, #cbd5e1);
+    transition: background 0.3s;
+}
+.step-mini.activo .step-line {
+    background: #22c55e;
+}
+
+.stepper-labels {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 4px;
+}
+.step-label {
+    font-size: 0.6rem;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    color: var(--texto-secundario, #94a3b8);
+    text-align: center;
+    flex: 1;
+    font-weight: 600;
+}
+.step-label.activo {
+    color: #22c55e;
+}
+
+/* ═══ RESPONSIVE ═══ */
+@media (max-width: 1200px) {
+    .tickets-lista {
+        grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    }
+}
+
+@media (max-width: 768px) {
+    .ticket-header h2 {
+        font-size: 1.15rem;
+    }
+    .ticket-form {
+        gap: 12px;
+    }
+    .form-grupo input,
+    .form-grupo select,
+    .form-grupo textarea {
+        padding: 9px 12px;
+        font-size: 0.9rem;
+    }
+    .btn-crear-ticket {
+        width: 100%;
+        justify-content: center;
+    }
+    .mis-tickets-panel {
+        padding: 16px;
+    }
+    .tickets-lista {
+        grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+        max-height: 420px;
+        gap: 10px;
+    }
+    .ticket-card-mini {
+        padding: 12px 14px;
+    }
+    .prioridad-selector {
+        gap: 6px;
+    }
+    .prioridad-badge {
+        padding: 5px 12px;
+        font-size: 0.72rem;
+    }
+    .foto-upload {
+        padding: 14px;
+    }
+    .step-label {
+        font-size: 0.55rem;
+    }
+}
+
+@media (max-width: 580px) {
+    .tickets-lista {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 480px) {
+    .prioridad-selector {
+        flex-direction: column;
+    }
+    .prioridad-badge {
+        text-align: center;
+    }
+    .mis-tickets-panel {
+        padding: 12px;
+    }
+    .ticket-card-top {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 4px;
+    }
+}
+
+/* ═══ Valoración modal (reused from Tickets.css) ═══ */
+.valoracion-overlay {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0, 0, 0, 0.55);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    animation: fadeInVal 0.3s;
+}
+@keyframes fadeInVal {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+.valoracion-modal {
+    background: var(--fondo-card, #fff);
+    border-radius: 16px;
+    padding: 32px 28px;
+    width: 380px;
+    max-width: 92vw;
+    text-align: center;
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.2);
+    animation: slideUpVal 0.3s ease;
+}
+@keyframes slideUpVal {
+    from { transform: translateY(24px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+}
+.valoracion-icono { font-size: 2.5rem; margin-bottom: 8px; }
+.valoracion-titulo { margin: 0 0 6px 0; font-size: 1.2rem; font-weight: 700; color: var(--texto-primario, #1e293b); }
+.valoracion-desc { margin: 0 0 10px 0; font-size: 0.88rem; color: var(--texto-secundario, #64748b); }
+.valoracion-mensaje-ti {
+    background: var(--fondo-tarjeta, #f0f9ff);
+    border-left: 4px solid #3b82f6;
+    border-radius: 8px;
+    padding: 10px 14px;
+    margin: 6px 0 14px;
+}
+.valoracion-msg-label {
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: #3b82f6;
+    display: block;
+    margin-bottom: 4px;
+}
+.valoracion-msg-texto {
+    margin: 0;
+    font-size: 0.88rem;
+    color: var(--texto-primario, #1e293b);
+    line-height: 1.4;
+}
+.valoracion-opciones { display: flex; flex-direction: column; gap: 10px; }
+.valoracion-btn {
+    display: flex; align-items: center; justify-content: center;
+    gap: 10px; padding: 14px 20px; border: 2px solid transparent;
+    border-radius: 12px; font-size: 0.9rem; font-weight: 700;
+    cursor: pointer; transition: all 0.2s;
+}
+.valoracion-btn:hover { transform: translateY(-2px); box-shadow: 0 4px 14px rgba(0,0,0,0.1); }
+.val-estrellas { display: flex; gap: 4px; font-size: 1rem; }
+.val-texto { letter-spacing: 0.06em; }
+.val-lento { background: #fef2f2; color: #dc2626; border-color: #fecaca; }
+.val-lento:hover { background: #fecaca; border-color: #dc2626; }
+.val-lento .val-estrellas { color: #dc2626; }
+.val-normal { background: #fefce8; color: #ca8a04; border-color: #fef08a; }
+.val-normal:hover { background: #fef08a; border-color: #ca8a04; }
+.val-normal .val-estrellas { color: #ca8a04; }
+.val-rapido { background: #f0fdf4; color: #16a34a; border-color: #bbf7d0; }
+.val-rapido:hover { background: #bbf7d0; border-color: #16a34a; }
+.val-rapido .val-estrellas { color: #16a34a; }
+
+/* ═══ Campos SAP extras ═══ */
+.sap-campos-extra {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    padding: 18px;
+    border: 1.5px solid var(--color-primario, #3b82f6);
+    border-radius: 10px;
+    background: color-mix(in srgb, var(--color-primario, #3b82f6) 4%, var(--fondo-card, #fff));
+    animation: fadeInSap 0.3s ease;
+}
+@keyframes fadeInSap {
+    from { opacity: 0; transform: translateY(-6px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+.sap-seccion-titulo {
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: var(--color-primario, #3b82f6);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    padding-bottom: 6px;
+    border-bottom: 1px solid var(--borde, #e2e8f0);
+}
+.sap-campos-extra .form-grupo label {
+    font-size: 0.78rem;
+}
+.sap-campos-extra .form-grupo input,
+.sap-campos-extra .form-grupo select {
+    font-size: 0.88rem;
+    padding: 8px 12px;
+}

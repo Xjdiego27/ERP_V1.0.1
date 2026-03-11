@@ -1,0 +1,44 @@
+version: '3.8'
+
+services:
+  # 1. Base de Datos SQL (PostgreSQL como ejemplo)
+  db_sql:
+    image: postgres:15
+    restart: always
+    environment:
+      POSTGRES_USER: usuario_erp
+      POSTGRES_PASSWORD: password_seguro
+      POSTGRES_DB: erp_sql
+    ports:
+      - "5432:5432"
+
+  # 2. Base de Datos NoSQL (MongoDB)
+  db_nosql:
+    image: mongo:latest
+    restart: always
+    ports:
+      - "27017:27017"
+
+  # 3. Tu Backend (Python/FastAPI)
+  backend:
+    build: ./backend
+    restart: always
+    ports:
+      - "8000:8000"
+    depends_on:
+      - db_sql
+      - db_nosql
+    environment:
+      - SQL_URL=postgresql://usuario_erp:password_seguro@db_sql:5432/erp_sql
+      - MONGO_URL=mongodb://db_nosql:27017
+      - CORS_ORIGINS=http://localhost:5173,http://192.168.1.192:5173
+
+  # 4. Tu Frontend (Vite)
+  frontend:
+    build: ./frontend
+    ports:
+      - "5173:5173"
+    environment:
+      - VITE_API_URL=http://192.168.1.192:8000
+    stdin_open: true
+    tty: true
