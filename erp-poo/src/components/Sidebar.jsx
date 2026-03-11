@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import IconoFa from './IconoFa'; 
+import PermisoService from '../servicios/PermisoService';
 import { faBars, faHouse, faFileLines, faBoxArchive, faUsers, faRightFromBracket, faChevronDown, faChevronRight, faPeopleGroup, faUserTie, faCalendarCheck, faClock, faLaptop, faPlus, faArrowsRotate, faTicket, faListCheck, faShieldHalved } from '@fortawesome/free-solid-svg-icons';
 import '../styles/Sidebar.css';
 
@@ -65,20 +66,14 @@ export default function Sidebar({ isOpen, onToggleMenu }) {
         { nombre: 'Clientes',   ruta: '/dashboard/clientes',     icono: faUsers,      modulo: 'CLIENTES' },
     ];
 
-    // Sub-opciones de RRHH
-    // Detectar rol TI desde la sesión
+    // ── Permisos de módulos (POO) ──
+    // Lógica SEPARADA del acceso a empresas (AsignacionEmp).
     const sessionData = JSON.parse(localStorage.getItem('session'));
-    const rolUsuario = (sessionData && sessionData.usuario && sessionData.usuario.rol || '').toUpperCase();
-    const esRolTI = ['ADMINISTRADOR', 'ADMIN', 'SOPORTE'].indexOf(rolUsuario) >= 0;
+    const permisos = new PermisoService(sessionData);
+    const esRolTI = permisos.esRolTI;
 
-    // Módulos permitidos para este usuario (viene del login)
-    const modulosPermitidos = (sessionData && sessionData.usuario && sessionData.usuario.modulos) || null;
-    // Función helper: ¿tiene acceso a un módulo?
-    function tieneAcceso(clave) {
-        // Si no hay restricciones (null), mostrar todo
-        if (!modulosPermitidos) return true;
-        return modulosPermitidos.indexOf(clave) >= 0;
-    }
+    // Wrapper para mantener compatibilidad con el resto del JSX
+    function tieneAcceso(clave) { return permisos.tieneAcceso(clave); }
 
     // Sub-opciones de RRHH (filtradas por permisos)
     const subMenuRRHHBase = [
@@ -322,7 +317,7 @@ export default function Sidebar({ isOpen, onToggleMenu }) {
                 )}
 
                 {/* === Permisos (ADMIN + tiene permiso PERMISOS) === */}
-                {(['ADMINISTRADOR', 'ADMIN'].indexOf(rolUsuario) >= 0) && tieneAcceso('PERMISOS') && (
+                {permisos.esAdmin && tieneAcceso('PERMISOS') && (
                     <Link
                         to="/dashboard/permisos"
                         className={'menu-link ' + (location.pathname === '/dashboard/permisos' ? 'active' : '')}

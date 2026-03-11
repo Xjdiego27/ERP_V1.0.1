@@ -4,8 +4,9 @@
 
 from database import (
     Personal, Acceso, RolAccs, Empresa, Contrato, Cargo,
-    Horario, HorarioDetalle, AsignacionAccs, PermisoAccs
+    Horario, HorarioDetalle,
 )
+from servicios.permiso_service import PermisoService
 
 # ──────────────────────────────────────────
 # Rango legible de un horario
@@ -86,18 +87,10 @@ def construir_respuesta_usuario(db, acceso, id_empresa):
             if cargo_obj:
                 cargo_nombre = cargo_obj.DESCRIP
 
-    # Módulos permitidos para este usuario (por rol)
-    modulos = None
-    if AsignacionAccs and PermisoAccs:
-        asigs = db.query(AsignacionAccs).filter(
-            AsignacionAccs.ID_ROL == acceso.ID_ROL
-        ).all()
-        perm_ids = [a.ID_PERM for a in asigs]
-        if perm_ids:
-            perms = db.query(PermisoAccs).filter(
-                PermisoAccs.ID_PERM.in_(perm_ids)
-            ).all()
-            modulos = [p.DESCRIP for p in perms]
+    # Módulos permitidos para este usuario (por rol).
+    # Lógica SEPARADA del acceso a empresas (AsignacionEmp).
+    # Siempre retorna list (vacía si no hay asignaciones). NUNCA None.
+    modulos = PermisoService(db).obtener_modulos_rol(acceso.ID_ROL)
 
     return {
         "nombre": personal.NOMBRES if personal else acceso.USUARIO,

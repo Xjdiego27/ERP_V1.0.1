@@ -74,7 +74,8 @@ AsignacionEmp = Base.classes.asignacion_emp if hasattr(Base.classes, 'asignacion
 
 # ── Permisos y roles ──
 PermisoAccs = Base.classes.permiso_accs if hasattr(Base.classes, 'permiso_accs') else None
-AsignacionAccs = Base.classes.asignacion_accs if hasattr(Base.classes, 'asignacion_accs') else None
+# NOTA: asignacion_accs NO tiene PRIMARY KEY, automap no puede mapearla.
+# Se accede via SQL crudo (text()) en PermisoService.
 
 # ── Tickets de soporte ──
 Ticket = Base.classes.ticket if hasattr(Base.classes, 'ticket') else None
