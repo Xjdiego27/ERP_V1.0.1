@@ -10,6 +10,7 @@ import { headersConToken, headersAuth, API_URL } from '../auth';
 export default function AsistenciaTab(props) {
   var idPersonal = props.idPersonal;
   var empleado = props.empleado;
+  var esMiPerfil = props.esMiPerfil;
   var asistenciaData = props.asistenciaData;
   var setAsistenciaData = props.setAsistenciaData;
   var asistCargando = props.asistCargando;
@@ -242,7 +243,7 @@ export default function AsistenciaTab(props) {
                     </td>
                     <td>{a.obsv || ''}</td>
                     <td>
-                      {!a.es_descanso && (
+                      {!a.es_descanso && !esMiPerfil && (
                         <button className="det-btn det-btn-justificar" onClick={function () {
                           setJustificando(a);
                           setDatosJustif({

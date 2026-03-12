@@ -17,10 +17,10 @@ var ESTADOS_COLOR = {
 };
 
 var PRIORIDAD_COLOR = {
-    BAJA:     '#22c55e',
-    MEDIA:    '#f59e0b',
-    ALTA:     '#f97316',
-    URGENTE:  '#dc2626',
+    BAJA:     { bg: '#dcfce7', color: '#15803d' },
+    MEDIA:    { bg: '#fef3c7', color: '#92400e' },
+    ALTA:     { bg: '#ffedd5', color: '#c2410c' },
+    URGENTE:  { bg: '#fee2e2', color: '#b91c1c' },
 };
 
 var ESTADOS_FLUJO = ['ABIERTO', 'ASIGNADO', 'RESUELTO', 'CERRADO'];
@@ -301,7 +301,7 @@ export default function Tickets() {
                                 <div className="vigente-body-left">
                                     <div className="vigente-header">
                                         <span className="detalle-codigo">TICKET: <b>#{seleccionado.id_ticket}</b></span>
-                                        <span className="detalle-prioridad" style={{ background: PRIORIDAD_COLOR[seleccionado.prioridad] || '#94a3b8' }}>
+                                        <span className="detalle-prioridad" style={{ background: (PRIORIDAD_COLOR[seleccionado.prioridad] || {}).bg || '#f1f5f9', color: (PRIORIDAD_COLOR[seleccionado.prioridad] || {}).color || '#64748b' }}>
                                             {seleccionado.prioridad}
                                         </span>
                                     </div>
@@ -496,7 +496,7 @@ export default function Tickets() {
                                             <td>{t.categoria}</td>
                                             <td className="td-asunto">{t.asunto}</td>
                                             <td>
-                                                <span className="prioridad-badge" style={{ background: PRIORIDAD_COLOR[t.prioridad] || '#94a3b8' }}>
+                                                <span className="prioridad-badge" style={{ background: (PRIORIDAD_COLOR[t.prioridad] || {}).bg || '#f1f5f9', color: (PRIORIDAD_COLOR[t.prioridad] || {}).color || '#64748b' }}>
                                                     {t.prioridad}
                                                 </span>
                                             </td>

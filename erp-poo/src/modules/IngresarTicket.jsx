@@ -6,9 +6,9 @@ import { faTicket, faCamera, faPaperPlane, faCheckCircle, faCircle, faSpinner, f
 import '../styles/IngresarTicket.css';
 
 var PRIORIDADES = [
-    { valor: 'BAJA', color: '#22c55e' },
-    { valor: 'MEDIA', color: '#f59e0b' },
-    { valor: 'ALTA', color: '#f97316' },
+    { valor: 'BAJA', color: '#16a34a' },
+    { valor: 'MEDIA', color: '#d97706' },
+    { valor: 'ALTA', color: '#ea580c' },
     { valor: 'URGENTE', color: '#dc2626' },
 ];
 

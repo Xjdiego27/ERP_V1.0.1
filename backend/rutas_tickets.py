@@ -78,6 +78,13 @@ async def _notificar_ticket(db: Session, id_ticket: int, tipo: str, texto: str,
     if not ids:
         return
 
+    # Eliminar notificaciones anteriores no leídas del mismo ticket para los mismos destinatarios
+    await coleccion_notif_tickets.delete_many({
+        "id_ticket": id_ticket,
+        "id_personal": {"$in": list(ids)},
+        "leido": False,
+    })
+
     docs = []
     for id_p in ids:
         docs.append({
@@ -245,17 +252,14 @@ def catalogos_sap(db: Session = Depends(get_db), _: dict = Depends(verificar_tok
 
 @router.get("/tickets/tecnicos")
 def listar_tecnicos(db: Session = Depends(get_db), token: dict = Depends(verificar_token)):
-    """Lista empleados con rol SOPORTE o ADMINISTRADOR (posibles asignados)."""
-    id_empresa = token.get("id_emp")
+    """Lista empleados con rol SOPORTE de cualquier empresa (posibles asignados)."""
     tecnicos = (
         db.query(Personal, Acceso)
         .join(Acceso, Acceso.ID_ACCS == Personal.ID_ACCS)
         .join(Contrato, Contrato.ID_PERSONAL == Personal.ID_PERSONAL)
-        .join(Cargo, Cargo.ID_CARGO == Contrato.ID_CARGO)
         .filter(
             Acceso.ID_ESTADO == 1,
-            Acceso.ID_ROL.in_([1, 2]),  # ADMINISTRADOR o SOPORTE
-            Cargo.ID_EMP == id_empresa,
+            Acceso.ID_ROL == 2,  # Solo SOPORTE
             Contrato.ID_ESTADO_CONTRATO == 1,
         )
         .all()
@@ -275,9 +279,8 @@ def estadisticas_tickets(db: Session = Depends(get_db), token: dict = Depends(ve
     if not Ticket:
         return {"abiertos": 0, "asignados": 0, "en_progreso": 0, "cerrados": 0, "total": 0, "por_mes": []}
 
-    id_empresa = token.get("id_emp")
-
-    # Conteos por estado — filtrados por empresa del token
+    # ADMIN/SOPORTE ven estadísticas de TODAS las empresas
+    # Conteos por estado
     conteos = (
         db.query(
             Ticket.ESTADO,
@@ -285,8 +288,7 @@ def estadisticas_tickets(db: Session = Depends(get_db), token: dict = Depends(ve
         )
         .join(Personal, Personal.ID_PERSONAL == Ticket.ID_PERSONAL)
         .join(Contrato, Contrato.ID_PERSONAL == Personal.ID_PERSONAL)
-        .join(Cargo, Cargo.ID_CARGO == Contrato.ID_CARGO)
-        .filter(Cargo.ID_EMP == id_empresa, Contrato.ID_ESTADO_CONTRATO == 1)
+        .filter(Contrato.ID_ESTADO_CONTRATO == 1)
         .group_by(Ticket.ESTADO)
         .all()
     )
@@ -300,8 +302,7 @@ def estadisticas_tickets(db: Session = Depends(get_db), token: dict = Depends(ve
         )
         .join(Personal, Personal.ID_PERSONAL == Ticket.ID_PERSONAL)
         .join(Contrato, Contrato.ID_PERSONAL == Personal.ID_PERSONAL)
-        .join(Cargo, Cargo.ID_CARGO == Contrato.ID_CARGO)
-        .filter(Cargo.ID_EMP == id_empresa, Contrato.ID_ESTADO_CONTRATO == 1)
+        .filter(Contrato.ID_ESTADO_CONTRATO == 1)
         .group_by(func.month(Ticket.FECH_CREACION))
         .order_by(func.month(Ticket.FECH_CREACION))
         .all()
@@ -322,7 +323,7 @@ def estadisticas_tickets(db: Session = Depends(get_db), token: dict = Depends(ve
 
 @router.get("/tickets")
 def listar_tickets(db: Session = Depends(get_db), token: dict = Depends(verificar_token)):
-    """Admin/Soporte ven todos los tickets de la empresa; Usuario solo los propios."""
+    """Admin/Soporte ven todos los tickets de TODAS las empresas; Usuario solo los propios de su empresa."""
     if not Ticket:
         return []
 
@@ -330,15 +331,23 @@ def listar_tickets(db: Session = Depends(get_db), token: dict = Depends(verifica
     id_accs = token.get("id_accs")
     es_ti = _es_ti(token)
 
-    query = (
-        db.query(Ticket)
-        .join(Personal, Personal.ID_PERSONAL == Ticket.ID_PERSONAL)
-        .join(Contrato, Contrato.ID_PERSONAL == Personal.ID_PERSONAL)
-        .join(Cargo, Cargo.ID_CARGO == Contrato.ID_CARGO)
-        .filter(Cargo.ID_EMP == id_empresa, Contrato.ID_ESTADO_CONTRATO == 1)
-    )
-
-    if not es_ti:
+    if es_ti:
+        # ADMIN/SOPORTE ven tickets de TODAS las empresas
+        query = (
+            db.query(Ticket)
+            .join(Personal, Personal.ID_PERSONAL == Ticket.ID_PERSONAL)
+            .join(Contrato, Contrato.ID_PERSONAL == Personal.ID_PERSONAL)
+            .filter(Contrato.ID_ESTADO_CONTRATO == 1)
+        )
+    else:
+        # Usuarios normales solo ven sus propios tickets de su empresa
+        query = (
+            db.query(Ticket)
+            .join(Personal, Personal.ID_PERSONAL == Ticket.ID_PERSONAL)
+            .join(Contrato, Contrato.ID_PERSONAL == Personal.ID_PERSONAL)
+            .join(Cargo, Cargo.ID_CARGO == Contrato.ID_CARGO)
+            .filter(Cargo.ID_EMP == id_empresa, Contrato.ID_ESTADO_CONTRATO == 1)
+        )
         persona = _personal_por_accs(db, id_accs)
         if not persona:
             return []

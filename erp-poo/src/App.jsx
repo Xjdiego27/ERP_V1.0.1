@@ -29,6 +29,7 @@ function App() {
                     <Route path="/" element={<Login />} />
                     <Route path="/dashboard" element={<Dashboard />}>
                         <Route index element={<DashboardHome />} />
+                        <Route path="mi-perfil" element={<PersonalDetalle />} />
                         <Route path="personal" element={<RRHH />} />
                         <Route path="personal/:id" element={<PersonalDetalle />} />
                         <Route path="asistencias" element={<AsistenciasGeneral />} />

@@ -650,6 +650,9 @@ body.dark-mode .step-mini.activo .step-dot {
 body.dark-mode .step-mini.activo .step-line {
   background: #22c55e;
 }
+body.dark-mode .step-line.linea-activa {
+  background: #22c55e;
+}
 body.dark-mode .step-label {
   color: var(--text-muted);
 }
@@ -667,6 +670,9 @@ body.dark-mode .step-det.activo .step-det-dot {
   background: #22c55e;
 }
 body.dark-mode .step-det.activo .step-det-line {
+  background: #22c55e;
+}
+body.dark-mode .step-det-line.activo {
   background: #22c55e;
 }
 body.dark-mode .step-det-label {

@@ -46,3 +46,11 @@
 .dropdown-btn:hover {
     font-weight: bold;
 }
+
+.dropdown-btn-perfil {
+    color: var(--text-primary, #333);
+}
+
+.dropdown-btn-perfil:hover {
+    color: var(--primary-color, #1976d2);
+}

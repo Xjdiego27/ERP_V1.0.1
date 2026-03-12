@@ -505,7 +505,6 @@
 .detalle-prioridad {
     padding: 4px 14px;
     border-radius: 16px;
-    color: #fff;
     font-size: 0.72rem;
     font-weight: 700;
     text-transform: uppercase;
@@ -664,7 +663,6 @@
 .prioridad-badge {
     padding: 3px 10px;
     border-radius: 12px;
-    color: #fff;
     font-size: 0.68rem;
     font-weight: 700;
     text-transform: uppercase;

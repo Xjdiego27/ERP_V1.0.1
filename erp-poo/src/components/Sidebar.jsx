@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import IconoFa from './IconoFa'; 
 import PermisoService from '../servicios/PermisoService';
-import { faBars, faHouse, faFileLines, faBoxArchive, faUsers, faRightFromBracket, faChevronDown, faChevronRight, faPeopleGroup, faUserTie, faCalendarCheck, faClock, faLaptop, faPlus, faArrowsRotate, faTicket, faListCheck, faShieldHalved, faSimCard } from '@fortawesome/free-solid-svg-icons';
+import { faBars, faHouse, faFileLines, faBoxArchive, faUsers, faRightFromBracket, faChevronDown, faChevronRight, faPeopleGroup, faUserTie, faCalendarCheck, faClock, faLaptop, faPlus, faArrowsRotate, faTicket, faListCheck, faShieldHalved, faSimCard, faUserCircle } from '@fortawesome/free-solid-svg-icons';
 import '../styles/Sidebar.css';
 
 export default function Sidebar({ isOpen, onToggleMenu }) {
@@ -156,6 +156,17 @@ export default function Sidebar({ isOpen, onToggleMenu }) {
                     {isOpen && <span className="menu-text">{menuSimple[0].nombre}</span>}
                 </Link>
                 )}
+
+                {/* Mi Perfil — visible para todos */}
+                <Link 
+                    to="/dashboard/mi-perfil" 
+                    className={`menu-link ${location.pathname === '/dashboard/mi-perfil' ? 'active' : ''}`}
+                    title={!isOpen ? 'Mi Perfil' : undefined}
+                    onClick={handleNavClick}
+                >
+                    <IconoFa icono={faUserCircle} />
+                    {isOpen && <span className="menu-text">Mi Perfil</span>}
+                </Link>
 
                 {/* === RRHH con submenú (oculto si no tiene hijos visibles) === */}
                 {subMenuRRHH.length > 0 && (

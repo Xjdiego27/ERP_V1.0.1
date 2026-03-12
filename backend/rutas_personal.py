@@ -176,6 +176,135 @@ async def listar_personal(db: Session = Depends(get_db), token: dict = Depends(v
     return resultado
 
 
+# === MI PERFIL — datos del empleado autenticado (accesible para TODOS los roles) ===
+@router.get("/mi-perfil")
+async def mi_perfil(db: Session = Depends(get_db), token: dict = Depends(verificar_token)):
+    id_accs = token.get("id_accs")
+    if not id_accs:
+        raise HTTPException(status_code=400, detail="Token sin id_accs")
+
+    # Buscar el personal asociado a este acceso
+    personal = db.query(Personal).filter(Personal.ID_ACCS == id_accs).first()
+    if not personal:
+        raise HTTPException(status_code=404, detail="No se encontró personal asociado a esta cuenta")
+
+    id_personal = personal.ID_PERSONAL
+
+    # Pre-cargar catálogos
+    areas_map = {a.ID_AREA: a.DESCRIP for a in db.query(Area).all()}
+    cargos_map = {c.ID_CARGO: (c.DESCRIP, c.ID_DEPART) for c in db.query(Cargo).all()}
+    docs_map = {d.ID_DOC: d.CODIGO for d in db.query(Documento).all()}
+    depart_map = {d.ID_DEPART: d.DESCRIP for d in db.query(Departamento).all()}
+    tipos_contr_map = {t.ID_TIPOCONTR: t.DESCRIP for t in db.query(TipoContrato).all()}
+    est_civil_map = {e.ID_ESTCIVIL: e.DESCRIP for e in db.query(EstadoCivil).all()}
+    grados_map = {g.ID_ACADM: g.DESCRIP for g in db.query(GradoAcademico).all()}
+    distritos_map = {d.ID_DISTR: d.DESCRIP for d in db.query(Distrito).all()}
+    estados_map = {e.ID_ESTADO: e.DESCRIP for e in db.query(EstadoAccs).all()}
+    tipo_fam_map = {t.ID_TIPFAM: t.DESCRIP for t in db.query(TipoFamiliar).all()}
+    modalidad_map = {}
+    if Modalidad:
+        modalidad_map = {m.ID_MODALID: m.DESCRIP for m in db.query(Modalidad).all()}
+
+    horarios_map = {}
+    horarios_descrip_map = {}
+    if Horario:
+        for h in db.query(Horario).all():
+            horarios_map[h.ID_HORARIO] = h.NOMBRE
+            horarios_descrip_map[h.ID_HORARIO] = h.DESCRIP or ''
+    horarios_rangos = construir_rangos_horarios(db)
+
+    # Consulta con JOIN
+    registro = db.query(Personal, Contrato, Acceso).join(
+        Acceso, Acceso.ID_ACCS == Personal.ID_ACCS
+    ).outerjoin(
+        Contrato, Contrato.ID_PERSONAL == Personal.ID_PERSONAL
+    ).filter(
+        Personal.ID_PERSONAL == id_personal,
+        Contrato.ID_ESTADO_CONTRATO == 1
+    ).first()
+
+    if not registro:
+        raise HTTPException(status_code=404, detail="No se encontró contrato activo para este empleado")
+
+    p, contrato, acceso = registro
+
+    # Contactos
+    contactos_raw = db.query(Contacto).filter(Contacto.ID_PERSONAL == id_personal).all()
+    contactos_lista = [{
+        "nombre": c.NOMBRES, "celular": c.CELULAR,
+        "id_tipfam": c.ID_TIPFAM,
+        "tipo_familiar": tipo_fam_map.get(c.ID_TIPFAM)
+    } for c in contactos_raw]
+
+    doc_codigo = docs_map.get(p.ID_DOC)
+    estado_nombre = estados_map.get(acceso.ID_ESTADO) if acceso else None
+
+    area_nombre = None; id_area = None
+    cargo_nombre = None; id_cargo = None; id_depart = None
+    depart_nombre = None; tipo_contr_nombre = None; id_tipocontr = None
+    modal_nombre = None; id_modalidad = None
+    direccion = None; sueldo = None; asig_fam = 0
+    fech_ingr = None; fech_cese = None
+    id_estcivil = None; est_civil_nombre = None
+    id_acadm = None; grado_nombre = None
+    id_distr = None; distrito_nombre = None
+
+    id_estcivil = getattr(p, 'ID_ESTCIVIL', None)
+    if id_estcivil:
+        est_civil_nombre = est_civil_map.get(id_estcivil)
+    id_acadm = getattr(p, 'ID_ACADM', None)
+    if id_acadm:
+        grado_nombre = grados_map.get(id_acadm)
+    id_distr = getattr(p, 'ID_DISTR', None)
+    if id_distr:
+        distrito_nombre = distritos_map.get(id_distr)
+    direccion = getattr(p, 'DIRECCION', None)
+
+    if contrato:
+        id_area = contrato.ID_AREA
+        area_nombre = areas_map.get(id_area)
+        id_cargo = contrato.ID_CARGO
+        cargo_info = cargos_map.get(id_cargo, (None, None))
+        cargo_nombre = cargo_info[0]
+        id_depart = cargo_info[1]
+        depart_nombre = depart_map.get(id_depart)
+        id_tipocontr = contrato.ID_TIPOCONTR
+        tipo_contr_nombre = tipos_contr_map.get(id_tipocontr)
+        id_modalidad = getattr(contrato, 'ID_MODALID', None)
+        if id_modalidad:
+            modal_nombre = modalidad_map.get(id_modalidad)
+        sueldo = contrato.SUELDO
+        asig_fam = contrato.ASIG_FAM if contrato.ASIG_FAM else 0
+        fech_ingr = str(contrato.FECH_INGR) if contrato.FECH_INGR else None
+        fech_cese = str(contrato.FECH_CESE) if contrato.FECH_CESE else None
+
+    return {
+        "id": p.ID_PERSONAL,
+        "nombres": p.NOMBRES, "ape_paterno": p.APE_PATERNO, "ape_materno": p.APE_MATERNO,
+        "genero": "M" if p.GENERO_PERS == 1 else "F",
+        "num_doc": p.NUM_DOC, "id_doc": p.ID_DOC,
+        "tipo_doc": doc_codigo,
+        "fech_nac": str(p.FECH_NAC) if p.FECH_NAC else None,
+        "email": p.EMAIL, "celular": p.CELULAR, "foto": p.FOTO,
+        "estado": estado_nombre,
+        "area": area_nombre, "id_area": id_area,
+        "departamento": depart_nombre, "id_depart": id_depart,
+        "cargo": cargo_nombre, "id_cargo": id_cargo,
+        "tipo_contrato": tipo_contr_nombre, "id_tipocontr": id_tipocontr,
+        "modalidad": modal_nombre, "id_modalidad": id_modalidad,
+        "direccion": direccion, "sueldo": sueldo, "asig_fam": asig_fam,
+        "fech_ingreso": fech_ingr, "fech_cese": fech_cese,
+        "estado_civil": est_civil_nombre, "id_estcivil": id_estcivil,
+        "grado_academico": grado_nombre, "id_acadm": id_acadm,
+        "distrito": distrito_nombre, "id_distr": id_distr,
+        "contactos": contactos_lista,
+        "id_horario": getattr(contrato, 'ID_HORARIO', None) if contrato else None,
+        "horario_nombre": horarios_map.get(getattr(contrato, 'ID_HORARIO', None), "Sin horario") if contrato else "Sin horario",
+        "horario_descrip": horarios_descrip_map.get(getattr(contrato, 'ID_HORARIO', None), "") if contrato else "",
+        "horario_rango": horarios_rangos.get(getattr(contrato, 'ID_HORARIO', None), "") if contrato else "",
+    }
+
+
 @router.post("/personal")
 async def crear_personal(datos: PersonalSchema, db: Session = Depends(get_db), token: dict = Depends(verificar_token)):
     # Validar campos obligatorios con mensaje claro

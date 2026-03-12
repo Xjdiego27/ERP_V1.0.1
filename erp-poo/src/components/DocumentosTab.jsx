@@ -10,6 +10,7 @@ import { headersConToken, headersAuth, API_URL } from '../auth';
 export default function DocumentosTab(props) {
   var idPersonal = props.idPersonal;
   var empleado = props.empleado;
+  var esMiPerfil = props.esMiPerfil;
   var areas = props.areas || [];
   var allCargos = props.cargos || [];
   var departamentos = props.departamentos || [];
@@ -150,9 +151,11 @@ export default function DocumentosTab(props) {
     <div className="detalle-tab-contenido doc-contenedor">
       <div className="doc-header">
         <h3>Documentos</h3>
+        {!esMiPerfil && (
         <button className="det-btn det-btn-nuevo" onClick={abrirCrear}>
           <IconoFa icono={faPlus} /> Nuevo Documento
         </button>
+        )}
       </div>
 
       {/* Formulario crear/editar */}
@@ -258,12 +261,16 @@ export default function DocumentosTab(props) {
                   {vigente && doc.fecha_fin && <span className="doc-badge-vigente">Vigente</span>}
                 </div>
                 <div className="doc-card-acciones">
+                  {!esMiPerfil && (
+                  <>
                   <button className="doc-btn-accion" title="Editar" onClick={function () { abrirEditar(doc); }}>
                     <IconoFa icono={faPen} />
                   </button>
                   <button className="doc-btn-accion doc-btn-eliminar" title="Eliminar" onClick={function () { eliminar(doc.id); }}>
                     <IconoFa icono={faTrash} />
                   </button>
+                  </>
+                  )}
                 </div>
               </div>
             );
