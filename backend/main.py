@@ -1,4 +1,5 @@
 import os
+import time
 import uvicorn
 import traceback
 from fastapi import FastAPI, Depends, HTTPException, Request
@@ -34,6 +35,16 @@ from rutas_chip import router as rutas_chip
 load_dotenv()
 
 app = FastAPI()
+
+# Middleware para medir tiempo de respuesta (ms)
+@app.middleware("http")
+async def log_request_time(request: Request, call_next):
+    start = time.time()
+    response = await call_next(request)
+    ms = (time.time() - start) * 1000
+    response.headers["X-Process-Time-Ms"] = f"{ms:.2f}"
+    print(f"⏱  {request.method} {request.url.path} — {ms:.2f} ms")
+    return response
 
 # Middleware para loguear errores 500
 @app.middleware("http")
@@ -75,6 +86,28 @@ app.include_router(rutas_equipo)
 app.include_router(rutas_tickets)
 app.include_router(rutas_permisos)
 app.include_router(rutas_chip)
+
+
+# ── Endpoints de diagnóstico (NO tocan la BD) ──────────
+@app.get("/ping")
+def ping():
+    """Health-check instantáneo — devuelve pong."""
+    return {"status": "pong", "ts": time.time()}
+
+
+@app.get("/stress-test")
+def stress_test(n: int = 100_000):
+    """Prueba de estrés CPU pura (sin BD). ?n=iteraciones."""
+    start = time.time()
+    total = 0
+    for i in range(n):
+        total += i * i
+    elapsed_ms = (time.time() - start) * 1000
+    return {
+        "iteraciones": n,
+        "resultado": total,
+        "tiempo_ms": round(elapsed_ms, 2),
+    }
 
 
 # ── Helpers locales ──────────────────────────────
