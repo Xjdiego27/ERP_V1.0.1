@@ -123,7 +123,7 @@ html, body {
     display: none;
 }
 
-/* ═══ MODO LECTURA (rol USUARIO) — deshabilita botones CRUD ═══ */
+/* ═══ MODO LECTURA (rol SUPERVISOR) — deshabilita botones y selects CRUD ═══ */
 .modo-lectura .personal-btn-nuevo,
 .modo-lectura .det-btn-agregar-contacto,
 .modo-lectura .det-btn-nuevo,
@@ -157,10 +157,41 @@ html, body {
     cursor: not-allowed;
     filter: grayscale(40%);
 }
-/* El USUARIO sí puede crear tickets */
+/* Deshabilitar TODOS los selects, inputs editables y textareas dentro de módulos */
+.modo-lectura select,
+.modo-lectura textarea,
+.modo-lectura input[type="text"],
+.modo-lectura input[type="number"],
+.modo-lectura input[type="date"],
+.modo-lectura input[type="file"],
+.modo-lectura input[type="email"],
+.modo-lectura input[type="tel"],
+.modo-lectura .foto-upload,
+.modo-lectura .check-btn,
+.modo-lectura .rol-select,
+.modo-lectura .detalle-asignar select {
+    pointer-events: none;
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+/* El SUPERVISOR sí puede crear tickets (IngresarTicket) */
+.modo-lectura .ticket-form select,
+.modo-lectura .ticket-form textarea,
+.modo-lectura .ticket-form input[type="text"],
+.modo-lectura .ticket-form .foto-upload,
 .modo-lectura .btn-crear-ticket {
     pointer-events: auto;
     opacity: 1;
     cursor: pointer;
     filter: none;
+}
+/* Permitir el buscador/filtros (solo lectura pero navegación) */
+.modo-lectura .tickets-search-box input,
+.modo-lectura .permisos-buscador input,
+.modo-lectura .filtro-activo-badge,
+.modo-lectura .asistg-buscador input,
+.modo-lectura .stat-card {
+    pointer-events: auto;
+    opacity: 1;
+    cursor: pointer;
 }
