@@ -64,64 +64,65 @@ export default function PersonalDetalle() {
     id_estcivil: '', id_acadm: '', id_distr: '',
   });
 
-  // Cargar catálogos + empleado
+  // Cargar catálogos + empleado (Promise.all para llamadas independientes)
   useEffect(function () {
     var abortCtrl = new AbortController();
     var signal = abortCtrl.signal;
+    var h = headersAuth();
 
-    fetch(API_URL + '/areas', { headers: headersAuth(), signal: signal })
-      .then(function (r) { return r.json(); }).then(function (d) { if (!signal.aborted) setAreas(d); }).catch(function () {});
-    fetch(API_URL + '/departamentos', { headers: headersAuth(), signal: signal })
-      .then(function (r) { return r.json(); }).then(function (d) { if (!signal.aborted) setDepartamentos(d); }).catch(function () {});
-    fetch(API_URL + '/cargos', { headers: headersAuth(), signal: signal })
-      .then(function (r) { return r.json(); }).then(function (d) { if (!signal.aborted) setCargos(d); }).catch(function () {});
-    fetch(API_URL + '/tipos-contrato', { headers: headersAuth(), signal: signal })
-      .then(function (r) { return r.json(); }).then(function (d) { if (!signal.aborted) setTiposContrato(d); }).catch(function () {});
-    fetch(API_URL + '/modalidad', { headers: headersAuth(), signal: signal })  
-      .then(function (r) { return r.json(); }).then(function (d) { if (!signal.aborted) setModalidad(d); }).catch(function () {});
-    fetch(API_URL + '/estados-civiles', { headers: headersAuth(), signal: signal })
-      .then(function (r) { return r.json(); }).then(function (d) { if (!signal.aborted) setEstadosCiviles(d); }).catch(function () {});
-    fetch(API_URL + '/grados', { headers: headersAuth(), signal: signal })
-      .then(function (r) { return r.json(); }).then(function (d) { if (!signal.aborted) setGrados(d); }).catch(function () {});
-    fetch(API_URL + '/distritos', { headers: headersAuth(), signal: signal })
-      .then(function (r) { return r.json(); }).then(function (d) { if (!signal.aborted) setDistritos(d); }).catch(function () {});
-    fetch(API_URL + '/tipos-documento', { headers: headersAuth(), signal: signal })
-      .then(function (r) { return r.json(); }).then(function (d) { if (!signal.aborted) setTiposDocumento(d); }).catch(function () {});
-    fetch(API_URL + '/tipos-familiar', { headers: headersAuth(), signal: signal })
-      .then(function (r) { return r.json(); }).then(function (d) { if (!signal.aborted) setTiposFamiliar(d); }).catch(function () {});
-    fetch(API_URL + '/afps', { headers: headersAuth(), signal: signal })
-      .then(function (r) { return r.json(); }).then(function (d) { if (!signal.aborted) setAfps(d); }).catch(function () {});
-    fetch(API_URL + '/bancos', { headers: headersAuth(), signal: signal })
-      .then(function (r) { return r.json(); }).then(function (d) { if (!signal.aborted) setBancos(d); }).catch(function () {});
-    fetch(API_URL + '/monedas', { headers: headersAuth(), signal: signal })
-      .then(function (r) { return r.json(); }).then(function (d) { if (!signal.aborted) setMonedas(d); }).catch(function () {});
-    fetch(API_URL + '/tipos-cuenta', { headers: headersAuth(), signal: signal })
-      .then(function (r) { return r.json(); }).then(function (d) { if (!signal.aborted) setTiposCuenta(d); }).catch(function () {});
+    // Catálogos independientes — se cargan en paralelo
+    Promise.all([
+      fetch(API_URL + '/areas', { headers: h, signal: signal }).then(function (r) { return r.json(); }),
+      fetch(API_URL + '/departamentos', { headers: h, signal: signal }).then(function (r) { return r.json(); }),
+      fetch(API_URL + '/cargos', { headers: h, signal: signal }).then(function (r) { return r.json(); }),
+      fetch(API_URL + '/tipos-contrato', { headers: h, signal: signal }).then(function (r) { return r.json(); }),
+      fetch(API_URL + '/modalidad', { headers: h, signal: signal }).then(function (r) { return r.json(); }),
+      fetch(API_URL + '/estados-civiles', { headers: h, signal: signal }).then(function (r) { return r.json(); }),
+      fetch(API_URL + '/grados', { headers: h, signal: signal }).then(function (r) { return r.json(); }),
+      fetch(API_URL + '/distritos', { headers: h, signal: signal }).then(function (r) { return r.json(); }),
+      fetch(API_URL + '/tipos-documento', { headers: h, signal: signal }).then(function (r) { return r.json(); }),
+      fetch(API_URL + '/tipos-familiar', { headers: h, signal: signal }).then(function (r) { return r.json(); }),
+      fetch(API_URL + '/afps', { headers: h, signal: signal }).then(function (r) { return r.json(); }),
+      fetch(API_URL + '/bancos', { headers: h, signal: signal }).then(function (r) { return r.json(); }),
+      fetch(API_URL + '/monedas', { headers: h, signal: signal }).then(function (r) { return r.json(); }),
+      fetch(API_URL + '/tipos-cuenta', { headers: h, signal: signal }).then(function (r) { return r.json(); }),
+    ]).then(function (res) {
+      if (signal.aborted) return;
+      setAreas(res[0]);
+      setDepartamentos(res[1]);
+      setCargos(res[2]);
+      setTiposContrato(res[3]);
+      setModalidad(res[4]);
+      setEstadosCiviles(res[5]);
+      setGrados(res[6]);
+      setDistritos(res[7]);
+      setTiposDocumento(res[8]);
+      setTiposFamiliar(res[9]);
+      setAfps(res[10]);
+      setBancos(res[11]);
+      setMonedas(res[12]);
+      setTiposCuenta(res[13]);
+    }).catch(function () {});
 
     if (esNuevo) { setCargando(false); return function () { abortCtrl.abort(); }; }
 
-    fetch(API_URL + '/personal', { headers: headersAuth(), signal: signal })
-      .then(function (res) { return res.json(); })
-      .then(function (data) {
-        if (signal.aborted) return;
-        var encontrado = data.find(function (p) { return p.id === Number(id); });
-        if (encontrado) { setEmpleado(encontrado); }
-        else { alert('Empleado no encontrado'); navigate('/dashboard/personal'); }
-        setCargando(false);
-      })
-      .catch(function (err) { if (!signal.aborted) { alert('Error al cargar datos'); navigate('/dashboard/personal'); } });
-
-    // Cargar seguros y aportaciones
-    fetch(API_URL + '/personal/' + id + '/seguros-aportaciones', { headers: headersAuth(), signal: signal })
-      .then(function (r) { return r.json(); })
-      .then(function (d) { if (!signal.aborted) setSeguros(d); })
-      .catch(function () {});
-
-    // Cargar cuentas bancarias
-    fetch(API_URL + '/personal/' + id + '/cuentas-bancarias', { headers: headersAuth(), signal: signal })
-      .then(function (r) { return r.json(); })
-      .then(function (d) { if (!signal.aborted) setCuentas(d || []); })
-      .catch(function () {});
+    // Datos del empleado + seguros + cuentas — independientes entre sí, paralelo
+    Promise.all([
+      fetch(API_URL + '/personal', { headers: h, signal: signal }).then(function (r) { return r.json(); }),
+      fetch(API_URL + '/personal/' + id + '/seguros-aportaciones', { headers: h, signal: signal }).then(function (r) { return r.json(); }),
+      fetch(API_URL + '/personal/' + id + '/cuentas-bancarias', { headers: h, signal: signal }).then(function (r) { return r.json(); }),
+    ]).then(function (res) {
+      if (signal.aborted) return;
+      var data = res[0];
+      var encontrado = data.find(function (p) { return p.id === Number(id); });
+      if (encontrado) { setEmpleado(encontrado); }
+      else { alert('Empleado no encontrado'); navigate('/dashboard/personal'); }
+      setSeguros(res[1]);
+      setCuentas(res[2] || []);
+      setCargando(false);
+    }).catch(function (err) {
+      if (!signal.aborted) { alert('Error al cargar datos'); navigate('/dashboard/personal'); }
+    });
 
     return function () { abortCtrl.abort(); };
   }, [id]);

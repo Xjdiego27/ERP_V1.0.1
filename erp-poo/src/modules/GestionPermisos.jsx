@@ -23,15 +23,13 @@ export default function GestionPermisos() {
     }, []);
 
     function cargarDatos() {
-        fetch(API_URL + '/permisos/roles', { headers: headersConToken() })
-            .then(function (r) { return r.json(); })
-            .then(function (data) { setDatos(data); })
-            .catch(function () {});
-
-        fetch(API_URL + '/permisos/usuarios', { headers: headersConToken() })
-            .then(function (r) { return r.json(); })
-            .then(function (data) { setUsuarios(Array.isArray(data) ? data : []); })
-            .catch(function () {});
+        Promise.all([
+            fetch(API_URL + '/permisos/roles', { headers: headersConToken() }).then(function (r) { return r.json(); }),
+            fetch(API_URL + '/permisos/usuarios', { headers: headersConToken() }).then(function (r) { return r.json(); }),
+        ]).then(function (res) {
+            setDatos(res[0]);
+            setUsuarios(Array.isArray(res[1]) ? res[1] : []);
+        }).catch(function () {});
     }
 
     if (!datos) return <PageContent><p>Cargando permisos...</p></PageContent>;

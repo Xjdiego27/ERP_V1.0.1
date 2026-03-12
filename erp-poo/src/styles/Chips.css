@@ -1,0 +1,434 @@
+/* ═══════════════════════════════════════════
+   Chips.css — Gestión de Líneas Corporativas
+   ═══════════════════════════════════════════ */
+
+.chip-container {
+    padding: 1.5rem;
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+.chip-titulo {
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin: 0;
+    color: var(--text-primary, #1a1a2e);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.chip-subtitulo {
+    font-size: 0.85rem;
+    color: var(--text-muted, #888);
+    margin: 0.2rem 0 1rem;
+    letter-spacing: 0.5px;
+}
+
+.chip-mensaje {
+    padding: 0.6rem 1rem;
+    border-radius: 6px;
+    font-size: 0.85rem;
+    font-weight: 500;
+    margin-bottom: 1rem;
+}
+.chip-mensaje.exito { background: #d4edda; color: #155724; }
+.chip-mensaje.error { background: #f8d7da; color: #721c24; }
+
+/* ── Estadísticas ── */
+.chip-stats {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.chip-stat {
+    background: var(--bg-card, #fff);
+    border: 1px solid var(--border-color, #e0e0e5);
+    border-radius: 10px;
+    padding: 1rem;
+    text-align: center;
+    cursor: pointer;
+    transition: transform 0.15s, box-shadow 0.15s;
+}
+.chip-stat:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+}
+.chip-stat-num {
+    display: block;
+    font-size: 1.6rem;
+    font-weight: 700;
+    color: var(--text-primary, #1a1a2e);
+}
+.chip-stat-label {
+    display: block;
+    font-size: 0.75rem;
+    color: var(--text-secondary, #666);
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+    margin-top: 0.2rem;
+}
+.chip-stat.asignado { border-left: 4px solid #2563eb; }
+.chip-stat.asignado .chip-stat-num { color: #2563eb; }
+.chip-stat.disponible { border-left: 4px solid #16a34a; }
+.chip-stat.disponible .chip-stat-num { color: #16a34a; }
+.chip-stat.costo { border-left: 4px solid #d97706; }
+.chip-stat.costo .chip-stat-num { color: #d97706; font-size: 1.3rem; }
+
+/* ── Toolbar ── */
+.chip-toolbar {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1rem;
+    flex-wrap: wrap;
+}
+
+.chip-busqueda {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: var(--bg-input, #fff);
+    border: 1px solid var(--border-color, #ddd);
+    border-radius: 8px;
+    padding: 0.4rem 0.7rem;
+    flex: 1;
+    max-width: 380px;
+    color: var(--text-muted, #888);
+}
+.chip-busqueda input {
+    border: none;
+    outline: none;
+    background: transparent;
+    flex: 1;
+    font-size: 0.85rem;
+    color: var(--text-primary, #222);
+}
+
+.chip-filtro-select {
+    padding: 0.45rem 0.6rem;
+    border: 1px solid var(--border-color, #ddd);
+    border-radius: 8px;
+    font-size: 0.85rem;
+    background: var(--bg-input, #fff);
+    color: var(--text-primary, #222);
+    cursor: pointer;
+}
+
+.chip-btn-nueva {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.5rem 1rem;
+    border: none;
+    border-radius: 8px;
+    background: var(--primario, #4361ee);
+    color: #fff;
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: opacity 0.2s;
+    white-space: nowrap;
+}
+.chip-btn-nueva:hover { opacity: 0.85; }
+
+/* ── Filtro badge ── */
+.chip-filtro-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.35rem 0.8rem;
+    background: var(--bg-subtle, #f0f0f5);
+    border-radius: 20px;
+    font-size: 0.8rem;
+    color: var(--text-secondary, #555);
+    margin-bottom: 1rem;
+}
+.chip-filtro-clear {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: var(--text-muted, #888);
+    padding: 0;
+    font-size: 0.9rem;
+}
+
+/* ── Form nueva línea ── */
+.chip-form {
+    background: var(--bg-card, #f8f9ff);
+    border: 1px solid var(--border-color, #e0e0e5);
+    border-radius: 10px;
+    padding: 1.2rem;
+    margin-bottom: 1.5rem;
+    animation: chipSlide 0.25s ease;
+}
+@keyframes chipSlide {
+    from { opacity: 0; transform: translateY(-8px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+.chip-form-campos {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.chip-campo {
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+}
+.chip-campo label {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--text-secondary, #666);
+    text-transform: uppercase;
+}
+.chip-campo select,
+.chip-campo input {
+    padding: 0.45rem 0.6rem;
+    border: 1px solid var(--border-color, #ddd);
+    border-radius: 6px;
+    font-size: 0.85rem;
+    background: var(--bg-input, #fff);
+    color: var(--text-primary, #222);
+}
+.chip-campo select:focus,
+.chip-campo input:focus {
+    border-color: var(--primario, #4361ee);
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(67, 97, 238, 0.15);
+}
+
+.chip-btn-crear {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    padding: 0.5rem 1.2rem;
+    border: none;
+    border-radius: 8px;
+    background: #28a745;
+    color: #fff;
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: opacity 0.2s;
+}
+.chip-btn-crear:hover { opacity: 0.85; }
+
+/* ── Tabla ── */
+.chip-tabla-wrap {
+    overflow-x: auto;
+    border-radius: 8px;
+    border: 1px solid var(--border-color, #e0e0e5);
+}
+
+.chip-tabla {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.83rem;
+}
+.chip-tabla th {
+    background: var(--bg-subtle, #f0f0f5);
+    padding: 0.6rem 0.7rem;
+    text-align: left;
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+    color: var(--text-secondary, #666);
+    white-space: nowrap;
+}
+.chip-tabla td {
+    padding: 0.55rem 0.7rem;
+    border-top: 1px solid var(--border-row, #eee);
+    color: var(--text-primary, #333);
+}
+.chip-tabla tbody tr:hover {
+    background: var(--bg-hover, rgba(67, 97, 238, 0.04));
+}
+
+.chip-numero {
+    font-weight: 600;
+    white-space: nowrap;
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+}
+
+.chip-disponible-tag {
+    color: #16a34a;
+    font-weight: 500;
+    font-style: italic;
+    font-size: 0.8rem;
+}
+
+.chip-estado-badge {
+    display: inline-block;
+    padding: 0.2rem 0.6rem;
+    border-radius: 20px;
+    font-size: 0.7rem;
+    font-weight: 600;
+    letter-spacing: 0.3px;
+}
+.chip-estado-badge.asignado { background: #dbeafe; color: #2563eb; }
+.chip-estado-badge.disponible { background: #dcfce7; color: #16a34a; }
+.chip-estado-badge.devuelto { background: #f1f5f9; color: #64748b; }
+
+.chip-vacio {
+    text-align: center;
+    color: var(--text-muted, #aaa);
+    padding: 2rem !important;
+    font-style: italic;
+}
+
+/* ── Acciones ── */
+.chip-acciones {
+    display: flex;
+    gap: 0.3rem;
+    flex-wrap: nowrap;
+}
+
+.chip-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 30px;
+    height: 30px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.78rem;
+    transition: opacity 0.15s, transform 0.15s;
+    color: #fff;
+}
+.chip-btn:hover { opacity: 0.8; transform: scale(1.05); }
+
+.chip-btn-asignar { background: #16a34a; }
+.chip-btn-reasignar { background: #2563eb; }
+.chip-btn-devolver { background: #f59e0b; color: #fff; }
+.chip-btn-editar { background: #6366f1; }
+.chip-btn-historial { background: #64748b; }
+.chip-btn-eliminar { background: #dc2626; }
+.chip-btn-guardar { background: #16a34a; }
+.chip-btn-cancelar { background: #dc2626; }
+
+/* Fila en modo edición */
+.chip-fila-edit td {
+    background: var(--bg-card, #fefce8);
+}
+.chip-fila-edit input,
+.chip-fila-edit select {
+    padding: 0.3rem 0.4rem;
+    border: 1px solid var(--border-color, #ddd);
+    border-radius: 4px;
+    font-size: 0.8rem;
+    background: var(--bg-input, #fff);
+    color: var(--text-primary, #222);
+    width: 100%;
+    min-width: 80px;
+}
+
+/* ── Modales ── */
+.chip-modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.45);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    animation: chipFadeIn 0.2s ease;
+}
+@keyframes chipFadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+.chip-modal {
+    background: var(--bg-card, #fff);
+    border-radius: 12px;
+    padding: 1.5rem;
+    min-width: 400px;
+    max-width: 600px;
+    max-height: 80vh;
+    overflow-y: auto;
+    box-shadow: 0 16px 48px rgba(0,0,0,0.2);
+}
+.chip-modal h3 {
+    margin: 0 0 1rem;
+    font-size: 1.1rem;
+    color: var(--text-primary, #1a1a2e);
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+}
+.chip-modal-info {
+    font-size: 0.85rem;
+    color: var(--text-secondary, #666);
+    margin-bottom: 1rem;
+    padding: 0.5rem;
+    background: var(--bg-subtle, #f8f9fa);
+    border-radius: 6px;
+}
+.chip-modal-btns {
+    display: flex;
+    gap: 0.7rem;
+    margin-top: 1.2rem;
+}
+.chip-btn-confirmar {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    padding: 0.5rem 1.2rem;
+    border: none;
+    border-radius: 8px;
+    background: var(--primario, #4361ee);
+    color: #fff;
+    font-weight: 600;
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: opacity 0.2s;
+}
+.chip-btn-confirmar:hover { opacity: 0.85; }
+
+.chip-btn-cancelar-modal {
+    padding: 0.5rem 1.2rem;
+    border: 1px solid var(--border-color, #ddd);
+    border-radius: 8px;
+    background: transparent;
+    color: var(--text-secondary, #666);
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: background 0.15s;
+}
+.chip-btn-cancelar-modal:hover { background: var(--bg-subtle, #f0f0f5); }
+
+/* ── Historial modal ── */
+.chip-modal-historial {
+    min-width: 550px;
+}
+.chip-tabla-historial {
+    font-size: 0.8rem;
+    margin-bottom: 1rem;
+}
+
+/* ══════════════════════════════
+   RESPONSIVE
+   ══════════════════════════════ */
+@media (max-width: 900px) {
+    .chip-stats { grid-template-columns: repeat(2, 1fr); }
+    .chip-form-campos { grid-template-columns: 1fr 1fr; }
+    .chip-modal { min-width: 90vw; }
+    .chip-modal-historial { min-width: 90vw; }
+}
+
+@media (max-width: 600px) {
+    .chip-container { padding: 1rem; }
+    .chip-stats { grid-template-columns: 1fr 1fr; gap: 0.7rem; }
+    .chip-toolbar { flex-direction: column; align-items: stretch; }
+    .chip-busqueda { max-width: 100%; }
+    .chip-form-campos { grid-template-columns: 1fr; }
+    .chip-stat-num { font-size: 1.2rem; }
+}

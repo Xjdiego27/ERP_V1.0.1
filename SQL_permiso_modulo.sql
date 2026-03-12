@@ -27,7 +27,8 @@ INSERT INTO `permiso_accs` (`ID_PERM`, `DESCRIP`) VALUES
 (8,  'INICIO'),
 (9,  'INVENTARIO'),
 (10, 'CLIENTES'),
-(11, 'PERMISOS');
+(11, 'PERMISOS'),
+(12, 'CHIPS');
 
 -- ═══════════════════════════════════════════════
 -- 3. ASIGNACIONES POR DEFECTO (asignacion_accs)
@@ -37,12 +38,12 @@ INSERT INTO `permiso_accs` (`ID_PERM`, `DESCRIP`) VALUES
 
 INSERT INTO `asignacion_accs` (`ID_ROL`, `ID_PERM`) VALUES
 -- ADMINISTRADOR (1): TODOS
-(1,1),(1,2),(1,3),(1,4),(1,5),(1,6),(1,7),(1,8),(1,9),(1,10),(1,11),
+(1,1),(1,2),(1,3),(1,4),(1,5),(1,6),(1,7),(1,8),(1,9),(1,10),(1,11),(1,12),
 -- SOPORTE (2): inicio, equipos, tickets, inventario, asistencia, personal
-(2,1),(2,2),(2,4),(2,5),(2,6),(2,7),(2,8),(2,9),
+(2,1),(2,2),(2,4),(2,5),(2,6),(2,7),(2,8),(2,9),(2,12),
 -- USUARIO (3): inicio, nuevo ticket
 (3,6),(3,8),
 -- RRHH (4): inicio, asistencia, personal, horarios, clientes
 (4,1),(4,2),(4,3),(4,8),(4,10),
 -- SUPERVISOR (5): TODOS (modo lectura — el frontend desactiva CRUD)
-(5,1),(5,2),(5,3),(5,4),(5,5),(5,6),(5,7),(5,8),(5,9),(5,10),(5,11);
+(5,1),(5,2),(5,3),(5,4),(5,5),(5,6),(5,7),(5,8),(5,9),(5,10),(5,11),(5,12);

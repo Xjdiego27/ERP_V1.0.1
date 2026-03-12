@@ -53,13 +53,14 @@ export default function IngresarTicket() {
 
     // Cargar catálogos y tickets del usuario
     useEffect(function () {
-        fetch(API_URL + '/tickets/categorias', { headers: headersConToken() })
-            .then(function (r) { return r.json(); })
-            .then(function (data) { setCategorias(data); });
-
-        fetch(API_URL + '/tickets/subcategorias', { headers: headersConToken() })
-            .then(function (r) { return r.json(); })
-            .then(function (data) { setSubcategorias(data); });
+        // Categorías y subcategorías son independientes → Promise.all
+        Promise.all([
+            fetch(API_URL + '/tickets/categorias', { headers: headersConToken() }).then(function (r) { return r.json(); }),
+            fetch(API_URL + '/tickets/subcategorias', { headers: headersConToken() }).then(function (r) { return r.json(); }),
+        ]).then(function (res) {
+            setCategorias(res[0]);
+            setSubcategorias(res[1]);
+        }).catch(function () {});
 
         cargarMisTickets();
 

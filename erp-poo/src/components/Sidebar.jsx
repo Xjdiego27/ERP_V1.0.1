@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import IconoFa from './IconoFa'; 
 import PermisoService from '../servicios/PermisoService';
-import { faBars, faHouse, faFileLines, faBoxArchive, faUsers, faRightFromBracket, faChevronDown, faChevronRight, faPeopleGroup, faUserTie, faCalendarCheck, faClock, faLaptop, faPlus, faArrowsRotate, faTicket, faListCheck, faShieldHalved } from '@fortawesome/free-solid-svg-icons';
+import { faBars, faHouse, faFileLines, faBoxArchive, faUsers, faRightFromBracket, faChevronDown, faChevronRight, faPeopleGroup, faUserTie, faCalendarCheck, faClock, faLaptop, faPlus, faArrowsRotate, faTicket, faListCheck, faShieldHalved, faSimCard } from '@fortawesome/free-solid-svg-icons';
 import '../styles/Sidebar.css';
 
 export default function Sidebar({ isOpen, onToggleMenu }) {
@@ -326,6 +326,19 @@ export default function Sidebar({ isOpen, onToggleMenu }) {
                     >
                         <IconoFa icono={faShieldHalved} />
                         {isOpen && <span className="menu-text">Permisos</span>}
+                    </Link>
+                )}
+
+                {/* === Chips / Telefonía === */}
+                {tieneAcceso('CHIPS') && (
+                    <Link
+                        to="/dashboard/chips"
+                        className={'menu-link ' + (location.pathname === '/dashboard/chips' ? 'active' : '')}
+                        title={!isOpen ? 'Telefonía' : undefined}
+                        onClick={handleNavClick}
+                    >
+                        <IconoFa icono={faSimCard} />
+                        {isOpen && <span className="menu-text">Telefonía</span>}
                     </Link>
                 )}
 

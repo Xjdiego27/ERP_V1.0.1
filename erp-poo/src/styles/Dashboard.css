@@ -151,7 +151,15 @@ html, body {
 .modo-lectura .btn-todos,
 .modo-lectura .btn-ninguno,
 .modo-lectura .btn-cerrar-ticket,
-.modo-lectura .btn-estado-cambio {
+.modo-lectura .btn-estado-cambio,
+.modo-lectura .chip-btn-nueva,
+.modo-lectura .chip-btn-crear,
+.modo-lectura .chip-btn-asignar,
+.modo-lectura .chip-btn-reasignar,
+.modo-lectura .chip-btn-devolver,
+.modo-lectura .chip-btn-editar,
+.modo-lectura .chip-btn-eliminar,
+.modo-lectura .chip-btn-confirmar {
     pointer-events: none;
     opacity: 0.35;
     cursor: not-allowed;
@@ -190,6 +198,9 @@ html, body {
 .modo-lectura .permisos-buscador input,
 .modo-lectura .filtro-activo-badge,
 .modo-lectura .asistg-buscador input,
+.modo-lectura .chip-busqueda input,
+.modo-lectura .chip-filtro-select,
+.modo-lectura .chip-stat,
 .modo-lectura .stat-card {
     pointer-events: auto;
     opacity: 1;

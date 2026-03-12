@@ -48,17 +48,15 @@ export default function Tickets() {
     useEffect(function () { cargarDatos(); }, []);
 
     function cargarDatos() {
-        fetch(API_URL + '/tickets', { headers: headersConToken() })
-            .then(function (r) { return r.json(); })
-            .then(function (data) { setTickets(Array.isArray(data) ? data : []); });
-
-        fetch(API_URL + '/tickets/estadisticas', { headers: headersConToken() })
-            .then(function (r) { return r.json(); })
-            .then(function (data) { setEstadisticas(data); });
-
-        fetch(API_URL + '/tickets/tecnicos', { headers: headersConToken() })
-            .then(function (r) { return r.json(); })
-            .then(function (data) { setTecnicos(Array.isArray(data) ? data : []); });
+        Promise.all([
+            fetch(API_URL + '/tickets', { headers: headersConToken() }).then(function (r) { return r.json(); }),
+            fetch(API_URL + '/tickets/estadisticas', { headers: headersConToken() }).then(function (r) { return r.json(); }),
+            fetch(API_URL + '/tickets/tecnicos', { headers: headersConToken() }).then(function (r) { return r.json(); }),
+        ]).then(function (res) {
+            setTickets(Array.isArray(res[0]) ? res[0] : []);
+            setEstadisticas(res[1]);
+            setTecnicos(Array.isArray(res[2]) ? res[2] : []);
+        }).catch(function () {});
     }
 
     // ── Donut chart via canvas ──

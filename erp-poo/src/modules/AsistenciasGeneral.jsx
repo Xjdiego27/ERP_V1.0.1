@@ -47,25 +47,21 @@ export default function AsistenciasGeneral() {
     } catch (e) { return 1; }
   }
 
-  // Cargar catálogos al montar
+  // Cargar catálogos al montar (Promise.all — llamadas independientes)
   useEffect(function () {
     var abortCtrl = new AbortController();
     var signal = abortCtrl.signal;
 
-    fetch(API_URL + '/areas', { headers: headersAuth(), signal: signal })
-      .then(function (res) { return res.json(); })
-      .then(function (data) { if (!signal.aborted) setAreas(data); })
-      .catch(function () {});
-
-    fetch(API_URL + '/departamentos', { headers: headersAuth(), signal: signal })
-      .then(function (res) { return res.json(); })
-      .then(function (data) { if (!signal.aborted) setDepartamentos(data); })
-      .catch(function () {});
-
-    fetch(API_URL + '/cargos', { headers: headersAuth(), signal: signal })
-      .then(function (res) { return res.json(); })
-      .then(function (data) { if (!signal.aborted) setCargos(data); })
-      .catch(function () {});
+    Promise.all([
+      fetch(API_URL + '/areas', { headers: headersAuth(), signal: signal }).then(function (r) { return r.json(); }),
+      fetch(API_URL + '/departamentos', { headers: headersAuth(), signal: signal }).then(function (r) { return r.json(); }),
+      fetch(API_URL + '/cargos', { headers: headersAuth(), signal: signal }).then(function (r) { return r.json(); }),
+    ]).then(function (res) {
+      if (signal.aborted) return;
+      setAreas(res[0]);
+      setDepartamentos(res[1]);
+      setCargos(res[2]);
+    }).catch(function () {});
 
     return function () { abortCtrl.abort(); };
   }, []);
