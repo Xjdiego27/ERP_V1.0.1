@@ -5,6 +5,7 @@ import Dashboard from './modules/Dashboard';
 import DashboardHome from './modules/DashboardHome';
 import RRHH from './modules/RRHH';
 import PersonalDetalle from './modules/PersonalDetalle';
+import MiPerfil from './modules/MiPerfil';
 import AsistenciasGeneral from './modules/AsistenciasGeneral';
 import HorariosRRHH from './modules/HorariosRRHH';
 import EquiposCrear from './modules/EquiposCrear';
@@ -29,7 +30,7 @@ function App() {
                     <Route path="/" element={<Login />} />
                     <Route path="/dashboard" element={<Dashboard />}>
                         <Route index element={<DashboardHome />} />
-                        <Route path="mi-perfil" element={<PersonalDetalle />} />
+                        <Route path="mi-perfil" element={<MiPerfil />} />
                         <Route path="personal" element={<RRHH />} />
                         <Route path="personal/:id" element={<PersonalDetalle />} />
                         <Route path="asistencias" element={<AsistenciasGeneral />} />

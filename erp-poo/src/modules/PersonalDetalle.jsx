@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { useParams, useNavigate, useLocation } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import { faPerson, faPersonDress, faPen, faFloppyDisk, faXmark, faBan, faArrowLeft, faCheck, faPlus, faTrash, faCamera, faCalendarCheck, faCalendarDays, faExclamationTriangle, faClock, faFileContract, faFileLines, faFileSignature, faHandshake, faFileInvoiceDollar, faFolder, faEllipsisVertical } from '@fortawesome/free-solid-svg-icons';
 import IconoFa from '../components/IconoFa';
 import AsistenciaTab from '../components/AsistenciaTab';
@@ -14,9 +14,7 @@ import '../styles/PersonalDetalle.css';
 export default function PersonalDetalle() {
   var { id } = useParams();
   var navigate = useNavigate();
-  var location = useLocation();
-  var esMiPerfil = location.pathname.indexOf('mi-perfil') !== -1;
-  var esNuevo = !esMiPerfil && (id === 'nuevo');
+  var esNuevo = (id === 'nuevo');
 
   var [empleado, setEmpleado] = useState(null);
   var [editando, setEditando] = useState(esNuevo);
@@ -108,31 +106,6 @@ export default function PersonalDetalle() {
 
     if (esNuevo) { setCargando(false); return function () { abortCtrl.abort(); }; }
 
-    if (esMiPerfil) {
-      // Mi Perfil: cargar datos propios desde /mi-perfil
-      fetch(API_URL + '/mi-perfil', { headers: h, signal: signal })
-        .then(function (r) { if (!r.ok) throw new Error('Error ' + r.status); return r.json(); })
-        .then(function (miData) {
-          if (signal.aborted) return;
-          setEmpleado(miData);
-          // Cargar seguros y cuentas con el id obtenido
-          var miId = miData.id;
-          return Promise.all([
-            fetch(API_URL + '/personal/' + miId + '/seguros-aportaciones', { headers: h, signal: signal }).then(function (r) { return r.json(); }),
-            fetch(API_URL + '/personal/' + miId + '/cuentas-bancarias', { headers: h, signal: signal }).then(function (r) { return r.json(); }),
-          ]).then(function (res2) {
-            if (signal.aborted) return;
-            setSeguros(res2[0]);
-            setCuentas(res2[1] || []);
-            setCargando(false);
-          });
-        })
-        .catch(function (err) {
-          if (!signal.aborted) { alert('Error al cargar tu perfil'); navigate('/dashboard'); }
-        });
-      return function () { abortCtrl.abort(); };
-    }
-
     // Datos del empleado + seguros + cuentas — independientes entre sí, paralelo
     Promise.all([
       fetch(API_URL + '/personal', { headers: h, signal: signal }).then(function (r) { return r.json(); }),
@@ -152,7 +125,7 @@ export default function PersonalDetalle() {
     });
 
     return function () { abortCtrl.abort(); };
-  }, [id, esMiPerfil]);
+  }, [id]);
 
   // Cuando cambia el departamento en el formulario, filtrar cargos
   function cargarCargosPorDepart(idDepart) {
@@ -332,7 +305,7 @@ export default function PersonalDetalle() {
     var formData = new FormData();
     formData.append('archivo', archivo);
     var token = obtenerToken();
-    var fotoId = esMiPerfil ? (empleado ? empleado.id : null) : id;
+    var fotoId = id;
     if (!fotoId) { alert('No se pudo identificar al empleado'); return; }
     fetch(API_URL + '/personal/' + fotoId + '/foto', {
       method: 'PUT',
@@ -360,7 +333,7 @@ export default function PersonalDetalle() {
   }
 
   var generoActual = editando ? datos.genero : (empleado ? empleado.genero : 'M');
-  var idEmpleado = esMiPerfil ? (empleado ? String(empleado.id) : null) : id;
+  var idEmpleado = id;
   var tabs = [
     { id: 'informacion', nombre: 'INFORMACIÓN' },
     { id: 'seguros', nombre: 'SEGUROS Y APORTACIONES' },
@@ -374,8 +347,8 @@ export default function PersonalDetalle() {
 
   return (
     <div className="detalle-pagina">
-      <button className="detalle-volver" onClick={function () { navigate(esMiPerfil ? '/dashboard' : '/dashboard/personal'); }}>
-        <IconoFa icono={faArrowLeft} /> {esMiPerfil ? 'Volver al Inicio' : 'Volver a Personal'}
+      <button className="detalle-volver" onClick={function () { navigate('/dashboard/personal'); }}>
+        <IconoFa icono={faArrowLeft} /> Volver a Personal
       </button>
 
       {!esNuevo && empleado && (
@@ -398,7 +371,7 @@ export default function PersonalDetalle() {
           {/* Cabecera: botones + área + género */}
           <div className="detalle-cabecera">
             <div className="detalle-botones">
-              {esMiPerfil ? null : !editando ? (
+              {!editando ? (
                 <>
                   <button className="det-btn det-btn-editar" onClick={iniciarEdicion}>
                     <IconoFa icono={faPen} /> Editar
@@ -869,7 +842,6 @@ export default function PersonalDetalle() {
           <h3>Seguros y Aportaciones</h3>
           {!editandoSeguros ? (
             <div className="det-seguros-view">
-              {!esMiPerfil && (
               <div className="det-seguros-actions">
                 <button className="det-btn det-btn-editar" onClick={function () {
                   setDatosSeguros({
@@ -883,7 +855,6 @@ export default function PersonalDetalle() {
                   <IconoFa icono={faPen} /> Editar
                 </button>
               </div>
-              )}
               {seguros ? (
                 <div className="det-seguros-datos">
                   <div className="det-fila">
@@ -983,13 +954,11 @@ export default function PersonalDetalle() {
           <h3>Cuentas Bancarias</h3>
           {!editandoCuentas ? (
             <div className="det-cuentas-view">
-              {!esMiPerfil && (
               <div className="det-cuentas-actions">
                 <button className="det-btn det-btn-editar" onClick={function () { setEditandoCuentas(true); }}>
                   <IconoFa icono={faPen} /> Editar
                 </button>
               </div>
-              )}
               {cuentas && cuentas.length > 0 ? (
                 <table className="det-cuentas-tabla">
                   <thead>
@@ -1119,7 +1088,7 @@ export default function PersonalDetalle() {
       )}
 
       {tabActiva === 'documentos' && !esNuevo && (
-        <DocumentosTab idPersonal={idEmpleado} empleado={empleado} areas={areas} cargos={cargos} departamentos={departamentos} esMiPerfil={esMiPerfil} />
+        <DocumentosTab idPersonal={idEmpleado} empleado={empleado} areas={areas} cargos={cargos} departamentos={departamentos} esMiPerfil={false} />
       )}
       {tabActiva === 'vacaciones' && !esNuevo && (
         <div className="detalle-tab-contenido"><h3>Vacaciones</h3><p className="det-sin-datos">Próximamente...</p></div>
@@ -1127,7 +1096,7 @@ export default function PersonalDetalle() {
       {tabActiva === 'asistencia' && !esNuevo && (
         <AsistenciaTab
           idPersonal={idEmpleado}
-          esMiPerfil={esMiPerfil}
+          esMiPerfil={false}
           empleado={empleado}
           asistenciaData={asistenciaData}
           setAsistenciaData={setAsistenciaData}
