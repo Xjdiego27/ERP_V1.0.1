@@ -83,11 +83,11 @@ export default function Header({ onToggleMenu, onToggleEmpresa }) {
     // Icono según tipo de notificación
     function iconoNoti(tipo) {
         if (tipo === 'contrato') return faFileContract;
-        if (tipo === 'cumpleanos') return faCakeCandles;
+        if (tipo === 'cumpleanos' || tipo === 'cumpleanos_proximo' || tipo === 'saludo_pendiente') return faCakeCandles;
         if (tipo === 'menu') return faUtensils;
         if (tipo === 'evento') return faCalendarDay;
         if (tipo === 'falta') return faUserXmark;
-        if (tipo === 'ticket' || tipo === 'ticket_nuevo') return faTicket;
+        if (tipo === 'ticket' || tipo === 'ticket_nuevo' || tipo === 'ticket_creado' || tipo === 'ticket_estado' || tipo === 'ticket_reabierto') return faTicket;
         return faBell;
     }
 

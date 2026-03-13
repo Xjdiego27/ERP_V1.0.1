@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { faClock, faMagnifyingGlass, faPlus, faPen, faFloppyDisk, faXmark, faUsers, faCheck } from '@fortawesome/free-solid-svg-icons';
+import { faClock, faMagnifyingGlass, faPlus, faPen, faFloppyDisk, faXmark, faUsers, faCheck, faUser } from '@fortawesome/free-solid-svg-icons';
 import IconoFa from '../components/IconoFa';
 import { headersAuth, API_URL } from '../auth';
 import '../styles/HorariosRRHH.css';
@@ -291,7 +291,7 @@ export default function HorariosRRHH() {
                     <td className="col-foto">
                       {emp.foto
                         ? <img src={'/assets/perfiles/' + emp.foto} alt="" className="mini-foto" />
-                        : <span className="mini-foto-placeholder">👤</span>
+                        : <span className="mini-foto-placeholder"><IconoFa icono={faUser} /></span>
                       }
                     </td>
                     <td className="td-nombre">{emp.nombre}</td>

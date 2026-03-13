@@ -7,7 +7,7 @@ try:
     from database import Ticket
 except ImportError:
     Ticket = None
-from mongodb import coleccion_menus, coleccion_eventos, coleccion_asistencia, coleccion_justificaciones, coleccion_notif_tickets
+from mongodb import coleccion_menus, coleccion_eventos, coleccion_asistencia, coleccion_justificaciones, coleccion_notif_tickets, coleccion_saludos_cumple
 from auth_token import verificar_token
 
 router = APIRouter()
@@ -65,29 +65,91 @@ async def obtener_notificaciones(db: Session = Depends(get_db), token: dict = De
                       "urgente": dias_restantes <= 2,
                   })
 
-    # ── 2. Cumpleaños de hoy ──
-    cumples = db.query(Personal).join(
+    # ── 2. Cumpleaños de hoy (TODAS las empresas) ──
+    cumples_raw = db.query(Personal).join(
         Acceso, Acceso.ID_ACCS == Personal.ID_ACCS
     ).join(
         Contrato, Contrato.ID_PERSONAL == Personal.ID_PERSONAL
-    ).join(
-        Cargo, Cargo.ID_CARGO == Contrato.ID_CARGO
     ).filter(
         Acceso.ID_ESTADO == 1,
-        Cargo.ID_EMP == id_empresa,
         Contrato.ID_ESTADO_CONTRATO == 1,
         extract('month', Personal.FECH_NAC) == hoy.month,
         extract('day', Personal.FECH_NAC) == hoy.day,
     ).all()
 
+    # Deduplicar (un empleado puede tener varios contratos)
+    _vistos = set()
+    cumples = []
+    for _p in cumples_raw:
+        if _p.ID_PERSONAL not in _vistos:
+            _vistos.add(_p.ID_PERSONAL)
+            cumples.append(_p)
+
     for p in cumples:
         items.append({
             "tipo": "cumpleanos",
-            "texto": f"¡Hoy es el cumpleaños de {p.NOMBRES} {p.APE_PATERNO}! 🎂",
+            "texto": f"¡Hoy es el cumpleaños de {p.NOMBRES} {p.APE_PATERNO}!",
             "icono": "cake-candles",
             "foto": p.FOTO,
             "urgente": False,
         })
+
+    # ── 2b. Aviso de cumpleaños próximos (1–2 días antes) — para TODO el personal, TODAS las empresas ──
+    for dias_antes in [1, 2]:
+        fecha_objetivo = hoy + timedelta(days=dias_antes)
+        cumples_prox_raw = db.query(Personal).join(
+            Acceso, Acceso.ID_ACCS == Personal.ID_ACCS
+        ).join(
+            Contrato, Contrato.ID_PERSONAL == Personal.ID_PERSONAL
+        ).filter(
+            Acceso.ID_ESTADO == 1,
+            Contrato.ID_ESTADO_CONTRATO == 1,
+            extract('month', Personal.FECH_NAC) == fecha_objetivo.month,
+            extract('day', Personal.FECH_NAC) == fecha_objetivo.day,
+        ).all()
+
+        _vistos_prox = set()
+        cumples_prox = []
+        for _pp in cumples_prox_raw:
+            if _pp.ID_PERSONAL not in _vistos_prox:
+                _vistos_prox.add(_pp.ID_PERSONAL)
+                cumples_prox.append(_pp)
+
+        for p in cumples_prox:
+            if dias_antes == 1:
+                texto = f"¡Mañana es el cumpleaños de {p.NOMBRES} {p.APE_PATERNO}! Prepara tu saludo"
+            else:
+                texto = f"En {dias_antes} días es el cumpleaños de {p.NOMBRES} {p.APE_PATERNO}. Prepara tu saludo"
+            items.append({
+                "tipo": "cumpleanos_proximo",
+                "texto": texto,
+                "icono": "cake-candles",
+                "foto": p.FOTO,
+                "urgente": False,
+            })
+
+    # ── 2c. Aviso de saludo de cumpleaños pendiente HOY ──
+    id_accs_usuario = token.get("id_accs")
+    mi_personal = db.query(Personal).filter(Personal.ID_ACCS == id_accs_usuario).first() if id_accs_usuario else None
+    if mi_personal and cumples:
+        anio_actual = hoy.year
+        for c in cumples:
+            if c.ID_PERSONAL == mi_personal.ID_PERSONAL:
+                continue  # no se saluda a sí mismo
+            doc_saludo = await coleccion_saludos_cumple.find_one({
+                "id_personal_cumple": c.ID_PERSONAL,
+                "anio": anio_actual,
+            })
+            ya_saludo = False
+            if doc_saludo and doc_saludo.get("saludos"):
+                ya_saludo = any(s["id_personal"] == mi_personal.ID_PERSONAL for s in doc_saludo["saludos"])
+            if not ya_saludo:
+                items.append({
+                    "tipo": "saludo_pendiente",
+                    "texto": f"¡Envía tu saludo de cumpleaños a {c.NOMBRES} {c.APE_PATERNO}!",
+                    "icono": "gift",
+                    "urgente": True,
+                })
 
     # ── 3. Menú actualizado hoy ──
     inicio_hoy = datetime.combine(hoy, datetime.min.time())
@@ -212,7 +274,7 @@ async def obtener_notificaciones(db: Session = Depends(get_db), token: dict = De
             pri = getattr(tk, 'PRIORIDAD', 'MEDIA') or 'MEDIA'
             items.append({
                 "tipo": "ticket_nuevo",
-                "texto": f"Nuevo ticket #{tk.ID_TICKET}: {tk.ASUNTO} — {nombre_c} [{pri}]",
+                "texto": f"Nuevo ticket: {tk.ASUNTO} — {nombre_c} [{pri}]",
                 "icono": "ticket",
                 "urgente": pri in ("ALTA", "URGENTE"),
             })
@@ -263,7 +325,7 @@ async def obtener_notificaciones(db: Session = Depends(get_db), token: dict = De
             })
 
     # Ordenar: urgentes primero, luego por tipo
-    prioridad = {"contrato": 0, "falta": 1, "ticket_creado": 2, "ticket_nuevo": 2, "ticket_estado": 3, "ticket": 4, "cumpleanos": 5, "evento": 6, "menu": 7}
+    prioridad = {"contrato": 0, "falta": 1, "saludo_pendiente": 2, "ticket_reabierto": 3, "ticket_creado": 3, "ticket_nuevo": 3, "ticket_estado": 4, "ticket": 5, "cumpleanos": 6, "cumpleanos_proximo": 7, "evento": 8, "menu": 9}
     items.sort(key=lambda x: (0 if x.get("urgente") else 1, prioridad.get(x["tipo"], 9)))
 
     return {

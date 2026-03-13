@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { faPerson, faPersonDress, faArrowLeft, faCamera, faClock } from '@fortawesome/free-solid-svg-icons';
+import { faPerson, faPersonDress, faCamera, faClock } from '@fortawesome/free-solid-svg-icons';
 import IconoFa from '../components/IconoFa';
 import AsistenciaTab from '../components/AsistenciaTab';
 import DocumentosTab from '../components/DocumentosTab';
@@ -132,9 +132,6 @@ export default function MiPerfil() {
 
   return (
     <div className="detalle-pagina">
-      <button className="detalle-volver" onClick={function () { navigate('/dashboard'); }}>
-        <IconoFa icono={faArrowLeft} /> Volver al Inicio
-      </button>
 
       {empleado && (
         <div className="detalle-tabs">

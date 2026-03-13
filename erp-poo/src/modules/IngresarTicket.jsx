@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { API_URL, headersConToken, headersAuth } from '../auth';
 import IconoFa from '../components/IconoFa';
 import PageContent from '../components/PageContent';
-import { faTicket, faCamera, faPaperPlane, faCheckCircle, faCircle, faSpinner, faStar } from '@fortawesome/free-solid-svg-icons';
+import { faTicket, faCamera, faPaperPlane, faCheckCircle, faCircle, faSpinner } from '@fortawesome/free-solid-svg-icons';
 import '../styles/IngresarTicket.css';
 
 var PRIORIDADES = [
@@ -43,14 +43,6 @@ export default function IngresarTicket() {
     var [sapCatalogos, setSapCatalogos] = useState(null);
     var [sapForm, setSapForm] = useState({});
 
-    // Valoración
-    var [modalValoracion, setModalValoracion] = useState(false);
-    var [ticketPendienteVal, setTicketPendienteVal] = useState(null);
-
-    // Obtener id_personal del usuario logueado
-    var sessionData = JSON.parse(localStorage.getItem('session'));
-    var miIdPersonal = sessionData && sessionData.usuario ? sessionData.usuario.id_personal : null;
-
     // Cargar catálogos y tickets del usuario
     useEffect(function () {
         // Categorías y subcategorías son independientes → Promise.all
@@ -83,24 +75,6 @@ export default function IngresarTicket() {
                 .then(function (data) { setSapCatalogos(data); });
         }
     }, [esSAP]);
-
-    // Verificar si hay tickets cerrados sin valoración (solo los que YO creé)
-    useEffect(function () {
-        if (misTickets.length > 0 && miIdPersonal) {
-            var pendiente = misTickets.find(function (t) {
-                return t.id_personal === miIdPersonal
-                    && t.estado === 'CERRADO'
-                    && (t.valoracion === null || t.valoracion === undefined);
-            });
-            if (pendiente) {
-                setTicketPendienteVal(pendiente);
-                setModalValoracion(true);
-            } else {
-                setModalValoracion(false);
-                setTicketPendienteVal(null);
-            }
-        }
-    }, [misTickets, miIdPersonal]);
 
     function cargarMisTickets() {
         fetch(API_URL + '/tickets', { headers: headersConToken() })
@@ -224,32 +198,6 @@ export default function IngresarTicket() {
     function indiceFlujo(estado) {
         var idx = ESTADOS_FLUJO.indexOf(estado);
         return idx >= 0 ? idx : 0;
-    }
-
-    async function enviarValoracion(valor) {
-        if (!ticketPendienteVal) return;
-        try {
-            var resp = await fetch(API_URL + '/tickets/' + ticketPendienteVal.id_ticket + '/valorar?valoracion=' + valor, {
-                method: 'PUT', headers: headersConToken(),
-            });
-            if (!resp.ok) throw new Error('Error al valorar');
-            setModalValoracion(false);
-            setTicketPendienteVal(null);
-            cargarMisTickets();
-        } catch (e) { alert(e.message); }
-    }
-
-    async function reabrirTicket() {
-        if (!ticketPendienteVal) return;
-        try {
-            var resp = await fetch(API_URL + '/tickets/' + ticketPendienteVal.id_ticket + '/reabrir', {
-                method: 'PUT', headers: headersConToken(),
-            });
-            if (!resp.ok) throw new Error('Error al reabrir');
-            setModalValoracion(false);
-            setTicketPendienteVal(null);
-            cargarMisTickets();
-        } catch (e) { alert(e.message); }
     }
 
     // ── Render campos SAP dinámicos ──
@@ -544,48 +492,6 @@ export default function IngresarTicket() {
                     </form>
 
                 </div>
-
-                {/* Modal de valoración — persiste hasta que el creador valore */}
-                {modalValoracion && ticketPendienteVal && (
-                    <div className="valoracion-overlay">
-                        <div className="valoracion-modal">
-                            <div className="valoracion-icono">⭐</div>
-                            <h3 className="valoracion-titulo">Valora la atención</h3>
-                            <p className="valoracion-desc">Ticket #{ticketPendienteVal.id_ticket}: {ticketPendienteVal.asunto}</p>
-                            {ticketPendienteVal.mensaje_ti && (
-                                <div className="valoracion-mensaje-ti">
-                                    <span className="valoracion-msg-label">Mensaje del técnico:</span>
-                                    <p className="valoracion-msg-texto">{ticketPendienteVal.mensaje_ti}</p>
-                                </div>
-                            )}
-                            <p className="valoracion-desc">¿Cómo fue la velocidad de atención?</p>
-                            <div className="valoracion-opciones">
-                                <button className="valoracion-btn val-lento" onClick={function () { enviarValoracion(1); }}>
-                                    <span className="val-estrellas"><IconoFa icono={faStar} /></span>
-                                    <span className="val-texto">LENTO</span>
-                                </button>
-                                <button className="valoracion-btn val-normal" onClick={function () { enviarValoracion(2); }}>
-                                    <span className="val-estrellas"><IconoFa icono={faStar} /> <IconoFa icono={faStar} /></span>
-                                    <span className="val-texto">NORMAL</span>
-                                </button>
-                                <button className="valoracion-btn val-rapido" onClick={function () { enviarValoracion(3); }}>
-                                    <span className="val-estrellas"><IconoFa icono={faStar} /> <IconoFa icono={faStar} /> <IconoFa icono={faStar} /></span>
-                                    <span className="val-texto">RÁPIDO</span>
-                                </button>
-                            </div>
-
-                            {/* Reabrir ticket */}
-                            <div className="reabrir-seccion">
-                                <div className="reabrir-separador"></div>
-                                <h4 className="reabrir-titulo">¿SE RESOLVIÓ TU PROBLEMA?</h4>
-                                <p className="reabrir-desc">Si el problema persiste, puedes reabrir el ticket para que sea atendido nuevamente.</p>
-                                <button className="btn-reabrir-ticket" onClick={reabrirTicket}>
-                                    REABRIR TICKET
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                )}
             </div>
         </PageContent>
     );

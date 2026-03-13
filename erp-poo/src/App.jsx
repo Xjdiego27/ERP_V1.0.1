@@ -14,6 +14,7 @@ import IngresarTicket from './modules/IngresarTicket';
 import Tickets from './modules/Tickets';
 import GestionPermisos from './modules/GestionPermisos';
 import Chips from './modules/Chips';
+import SaludosCumpleanos from './modules/SaludosCumpleanos';
 import './styles/DarkMode.css';
 import './styles/TemaEmpresa1.css';
 import './styles/TemaEmpresa2.css';
@@ -41,6 +42,7 @@ function App() {
                         <Route path="tickets/nuevo" element={<IngresarTicket />} />
                         <Route path="permisos" element={<GestionPermisos />} />
                         <Route path="chips" element={<Chips />} />
+                        <Route path="saludos-cumpleanos" element={<SaludosCumpleanos />} />
                     </Route>
                     <Route path="*" element={<Navigate to="/" />} />
                 </Routes>

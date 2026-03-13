@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import IconoFa from './IconoFa'; 
 import PermisoService from '../servicios/PermisoService';
-import { faBars, faHouse, faFileLines, faBoxArchive, faUsers, faRightFromBracket, faChevronDown, faChevronRight, faPeopleGroup, faUserTie, faCalendarCheck, faClock, faLaptop, faPlus, faArrowsRotate, faTicket, faListCheck, faShieldHalved, faSimCard, faUserCircle } from '@fortawesome/free-solid-svg-icons';
+import { faBars, faHouse, faFileLines, faBoxArchive, faUsers, faRightFromBracket, faChevronDown, faChevronRight, faPeopleGroup, faUserTie, faCalendarCheck, faClock, faLaptop, faPlus, faArrowsRotate, faTicket, faListCheck, faShieldHalved, faSimCard, faUserCircle, faCakeCandles } from '@fortawesome/free-solid-svg-icons';
 import '../styles/Sidebar.css';
 
 export default function Sidebar({ isOpen, onToggleMenu }) {
@@ -71,6 +71,10 @@ export default function Sidebar({ isOpen, onToggleMenu }) {
     const sessionData = JSON.parse(localStorage.getItem('session'));
     const permisos = new PermisoService(sessionData);
     const esRolTI = permisos.esRolTI;
+
+    // ── Cargo del usuario (para módulos específicos por cargo) ──
+    var cargoUsuario = (sessionData && sessionData.usuario && sessionData.usuario.cargo) ? sessionData.usuario.cargo.toUpperCase() : '';
+    var esMarketing = cargoUsuario.indexOf('MARKETING') >= 0;
 
     // Wrapper para mantener compatibilidad con el resto del JSX
     function tieneAcceso(clave) { return permisos.tieneAcceso(clave); }
@@ -350,6 +354,19 @@ export default function Sidebar({ isOpen, onToggleMenu }) {
                     >
                         <IconoFa icono={faSimCard} />
                         {isOpen && <span className="menu-text">Telefonía</span>}
+                    </Link>
+                )}
+
+                {/* === Saludos de Cumpleaños (solo Marketing) === */}
+                {esMarketing && (
+                    <Link
+                        to="/dashboard/saludos-cumpleanos"
+                        className={'menu-link ' + (location.pathname === '/dashboard/saludos-cumpleanos' ? 'active' : '')}
+                        title={!isOpen ? 'Saludos Cumpleaños' : undefined}
+                        onClick={handleNavClick}
+                    >
+                        <IconoFa icono={faCakeCandles} />
+                        {isOpen && <span className="menu-text">Saludos Cumpleaños</span>}
                     </Link>
                 )}
 

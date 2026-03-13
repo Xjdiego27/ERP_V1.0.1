@@ -575,6 +575,61 @@
     transform: translateY(-1px);
     box-shadow: 0 4px 14px rgba(220, 38, 38, 0.25);
 }
+.btn-reabrir-ticket:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+}
+
+/* ═══ Motivo de reapertura ═══ */
+.reabrir-motivo-input {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 12px 14px;
+    border: 2px solid var(--borde, #e2e8f0);
+    border-radius: 10px;
+    font-size: 0.88rem;
+    font-family: inherit;
+    resize: vertical;
+    min-height: 80px;
+    max-height: 200px;
+    color: var(--texto-primario, #1e293b);
+    background: var(--fondo-tarjeta, #fff);
+    transition: border-color 0.2s;
+    margin-bottom: 14px;
+}
+.reabrir-motivo-input:focus {
+    outline: none;
+    border-color: #ef4444;
+}
+.reabrir-motivo-input::placeholder {
+    color: var(--texto-secundario, #94a3b8);
+}
+.reabrir-motivo-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    align-items: center;
+}
+.btn-reabrir-volver {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 8px 20px;
+    border: none;
+    border-radius: 8px;
+    background: transparent;
+    color: var(--texto-secundario, #64748b);
+    font-size: 0.82rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+.btn-reabrir-volver:hover {
+    color: var(--texto-primario, #1e293b);
+    background: var(--fondo-hover, #f1f5f9);
+}
 
 /* ═══ Campos SAP extras ═══ */
 .sap-campos-extra {

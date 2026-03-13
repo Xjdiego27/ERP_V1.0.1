@@ -1,0 +1,378 @@
+/* ═══════════════════════════════════════════════════════════
+   SaludosCumpleanos.css
+   Estilos para el módulo de saludos de cumpleaños (Marketing)
+   y el modal global de envío de saludos
+   ═══════════════════════════════════════════════════════════ */
+
+/* ── MODAL GLOBAL (CumpleanosModal) ──────────────────── */
+.cumple-modal-overlay {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0, 0, 0, 0.6);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+    backdrop-filter: blur(4px);
+}
+
+.cumple-modal {
+    background: var(--bg-card, #fff);
+    border-radius: 16px;
+    padding: 32px;
+    max-width: 480px;
+    width: 90%;
+    text-align: center;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    animation: cumpleModalIn 0.35s ease-out;
+}
+
+@keyframes cumpleModalIn {
+    from { opacity: 0; transform: scale(0.9) translateY(20px); }
+    to { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+.cumple-modal-confeti {
+    font-size: 3rem;
+    margin-bottom: 8px;
+}
+
+.cumple-modal-titulo {
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: var(--text-primary, #2c3e50);
+    margin: 0 0 12px;
+}
+
+.cumple-modal-persona {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 16px;
+}
+
+.cumple-modal-foto {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 3px solid #f59e0b;
+}
+
+.cumple-modal-nombre {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #f59e0b;
+}
+
+.cumple-modal-desc {
+    font-size: 0.9rem;
+    color: var(--text-secondary, #555);
+    margin: 0 0 12px;
+}
+
+.cumple-modal-textarea {
+    width: 100%;
+    border: 2px solid var(--border-color, #e0e0e0);
+    border-radius: 10px;
+    padding: 12px;
+    font-size: 0.95rem;
+    font-family: inherit;
+    resize: vertical;
+    min-height: 100px;
+    color: var(--text-primary, #2c3e50);
+    background: var(--bg-input, #f8f9fa);
+    box-sizing: border-box;
+    transition: border-color 0.2s;
+}
+
+.cumple-modal-textarea:focus {
+    outline: none;
+    border-color: #f59e0b;
+}
+
+.cumple-modal-chars {
+    text-align: right;
+    font-size: 0.75rem;
+    color: var(--text-muted, #999);
+    margin: 4px 0 12px;
+}
+
+.cumple-modal-btn-enviar {
+    width: 100%;
+    padding: 12px 24px;
+    border: none;
+    border-radius: 10px;
+    background: linear-gradient(135deg, #f59e0b, #d97706);
+    color: #fff;
+    font-size: 1rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.cumple-modal-btn-enviar:hover:not(:disabled) {
+    background: linear-gradient(135deg, #d97706, #b45309);
+    transform: translateY(-1px);
+}
+
+.cumple-modal-btn-enviar:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.cumple-modal-exito {
+    padding: 20px 0;
+}
+
+
+/* ── MÓDULO MARKETING (SaludosCumpleanos) ──────────── */
+.saludos-contenedor {
+    padding: 20px;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.saludos-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 20px;
+}
+
+.saludos-header-icono {
+    font-size: 1.5rem;
+    color: #f59e0b;
+}
+
+.saludos-titulo {
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: var(--text-primary, #2c3e50);
+    margin: 0;
+}
+
+.saludos-cargando {
+    text-align: center;
+    padding: 60px 20px;
+    color: var(--text-secondary, #555);
+    font-size: 1rem;
+}
+
+.saludos-vacio {
+    text-align: center;
+    padding: 60px 20px;
+    color: var(--text-secondary, #555);
+}
+
+.saludos-vacio-icono {
+    font-size: 4rem;
+    margin-bottom: 16px;
+}
+
+.saludos-vacio-sub {
+    font-size: 0.85rem;
+    color: var(--text-muted, #999);
+    margin-top: 8px;
+}
+
+/* Cumpleañeros de hoy — lista horizontal */
+.saludos-cumples-lista {
+    display: flex;
+    gap: 12px;
+    overflow-x: auto;
+    padding-bottom: 8px;
+    margin-bottom: 20px;
+}
+
+.saludos-cumple-card {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 16px;
+    background: var(--bg-card, #fff);
+    border: 2px solid var(--border-color, #e0e0e0);
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.2s;
+    min-width: 200px;
+    text-align: left;
+    font-family: inherit;
+    font-size: inherit;
+    color: inherit;
+}
+
+.saludos-cumple-card:hover {
+    border-color: #f59e0b;
+    background: var(--bg-hover, #f0f0f0);
+}
+
+.saludos-cumple-card.activo {
+    border-color: #f59e0b;
+    background: rgba(245, 158, 11, 0.08);
+    box-shadow: 0 2px 8px rgba(245, 158, 11, 0.15);
+}
+
+.saludos-cumple-emoji {
+    font-size: 1.8rem;
+}
+
+.saludos-cumple-info {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.saludos-cumple-nombre {
+    font-weight: 600;
+    font-size: 0.9rem;
+    color: var(--text-primary, #2c3e50);
+}
+
+.saludos-cumple-progreso {
+    font-size: 0.78rem;
+    color: var(--text-muted, #999);
+}
+
+.saludos-cumple-etiqueta {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #e67e22;
+    margin-top: -2px;
+}
+
+/* Detalle — Tabs */
+.saludos-detalle {
+    background: var(--bg-card, #fff);
+    border-radius: 12px;
+    border: 1px solid var(--border-color, #e0e0e0);
+    overflow: hidden;
+}
+
+.saludos-tabs {
+    display: flex;
+    border-bottom: 2px solid var(--border-color, #e0e0e0);
+}
+
+.saludos-tab {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 14px 16px;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--text-secondary, #555);
+    transition: all 0.2s;
+    font-family: inherit;
+    border-bottom: 3px solid transparent;
+    margin-bottom: -2px;
+}
+
+.saludos-tab:hover {
+    background: var(--bg-hover, #f0f0f0);
+    color: var(--text-primary, #2c3e50);
+}
+
+.saludos-tab.activo {
+    color: #f59e0b;
+    border-bottom-color: #f59e0b;
+}
+
+/* Grid de saludos — 2 columnas */
+.saludos-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+    padding: 16px;
+    max-height: 500px;
+    overflow-y: auto;
+}
+
+@media (max-width: 768px) {
+    .saludos-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+.saludos-grid-vacio {
+    grid-column: 1 / -1;
+    text-align: center;
+    padding: 40px 20px;
+    color: var(--text-muted, #999);
+}
+
+.saludos-grid-vacio-icono {
+    font-size: 2rem;
+    margin-bottom: 10px;
+    opacity: 0.5;
+}
+
+.saludo-card {
+    background: var(--bg-subtle, #f0f4f8);
+    border-radius: 10px;
+    padding: 14px;
+    border: 1px solid var(--border-color, #e0e0e0);
+    transition: transform 0.15s;
+}
+
+.saludo-card:hover {
+    transform: translateY(-2px);
+}
+
+.saludo-card-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 8px;
+}
+
+.saludo-card-nombre {
+    font-weight: 700;
+    font-size: 0.88rem;
+    color: var(--text-primary, #2c3e50);
+}
+
+.saludo-card-mensaje {
+    font-size: 0.85rem;
+    color: var(--text-secondary, #555);
+    margin: 0;
+    line-height: 1.5;
+    white-space: pre-wrap;
+    word-break: break-word;
+}
+
+/* Lista de faltantes */
+.saludos-faltantes-lista {
+    padding: 16px;
+    max-height: 500px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.faltante-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 14px;
+    background: var(--bg-subtle, #f0f4f8);
+    border-radius: 8px;
+    border: 1px solid var(--border-color, #e0e0e0);
+}
+
+.faltante-icono {
+    font-size: 1.1rem;
+}
+
+.faltante-nombre {
+    font-size: 0.88rem;
+    font-weight: 500;
+    color: var(--text-primary, #2c3e50);
+}

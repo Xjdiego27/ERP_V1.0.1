@@ -4,6 +4,9 @@ import Header from '../components/Header';
 import Sidebar from '../components/Sidebar'; 
 import CompanyPanel from '../components/CompanyPanel'; 
 import CambioPassword from './CambioPassword';
+import ValoracionModal from '../components/ValoracionModal';
+import CumpleanosModal from '../components/CumpleanosModal';
+import ReaperturaModal from '../components/ReaperturaModal';
 import { API_URL } from '../auth';
 import '../styles/Dashboard.css';
 
@@ -96,6 +99,9 @@ export default function Dashboard() {
             {mostrarCambioPassword && (
                 <CambioPassword onCambiado={() => setMostrarCambioPassword(false)} />
             )}
+            <ValoracionModal />
+            <CumpleanosModal />
+            <ReaperturaModal />
             <Header 
                 onToggleMenu={toggleSidebar} 
                 onToggleEmpresa={toggleEmpresa} 

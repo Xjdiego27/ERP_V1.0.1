@@ -10,10 +10,17 @@ import { headersAuth, API_URL } from '../auth';
 export default function CompanyPanel({ isOpen, onClose, idRol, idAccs }) {
   const [menuUrl, setMenuUrl] = useState(null);
   const [eventoUrl, setEventoUrl] = useState(null);
+  const [evento2Url, setEvento2Url] = useState(null);
+  const [eventoMujeresUrl, setEventoMujeresUrl] = useState(null);
   const [cumpleanos, setCumpleanos] = useState([]);
   const [imagenGrande, setImagenGrande] = useState(null);
 
   const esAdmin = idRol === 1;
+
+  // Obtener género del usuario actual
+  var sessionData = JSON.parse(localStorage.getItem('session'));
+  var generoUsuario = sessionData && sessionData.usuario ? sessionData.usuario.genero : null;
+  var esMujer = generoUsuario === 'F';
 
   // Traer datos cuando se abre el panel
   useEffect(() => {
@@ -28,6 +35,19 @@ export default function CompanyPanel({ isOpen, onClose, idRol, idAccs }) {
       .then(res => res.json())
       .then(data => setEventoUrl(data.url ? data.url + '?t=' + Date.now() : null))
       .catch(() => setEventoUrl(null));
+
+    fetch(API_URL + '/evento2', { headers: headersAuth() })
+      .then(res => res.json())
+      .then(data => setEvento2Url(data.url ? data.url + '?t=' + Date.now() : null))
+      .catch(() => setEvento2Url(null));
+
+    // Evento mujeres: solo traer si es admin o es mujer
+    if (esAdmin || esMujer) {
+      fetch(API_URL + '/evento-mujeres', { headers: headersAuth() })
+        .then(res => res.json())
+        .then(data => setEventoMujeresUrl(data.url ? data.url + '?t=' + Date.now() : null))
+        .catch(() => setEventoMujeresUrl(null));
+    }
 
     fetch(API_URL + '/cumpleanos', { headers: headersAuth() })
       .then(res => res.json())
@@ -66,6 +86,32 @@ export default function CompanyPanel({ isOpen, onClose, idRol, idAccs }) {
             tipo="evento"
             idAccs={idAccs}
             onCambio={setEventoUrl}
+            onVerGrande={setImagenGrande}
+          />
+        )}
+
+        {/* Evento 2 */}
+        {(evento2Url || esAdmin) && (
+          <SeccionImagen
+            label="Eventos 2"
+            url={evento2Url}
+            esAdmin={esAdmin}
+            tipo="evento2"
+            idAccs={idAccs}
+            onCambio={setEvento2Url}
+            onVerGrande={setImagenGrande}
+          />
+        )}
+
+        {/* Evento exclusivo Mujeres — solo visible para mujeres y admins */}
+        {(esMujer || esAdmin) && (eventoMujeresUrl || esAdmin) && (
+          <SeccionImagen
+            label="Evento Mujeres"
+            url={eventoMujeresUrl}
+            esAdmin={esAdmin}
+            tipo="evento-mujeres"
+            idAccs={idAccs}
+            onCambio={setEventoMujeresUrl}
             onVerGrande={setImagenGrande}
           />
         )}

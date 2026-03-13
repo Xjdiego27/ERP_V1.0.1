@@ -1,5 +1,6 @@
 import os
 import time
+import asyncio
 import uvicorn
 import traceback
 from fastapi import FastAPI, Depends, HTTPException, Request
@@ -31,6 +32,8 @@ from rutas_equipo import router as rutas_equipo
 from rutas_tickets import router as rutas_tickets
 from rutas_permisos import router as rutas_permisos
 from rutas_chip import router as rutas_chip
+from rutas_saludos_cumpleanos import router as rutas_saludos_cumpleanos
+from rutas_saludos_cumpleanos import tarea_limpieza_periodica
 
 load_dotenv()
 
@@ -86,6 +89,13 @@ app.include_router(rutas_equipo)
 app.include_router(rutas_tickets)
 app.include_router(rutas_permisos)
 app.include_router(rutas_chip)
+app.include_router(rutas_saludos_cumpleanos)
+
+
+# ── Tarea en background: limpieza automática de saludos vencidos ──
+@app.on_event("startup")
+async def iniciar_tareas_background():
+    asyncio.create_task(tarea_limpieza_periodica())
 
 
 # ── Endpoints de diagnóstico (NO tocan la BD) ──────────

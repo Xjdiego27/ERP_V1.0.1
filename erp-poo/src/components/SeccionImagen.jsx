@@ -19,9 +19,9 @@ export default function SeccionImagen(props) {
   const [cargando, setCargando] = useState(false);
   const inputRef = useRef(null);
 
-  // ¿En qué carpeta se guarda? menu → menus, evento → eventos
+  // ¿En qué carpeta se guarda? menu → menus, evento/evento2/evento-mujeres → eventos
   var carpeta = 'menus';
-  if (props.tipo === 'evento') {
+  if (props.tipo === 'evento' || props.tipo === 'evento2' || props.tipo === 'evento-mujeres') {
     carpeta = 'eventos';
   }
 

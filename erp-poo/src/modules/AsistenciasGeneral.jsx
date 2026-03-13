@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { faMagnifyingGlass, faFilter, faCalendarDays, faClockRotateLeft, faUserClock, faUserXmark, faUserCheck } from '@fortawesome/free-solid-svg-icons';
+import { faMagnifyingGlass, faFilter, faCalendarDays, faClockRotateLeft, faUserClock, faUserXmark, faUserCheck, faUser } from '@fortawesome/free-solid-svg-icons';
 import IconoFa from '../components/IconoFa';
 import { headersAuth, API_URL } from '../auth';
 import '../styles/AsistenciasGeneral.css';
@@ -318,7 +318,7 @@ export default function AsistenciasGeneral() {
                           {emp.foto ? (
                             <img src={'/assets/perfiles/' + emp.foto} alt="" />
                           ) : (
-                            <span className="foto-placeholder">👤</span>
+                            <span className="foto-placeholder"><IconoFa icono={faUser} /></span>
                           )}
                         </div>
                         <span className="asistg-emp-nombre">{emp.nombre}</span>

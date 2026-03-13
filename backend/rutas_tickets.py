@@ -99,6 +99,55 @@ async def _notificar_ticket(db: Session, id_ticket: int, tipo: str, texto: str,
         await coleccion_notif_tickets.insert_many(docs)
 
 
+# ── Endpoint: Modal de reapertura de ticket ──────────
+from bson import ObjectId
+
+@router.get("/tickets/reabierto-pendiente")
+async def reabierto_pendiente(
+    db: Session = Depends(get_db),
+    token: dict = Depends(verificar_token),
+):
+    """Retorna la notificación de reapertura pendiente para mostrar en modal."""
+    id_accs = token.get("id_accs")
+    personal = _personal_por_accs(db, id_accs)
+    if not personal:
+        return {"pendiente": False}
+
+    doc = await coleccion_notif_tickets.find_one({
+        "id_personal": personal.ID_PERSONAL,
+        "tipo": "ticket_reabierto_modal",
+        "leido": False,
+    }, sort=[("fecha", -1)])
+
+    if not doc:
+        return {"pendiente": False}
+
+    return {
+        "pendiente": True,
+        "id_notif": str(doc["_id"]),
+        "id_ticket": doc.get("id_ticket"),
+        "asunto": doc.get("asunto", ""),
+        "motivo": doc.get("motivo", ""),
+        "nombre_reabrio": doc.get("nombre_reabrio", ""),
+    }
+
+
+@router.put("/tickets/reabierto-visto/{id_notif}")
+async def marcar_reabierto_visto(
+    id_notif: str,
+    token: dict = Depends(verificar_token),
+):
+    """Marca la notificación de reapertura como leída."""
+    try:
+        await coleccion_notif_tickets.update_one(
+            {"_id": ObjectId(id_notif)},
+            {"$set": {"leido": True}},
+        )
+    except Exception:
+        pass
+    return {"ok": True}
+
+
 def _equipo_asignado(db: Session, id_personal: int):
     """Devuelve datos del equipo asignado a un empleado (si existe)."""
     if not AsignacionEquipo or not Equipo:
@@ -425,7 +474,7 @@ async def crear_ticket(
     await _notificar_ticket(
         db, nuevo.ID_TICKET,
         tipo="ticket_creado",
-        texto=f"Nuevo ticket #{nuevo.ID_TICKET}: {asunto} — {nombre_creador} [{prioridad.upper()}]",
+        texto=f"Nuevo ticket: {asunto} — {nombre_creador} [{prioridad.upper()}]",
         roles_destino=[1, 2],
         id_empresa=token.get("id_emp"),
     )
@@ -571,7 +620,7 @@ async def asignar_ticket(
     await _notificar_ticket(
         db, id_ticket,
         tipo="ticket_estado",
-        texto=f"Tu ticket #{id_ticket} fue asignado a {nombre_tec}",
+        texto=f"Tu ticket fue asignado a {nombre_tec}: {t.ASUNTO}",
         destinatarios_ids=[t.ID_PERSONAL],
     )
 
@@ -619,7 +668,7 @@ async def cambiar_estado(
     await _notificar_ticket(
         db, id_ticket,
         tipo="ticket_estado",
-        texto=f"Tu ticket #{id_ticket} ahora está {etiquetas.get(estado, estado)}",
+        texto=f"Tu ticket ahora está {etiquetas.get(estado, estado)}: {t.ASUNTO}",
         destinatarios_ids=[t.ID_PERSONAL],
     )
 
@@ -662,7 +711,7 @@ async def cerrar_ticket(
     await _notificar_ticket(
         db, id_ticket,
         tipo="ticket_estado",
-        texto=f"Tu ticket #{id_ticket} fue cerrado" + (f": {mensaje_ti}" if mensaje_ti else ""),
+        texto=f"Tu ticket fue cerrado: {t.ASUNTO}" + (f" — {mensaje_ti}" if mensaje_ti else ""),
         destinatarios_ids=[t.ID_PERSONAL],
     )
 
@@ -699,6 +748,7 @@ async def valorar_ticket(
 @router.put("/tickets/{id_ticket}/reabrir")
 async def reabrir_ticket(
     id_ticket: int,
+    motivo: Optional[str] = None,
     db: Session = Depends(get_db),
     token: dict = Depends(verificar_token),
 ):
@@ -719,23 +769,54 @@ async def reabrir_ticket(
     t.MENSAJE_TI = None
     db.commit()
 
+    motivo_texto = motivo.strip() if motivo else None
+
     await registrar_accion(
         usuario=token.get("sub", "desconocido"),
         accion="REABRIR",
         modulo="TICKETS",
         id_afectado=id_ticket,
         nombre_afectado=t.ASUNTO,
-        datos_nuevos={"estado": "ABIERTO"},
+        datos_nuevos={"estado": "ABIERTO", "motivo": motivo_texto},
     )
 
     # Notificar a SOPORTE y ADMIN que el ticket fue reabierto
     id_empresa = token.get("id_emp")
+    id_accs = token.get("id_accs")
+    personal_reabrio = _personal_por_accs(db, id_accs)
+    nombre_reabrio = f"{personal_reabrio.NOMBRES} {personal_reabrio.APE_PATERNO}" if personal_reabrio else "Usuario"
+
+    texto_notif = f"Ticket reabierto: {t.ASUNTO}"
+    if motivo_texto:
+        texto_notif += f" — Motivo: {motivo_texto}"
+
+    # Incluir al técnico asignado (ID_TI) para que vea el motivo
+    destinatarios_extra = []
+    if t.ID_TI:
+        destinatarios_extra.append(t.ID_TI)
+
+    # Notificación general (campana) para SOPORTE y ADMIN
     await _notificar_ticket(
         db, id_ticket,
-        tipo="ticket_creado",
-        texto=f"Ticket #{id_ticket} fue reabierto: {t.ASUNTO}",
+        tipo="ticket_reabierto",
+        texto=texto_notif,
+        destinatarios_ids=destinatarios_extra,
         roles_destino=[1, 2],
         id_empresa=id_empresa,
     )
+
+    # Notificación especial para modal de reapertura (al técnico asignado)
+    if t.ID_TI:
+        await coleccion_notif_tickets.insert_one({
+            "id_personal": t.ID_TI,
+            "id_ticket": id_ticket,
+            "tipo": "ticket_reabierto_modal",
+            "texto": texto_notif,
+            "asunto": t.ASUNTO,
+            "motivo": motivo_texto or "",
+            "nombre_reabrio": nombre_reabrio,
+            "leido": False,
+            "fecha": datetime.now(),
+        })
 
     return {"mensaje": "Ticket reabierto exitosamente"}

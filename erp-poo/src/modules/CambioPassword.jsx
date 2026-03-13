@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { API_URL, headersConToken } from '../auth';
 import IconoFa from '../components/IconoFa';
-import { faEye, faEyeSlash, faCheck, faXmark } from '@fortawesome/free-solid-svg-icons';
+import { faEye, faEyeSlash, faCheck, faXmark, faLock } from '@fortawesome/free-solid-svg-icons';
 import '../styles/CambioPassword.css';
 
 export default function CambioPassword({ onCambiado }) {
@@ -104,7 +104,7 @@ export default function CambioPassword({ onCambiado }) {
     return (
         <div className="cambio-pw-overlay">
             <div className="cambio-pw-modal">
-                <div className="cambio-pw-icono">🔒</div>
+                <div className="cambio-pw-icono"><IconoFa icono={faLock} /></div>
                 <h2 className="cambio-pw-titulo">Cambio de Contraseña Obligatorio</h2>
                 <p className="cambio-pw-desc">
                     Tu contraseña actual no es segura. Por favor, establece una nueva contraseña.

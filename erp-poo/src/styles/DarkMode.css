@@ -624,6 +624,24 @@ body.dark-mode .val-rapido {
   background: #1a3a20; border-color: #205a30; color: #4ade80;
 }
 body.dark-mode .val-rapido:hover { background: #204a28; }
+body.dark-mode .reabrir-motivo-input {
+  background: var(--bg-input);
+  border-color: var(--border-color);
+  color: var(--text-primary);
+}
+body.dark-mode .reabrir-motivo-input:focus {
+  border-color: #ef4444;
+}
+body.dark-mode .reabrir-motivo-input::placeholder {
+  color: var(--text-muted);
+}
+body.dark-mode .btn-reabrir-volver {
+  color: var(--text-secondary);
+}
+body.dark-mode .btn-reabrir-volver:hover {
+  color: var(--text-primary);
+  background: var(--bg-hover);
+}
 body.dark-mode .ticket-mensaje.exito {
   background: #1b3a2a;
   color: #5cae7b;
@@ -747,5 +765,90 @@ body.dark-mode .detalle-foto-square img {
 body.dark-mode .detalle-asignar textarea {
   background: var(--bg-input);
   border-color: var(--border-color);
+  color: var(--text-primary);
+}
+
+/* ═══ Saludos de Cumpleaños — Dark Mode ═══ */
+body.dark-mode .cumple-modal {
+  background: var(--bg-card);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6);
+}
+body.dark-mode .cumple-modal-titulo {
+  color: var(--text-primary);
+}
+body.dark-mode .cumple-modal-nombre {
+  color: #fbbf24;
+}
+body.dark-mode .cumple-modal-desc {
+  color: var(--text-secondary);
+}
+body.dark-mode .cumple-modal-textarea {
+  background: var(--bg-input);
+  border-color: var(--border-color);
+  color: var(--text-primary);
+}
+body.dark-mode .cumple-modal-textarea:focus {
+  border-color: #fbbf24;
+}
+body.dark-mode .cumple-modal-chars {
+  color: var(--text-muted);
+}
+body.dark-mode .cumple-modal-btn-enviar {
+  background: linear-gradient(135deg, #d97706, #b45309);
+}
+body.dark-mode .cumple-modal-btn-enviar:hover:not(:disabled) {
+  background: linear-gradient(135deg, #b45309, #92400e);
+}
+body.dark-mode .saludos-titulo {
+  color: var(--text-primary);
+}
+body.dark-mode .saludos-cumple-card {
+  background: var(--bg-card);
+  border-color: var(--border-color);
+}
+body.dark-mode .saludos-cumple-card:hover {
+  background: var(--bg-hover);
+  border-color: #d97706;
+}
+body.dark-mode .saludos-cumple-card.activo {
+  border-color: #d97706;
+  background: rgba(217, 119, 6, 0.12);
+}
+body.dark-mode .saludos-cumple-nombre {
+  color: var(--text-primary);
+}
+body.dark-mode .saludos-detalle {
+  background: var(--bg-card);
+  border-color: var(--border-color);
+}
+body.dark-mode .saludos-tabs {
+  border-bottom-color: var(--border-color);
+}
+body.dark-mode .saludos-tab {
+  color: var(--text-secondary);
+}
+body.dark-mode .saludos-tab:hover {
+  background: var(--bg-hover);
+  color: var(--text-primary);
+}
+body.dark-mode .saludos-tab.activo {
+  color: #fbbf24;
+  border-bottom-color: #fbbf24;
+}
+body.dark-mode .saludo-card {
+  background: var(--bg-subtle);
+  border-color: var(--border-color);
+}
+body.dark-mode .saludo-card-nombre {
+  color: var(--text-primary);
+}
+body.dark-mode .saludo-card-mensaje {
+  color: var(--text-secondary);
+}
+body.dark-mode .faltante-item {
+  background: var(--bg-subtle);
+  border-color: var(--border-color);
+}
+body.dark-mode .faltante-nombre {
   color: var(--text-primary);
 }

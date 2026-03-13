@@ -106,4 +106,5 @@ def construir_respuesta_usuario(db, acceso, id_empresa):
         "cargo": cargo_nombre,
         "usuario": acceso.USUARIO,
         "modulos": modulos,
+        "genero": "M" if (personal and personal.GENERO_PERS == 1) else ("F" if personal else None),
     }

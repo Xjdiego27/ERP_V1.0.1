@@ -71,3 +71,81 @@ async def eliminar_evento(token: dict = Depends(verificar_token)):
         # Eliminar el documento de MongoDB
         await coleccion_eventos.delete_one({"_id": evento["_id"]})
     return {"mensaje": "Evento eliminado"}
+
+
+# ════════════════════════════════════════════════════════════
+# EVENTO 2 — Segundo campo de evento (mismo patrón)
+# ════════════════════════════════════════════════════════════
+from mongodb import coleccion_eventos2, coleccion_evento_mujeres
+
+@router.post("/evento2")
+async def subir_evento2(id_accs: int, archivo: UploadFile = File(...), db: Session = Depends(get_db), token: dict = Depends(verificar_token)):
+    timestamp = int(datetime.now().timestamp())
+    nombre_archivo = f"evento2_{timestamp}.webp"
+    ruta_nueva = os.path.join(EVENTOS_DIR, nombre_archivo)
+    personal = db.query(Personal).filter(Personal.ID_ACCS == id_accs).first()
+    nombre_usuario = (personal.NOMBRES + " " + personal.APE_PATERNO) if personal else "Desconocido"
+    anterior = await coleccion_eventos2.find_one(sort=[("fecha_subida", -1)])
+    if anterior:
+        ruta_vieja = os.path.join(EVENTOS_DIR, anterior["archivo"])
+        if os.path.exists(ruta_vieja):
+            os.remove(ruta_vieja)
+    with open(ruta_nueva, "wb") as f:
+        shutil.copyfileobj(archivo.file, f)
+    await coleccion_eventos2.insert_one({"archivo": nombre_archivo, "id_accs": id_accs, "nombre_usuario": nombre_usuario, "fecha_subida": datetime.now(), "tipo": "evento2"})
+    return {"mensaje": "Evento 2 subido", "archivo": nombre_archivo}
+
+@router.get("/evento2")
+async def ver_evento2(token: dict = Depends(verificar_token)):
+    evento = await coleccion_eventos2.find_one(sort=[("fecha_subida", -1)])
+    if evento:
+        return {"archivo": evento["archivo"], "url": f"/assets/eventos/{evento['archivo']}"}
+    return {"archivo": None, "url": None}
+
+@router.delete("/evento2")
+async def eliminar_evento2(token: dict = Depends(verificar_token)):
+    evento = await coleccion_eventos2.find_one(sort=[("fecha_subida", -1)])
+    if evento:
+        ruta = os.path.join(EVENTOS_DIR, evento["archivo"])
+        if os.path.exists(ruta):
+            os.remove(ruta)
+        await coleccion_eventos2.delete_one({"_id": evento["_id"]})
+    return {"mensaje": "Evento 2 eliminado"}
+
+
+# ════════════════════════════════════════════════════════════
+# EVENTO MUJERES — Visible solo para género femenino
+# ════════════════════════════════════════════════════════════
+@router.post("/evento-mujeres")
+async def subir_evento_mujeres(id_accs: int, archivo: UploadFile = File(...), db: Session = Depends(get_db), token: dict = Depends(verificar_token)):
+    timestamp = int(datetime.now().timestamp())
+    nombre_archivo = f"evento_mujeres_{timestamp}.webp"
+    ruta_nueva = os.path.join(EVENTOS_DIR, nombre_archivo)
+    personal = db.query(Personal).filter(Personal.ID_ACCS == id_accs).first()
+    nombre_usuario = (personal.NOMBRES + " " + personal.APE_PATERNO) if personal else "Desconocido"
+    anterior = await coleccion_evento_mujeres.find_one(sort=[("fecha_subida", -1)])
+    if anterior:
+        ruta_vieja = os.path.join(EVENTOS_DIR, anterior["archivo"])
+        if os.path.exists(ruta_vieja):
+            os.remove(ruta_vieja)
+    with open(ruta_nueva, "wb") as f:
+        shutil.copyfileobj(archivo.file, f)
+    await coleccion_evento_mujeres.insert_one({"archivo": nombre_archivo, "id_accs": id_accs, "nombre_usuario": nombre_usuario, "fecha_subida": datetime.now(), "tipo": "evento_mujeres"})
+    return {"mensaje": "Evento Mujeres subido", "archivo": nombre_archivo}
+
+@router.get("/evento-mujeres")
+async def ver_evento_mujeres(token: dict = Depends(verificar_token)):
+    evento = await coleccion_evento_mujeres.find_one(sort=[("fecha_subida", -1)])
+    if evento:
+        return {"archivo": evento["archivo"], "url": f"/assets/eventos/{evento['archivo']}"}
+    return {"archivo": None, "url": None}
+
+@router.delete("/evento-mujeres")
+async def eliminar_evento_mujeres(token: dict = Depends(verificar_token)):
+    evento = await coleccion_evento_mujeres.find_one(sort=[("fecha_subida", -1)])
+    if evento:
+        ruta = os.path.join(EVENTOS_DIR, evento["archivo"])
+        if os.path.exists(ruta):
+            os.remove(ruta)
+        await coleccion_evento_mujeres.delete_one({"_id": evento["_id"]})
+    return {"mensaje": "Evento Mujeres eliminado"}

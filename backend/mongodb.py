@@ -26,3 +26,10 @@ coleccion_asistencia = db_mongo["asistencia"]          # Marcajes del huellero (
 coleccion_justificaciones = db_mongo["justificaciones"]  # Justificaciones manuales de asistencia
 coleccion_auditoria = db_mongo["auditoria"]            # Log de cambios: quién, qué, a quién, cuándo
 coleccion_notif_tickets = db_mongo["notificaciones_tickets"]  # Notificaciones de tickets (creación, estado)
+coleccion_saludos_cumple = db_mongo["saludos_cumpleanos"]      # Saludos de cumpleaños recopilados por Marketing
+coleccion_eventos2 = db_mongo["eventos2"]                      # Segundo evento (foto)
+coleccion_evento_mujeres = db_mongo["evento_mujeres"]          # Evento exclusivo para mujeres
+
+# === BASE DE DATOS DE ARCHIVO (erp_sql) ===
+db_archivo = cliente_mongo["erp_sql"]
+coleccion_archivo_saludos = db_archivo["saludos_cumpleanos_archivo"]  # Archivo histórico de saludos
