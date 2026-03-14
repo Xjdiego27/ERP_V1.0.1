@@ -1,0 +1,29 @@
+
+# Core web framework and server
+fastapi>=0.95.2
+uvicorn[standard]==0.22.0
+
+# Real-time
+python-socketio[asyncio_server]==5.9.0
+
+# Authentication
+python-jose[cryptography]>=0.3.3
+passlib[bcrypt]>=1.7.4
+python-multipart==0.0.6
+
+# Databases
+sqlalchemy==1.4.49
+asyncpg==0.28.0
+aiosqlite==0.19.0
+alembic==1.11.1
+
+# Mongo / ODM
+beanie==1.22.1
+motor==3.1.1
+
+# Misc
+redis>=4.6.0
+aiohttp==3.9.4
+
+# NOTE: pydantic is intentionally not pinned here so pip can resolve a
+# version compatible with FastAPI and Beanie at install time.

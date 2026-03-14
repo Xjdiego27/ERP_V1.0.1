@@ -121,14 +121,21 @@ def stress_test(n: int = 100_000):
 
 
 # ── Helpers locales ──────────────────────────────
-def _generar_token(acceso, id_empresa, rol):
+def _generar_token(acceso, id_empresa, rol, db=None):
     """Construye payload y firma el JWT."""
-    return crear_token_acceso({
+    payload = {
         "sub": acceso.USUARIO,
         "id_accs": acceso.ID_ACCS,
         "id_emp": id_empresa,
         "rol": rol.DESCRIP if rol else None,
-    })
+    }
+    # Incluir id_personal si es posible (para Chat y otros servicios)
+    if db:
+        personal = db.query(Personal).filter(Personal.ID_ACCS == acceso.ID_ACCS).first()
+        if personal:
+            payload["id_personal"] = personal.ID_PERSONAL
+            payload["nombre"] = f"{personal.NOMBRES} {personal.APE_PATERNO}"
+    return crear_token_acceso(payload)
 
 
 def _verificar_asignacion(db, id_accs, id_empresa):
@@ -179,7 +186,7 @@ async def login(datos: LoginRequest, db: Session = Depends(get_db)):
     # 3. Generar token
     acceso = db.query(Acceso).filter(Acceso.ID_ACCS == id_accs).first()
     rol = db.query(RolAccs).filter(RolAccs.ID_ROL == acceso.ID_ROL).first()
-    token = _generar_token(acceso, datos.id_empresa, rol)
+    token = _generar_token(acceso, datos.id_empresa, rol, db)
 
     # 4. Respuesta completa
     return {
@@ -205,7 +212,7 @@ async def seleccionar_empresa(datos: SeleccionEmpresaRequest, db: Session = Depe
         raise HTTPException(status_code=404, detail="Empresa no encontrada")
 
     rol = db.query(RolAccs).filter(RolAccs.ID_ROL == acceso.ID_ROL).first()
-    token = _generar_token(acceso, datos.id_empresa, rol)
+    token = _generar_token(acceso, datos.id_empresa, rol, db)
 
     return {
         "access_token": token,

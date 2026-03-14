@@ -7,6 +7,7 @@ import CambioPassword from './CambioPassword';
 import ValoracionModal from '../components/ValoracionModal';
 import CumpleanosModal from '../components/CumpleanosModal';
 import ReaperturaModal from '../components/ReaperturaModal';
+import ChatPanel from '../components/ChatPanel';
 import { API_URL } from '../auth';
 import '../styles/Dashboard.css';
 
@@ -102,6 +103,7 @@ export default function Dashboard() {
             <ValoracionModal />
             <CumpleanosModal />
             <ReaperturaModal />
+            <ChatPanel />
             <Header 
                 onToggleMenu={toggleSidebar} 
                 onToggleEmpresa={toggleEmpresa} 

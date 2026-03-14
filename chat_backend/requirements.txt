@@ -1,0 +1,8 @@
+fastapi
+uvicorn[standard]
+python-socketio[asyncio_server]
+python-jose[cryptography]
+python-dotenv
+sqlalchemy
+pymysql
+motor
