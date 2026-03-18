@@ -1278,3 +1278,30 @@ body.dark-mode .asist-rango-info {
     justify-content: flex-end;
   }
 }
+
+
+/* ═══════════════════════════════════════════════
+   Plantillas — Generar Documento
+   ═══════════════════════════════════════════════ */
+.doc-plantilla-seccion {
+  margin-top: 20px;
+  border-top: 2px solid var(--border-color, #e0e3e8);
+  padding-top: 10px;
+}
+
+.doc-campos-titulo {
+  margin: 14px 0 8px;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--color-primario, #2563eb);
+  text-transform: uppercase;
+  letter-spacing: .5px;
+}
+
+.doc-campos-auto {
+  margin-bottom: 10px;
+}
+
+.doc-campos-manual {
+  margin-bottom: 10px;
+}

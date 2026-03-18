@@ -20,16 +20,22 @@ load_dotenv(env_path)
 import uvicorn
 import time
 import logging
+import uuid
+import shutil
 from datetime import datetime
-from fastapi import FastAPI, Depends, HTTPException
+from typing import List, Optional
+from fastapi import FastAPI, Depends, HTTPException, UploadFile, File, Form
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
+from fastapi.staticfiles import StaticFiles
+from pydantic import BaseModel
 from jose import jwt, JWTError
 import socketio
 from sqlalchemy import create_engine
 from sqlalchemy.ext.automap import automap_base
 from sqlalchemy.orm import sessionmaker
 from motor.motor_asyncio import AsyncIOMotorClient
+from bson import ObjectId
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("chat")
@@ -130,8 +136,8 @@ sio = socketio.AsyncServer(
     cors_allowed_origins='*',
     ping_interval=25,
     ping_timeout=60,
-    logger=True,
-    engineio_logger=True,
+    logger=False,
+    engineio_logger=False,
 )
 
 # Mapa de usuarios conectados: id_personal → set(sid)
@@ -242,6 +248,9 @@ async def enviar_mensaje(sid, data):
         'nombre_remitente': nombre_remitente,
         'fecha': ahora,
         'leido': False,
+        'tipo': data.get('tipo', 'texto'),
+        'archivo_url': data.get('archivo_url', ''),
+        'archivo_nombre': data.get('archivo_nombre', ''),
     }
 
     try:
@@ -259,6 +268,9 @@ async def enviar_mensaje(sid, data):
         'contenido': contenido,
         'nombre_remitente': nombre_remitente,
         'fecha': ahora.isoformat(),
+        'tipo': mensaje_doc['tipo'],
+        'archivo_url': mensaje_doc['archivo_url'],
+        'archivo_nombre': mensaje_doc['archivo_nombre'],
     }
 
     # Enviar al destinatario
@@ -289,6 +301,136 @@ async def escribiendo(sid, data):
     sids_destino = list(usuarios_conectados.get(destinatario_id, []))
     for rsid in sids_destino:
         await sio.emit('escribiendo', {'remitente_id': remitente_id}, to=rsid)
+
+
+@sio.event
+async def zumbido(sid, data):
+    """Envía un zumbido (nudge) al destinatario - estilo MSN Messenger."""
+    session = await sio.get_session(sid)
+    if not session:
+        return
+    remitente_id = session['id_personal']
+    nombre_remitente = session.get('nombre', 'Usuario')
+    destinatario_id = data.get('destinatario_id')
+    if not destinatario_id:
+        return
+    try:
+        destinatario_id = int(destinatario_id)
+    except (ValueError, TypeError):
+        return
+    sids_destino = list(usuarios_conectados.get(destinatario_id, []))
+    for rsid in sids_destino:
+        await sio.emit('zumbido', {
+            'remitente_id': remitente_id,
+            'nombre_remitente': nombre_remitente,
+        }, to=rsid)
+    logger.info(f"[Chat] Zumbido {nombre_remitente} -> {destinatario_id}")
+
+
+# ══════════════════════════════════════════════════════════
+# CHAT GENERAL & GRUPOS
+# ══════════════════════════════════════════════════════════
+SALA_GENERAL = 'sala_general'
+
+# Colecciones MongoDB adicionales
+coleccion_msg_general = db_mongo["chat_general"]
+coleccion_grupos = db_mongo["chat_grupos"]
+coleccion_msg_grupo = db_mongo["chat_grupo_mensajes"]
+
+
+@sio.event
+async def join_general(sid, data=None):
+    """Unir al usuario a la sala general."""
+    sio.enter_room(sid, SALA_GENERAL)
+
+
+@sio.event
+async def msg_general(sid, data):
+    """Mensaje al chat general (todos lo ven)."""
+    session = await sio.get_session(sid)
+    if not session:
+        return {'error': 'No autenticado'}
+
+    remitente_id = session['id_personal']
+    nombre = session.get('nombre', 'Usuario')
+    contenido = (data.get('contenido') or '').strip()
+    if not contenido:
+        return {'error': 'Vacío'}
+
+    ahora = datetime.now()
+    doc = {
+        'remitente_id': remitente_id,
+        'nombre_remitente': nombre,
+        'contenido': contenido,
+        'fecha': ahora,
+        'tipo': data.get('tipo', 'texto'),         # texto | archivo
+        'archivo_url': data.get('archivo_url', ''),
+        'archivo_nombre': data.get('archivo_nombre', ''),
+    }
+    resultado = await coleccion_msg_general.insert_one(doc)
+
+    msg_emit = {
+        'id': str(resultado.inserted_id),
+        'remitente_id': remitente_id,
+        'nombre_remitente': nombre,
+        'contenido': contenido,
+        'fecha': ahora.isoformat(),
+        'tipo': doc['tipo'],
+        'archivo_url': doc['archivo_url'],
+        'archivo_nombre': doc['archivo_nombre'],
+    }
+    await sio.emit('msg_general', msg_emit, room=SALA_GENERAL, skip_sid=sid)
+    return {'ok': True, 'mensaje': msg_emit}
+
+
+@sio.event
+async def join_grupo(sid, data):
+    """Unir al usuario a una sala de grupo."""
+    grupo_id = data.get('grupo_id')
+    if grupo_id:
+        sio.enter_room(sid, f'grupo_{grupo_id}')
+
+
+@sio.event
+async def msg_grupo(sid, data):
+    """Mensaje a un grupo específico."""
+    session = await sio.get_session(sid)
+    if not session:
+        return {'error': 'No autenticado'}
+
+    remitente_id = session['id_personal']
+    nombre = session.get('nombre', 'Usuario')
+    grupo_id = data.get('grupo_id')
+    contenido = (data.get('contenido') or '').strip()
+    if not grupo_id or not contenido:
+        return {'error': 'Datos incompletos'}
+
+    ahora = datetime.now()
+    doc = {
+        'grupo_id': grupo_id,
+        'remitente_id': remitente_id,
+        'nombre_remitente': nombre,
+        'contenido': contenido,
+        'fecha': ahora,
+        'tipo': data.get('tipo', 'texto'),
+        'archivo_url': data.get('archivo_url', ''),
+        'archivo_nombre': data.get('archivo_nombre', ''),
+    }
+    resultado = await coleccion_msg_grupo.insert_one(doc)
+
+    msg_emit = {
+        'id': str(resultado.inserted_id),
+        'grupo_id': grupo_id,
+        'remitente_id': remitente_id,
+        'nombre_remitente': nombre,
+        'contenido': contenido,
+        'fecha': ahora.isoformat(),
+        'tipo': doc['tipo'],
+        'archivo_url': doc['archivo_url'],
+        'archivo_nombre': doc['archivo_nombre'],
+    }
+    await sio.emit('msg_grupo', msg_emit, room=f'grupo_{grupo_id}', skip_sid=sid)
+    return {'ok': True, 'mensaje': msg_emit}
 
 
 # ══════════════════════════════════════════════════════════
@@ -393,6 +535,9 @@ async def obtener_historial(
             'nombre_remitente': m.get('nombre_remitente', ''),
             'fecha': m['fecha'].isoformat() if m.get('fecha') else '',
             'leido': m.get('leido', False),
+            'tipo': m.get('tipo', 'texto'),
+            'archivo_url': m.get('archivo_url', ''),
+            'archivo_nombre': m.get('archivo_nombre', ''),
         })
 
     return resultado
@@ -424,6 +569,180 @@ async def mensajes_no_leidos(
         total += r['count']
 
     return {"total": total, "por_contacto": por_contacto}
+
+
+# ══════════════════════════════════════════════════════════
+# CHAT GENERAL — REST
+# ══════════════════════════════════════════════════════════
+@fastapi_app.get("/mensajes/general")
+async def historial_general(
+    limite: int = 80,
+    token: dict = Depends(verificar_token),
+):
+    """Historial del chat general."""
+    cursor = coleccion_msg_general.find().sort("fecha", -1).limit(limite)
+    docs = await cursor.to_list(length=limite)
+    resultado = []
+    for m in reversed(docs):
+        resultado.append({
+            'id': str(m['_id']),
+            'remitente_id': m['remitente_id'],
+            'nombre_remitente': m.get('nombre_remitente', ''),
+            'contenido': m['contenido'],
+            'fecha': m['fecha'].isoformat() if m.get('fecha') else '',
+            'tipo': m.get('tipo', 'texto'),
+            'archivo_url': m.get('archivo_url', ''),
+            'archivo_nombre': m.get('archivo_nombre', ''),
+        })
+    return resultado
+
+
+# ══════════════════════════════════════════════════════════
+# GRUPOS — REST
+# ══════════════════════════════════════════════════════════
+class GrupoCrear(BaseModel):
+    nombre: str
+    miembros: List[int]   # IDs de personal
+
+
+@fastapi_app.post("/grupos")
+async def crear_grupo(
+    body: GrupoCrear,
+    token: dict = Depends(verificar_token),
+    db=Depends(get_db),
+):
+    """Crear un grupo nuevo."""
+    id_personal, _ = _resolver_id_personal(token)
+    if not id_personal:
+        raise HTTPException(status_code=404, detail="Personal no encontrado")
+
+    # Incluir al creador si no está
+    miembros = list(set(body.miembros + [id_personal]))
+    doc = {
+        'nombre': body.nombre.strip(),
+        'creador_id': id_personal,
+        'miembros': miembros,
+        'fecha_creacion': datetime.now(),
+    }
+    resultado = await coleccion_grupos.insert_one(doc)
+    return {
+        'ok': True,
+        'grupo_id': str(resultado.inserted_id),
+        'nombre': doc['nombre'],
+        'miembros': miembros,
+    }
+
+
+@fastapi_app.get("/grupos")
+async def listar_grupos(
+    token: dict = Depends(verificar_token),
+    db=Depends(get_db),
+):
+    """Listar grupos del usuario."""
+    id_personal, _ = _resolver_id_personal(token)
+    if not id_personal:
+        return []
+
+    cursor = coleccion_grupos.find({'miembros': id_personal})
+    docs = await cursor.to_list(length=200)
+    resultado = []
+    for g in docs:
+        resultado.append({
+            'id': str(g['_id']),
+            'nombre': g['nombre'],
+            'creador_id': g['creador_id'],
+            'miembros': g['miembros'],
+        })
+    return resultado
+
+
+@fastapi_app.get("/grupos/{grupo_id}/mensajes")
+async def historial_grupo(
+    grupo_id: str,
+    limite: int = 80,
+    token: dict = Depends(verificar_token),
+):
+    """Historial de mensajes de un grupo."""
+    cursor = coleccion_msg_grupo.find({'grupo_id': grupo_id}).sort('fecha', -1).limit(limite)
+    docs = await cursor.to_list(length=limite)
+    resultado = []
+    for m in reversed(docs):
+        resultado.append({
+            'id': str(m['_id']),
+            'grupo_id': m['grupo_id'],
+            'remitente_id': m['remitente_id'],
+            'nombre_remitente': m.get('nombre_remitente', ''),
+            'contenido': m['contenido'],
+            'fecha': m['fecha'].isoformat() if m.get('fecha') else '',
+            'tipo': m.get('tipo', 'texto'),
+            'archivo_url': m.get('archivo_url', ''),
+            'archivo_nombre': m.get('archivo_nombre', ''),
+        })
+    return resultado
+
+
+@fastapi_app.post("/grupos/{grupo_id}/miembros")
+async def agregar_miembros(
+    grupo_id: str,
+    miembros: List[int],
+    token: dict = Depends(verificar_token),
+):
+    """Agregar miembros a un grupo."""
+    await coleccion_grupos.update_one(
+        {'_id': ObjectId(grupo_id)},
+        {'$addToSet': {'miembros': {'$each': miembros}}}
+    )
+    return {'ok': True}
+
+
+@fastapi_app.delete("/grupos/{grupo_id}")
+async def eliminar_grupo(
+    grupo_id: str,
+    token: dict = Depends(verificar_token),
+    db=Depends(get_db),
+):
+    """Eliminar un grupo (solo el creador)."""
+    id_personal, _ = _resolver_id_personal(token)
+    grupo = await coleccion_grupos.find_one({'_id': ObjectId(grupo_id)})
+    if not grupo:
+        raise HTTPException(status_code=404, detail="Grupo no encontrado")
+    if grupo['creador_id'] != id_personal:
+        raise HTTPException(status_code=403, detail="Solo el creador puede eliminar")
+    await coleccion_grupos.delete_one({'_id': ObjectId(grupo_id)})
+    await coleccion_msg_grupo.delete_many({'grupo_id': grupo_id})
+    return {'ok': True}
+
+
+# ══════════════════════════════════════════════════════════
+# ARCHIVOS / UPLOAD
+# ══════════════════════════════════════════════════════════
+UPLOAD_DIR = os.path.join(os.path.dirname(__file__), 'uploads')
+os.makedirs(UPLOAD_DIR, exist_ok=True)
+
+fastapi_app.mount("/uploads", StaticFiles(directory=UPLOAD_DIR), name="uploads")
+
+
+@fastapi_app.post("/upload")
+async def subir_archivo(
+    file: UploadFile = File(...),
+    token: dict = Depends(verificar_token),
+):
+    """Sube un archivo y devuelve la URL relativa."""
+    ext = os.path.splitext(file.filename)[1]
+    nombre_unico = f"{uuid.uuid4().hex}{ext}"
+    ruta_destino = os.path.join(UPLOAD_DIR, nombre_unico)
+
+    with open(ruta_destino, 'wb') as f:
+        contenido = await file.read()
+        f.write(contenido)
+
+    url = f"/uploads/{nombre_unico}"
+    return {
+        'ok': True,
+        'url': url,
+        'nombre_original': file.filename,
+        'content_type': file.content_type,
+    }
 
 
 # ══════════════════════════════════════════════════════════

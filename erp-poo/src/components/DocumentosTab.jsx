@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { faPen, faFloppyDisk, faXmark, faPlus, faTrash, faFileContract, faFileLines, faFileSignature, faHandshake, faFileInvoiceDollar, faFolder } from '@fortawesome/free-solid-svg-icons';
+import { faPen, faFloppyDisk, faXmark, faPlus, faTrash, faFileContract, faFileLines, faFileSignature, faHandshake, faFileInvoiceDollar, faFolder, faFilePdf, faFileWord, faWandMagicSparkles, faDownload, faSpinner } from '@fortawesome/free-solid-svg-icons';
 import IconoFa from './IconoFa';
 import { headersConToken, headersAuth, API_URL } from '../auth';
 
@@ -25,6 +25,14 @@ export default function DocumentosTab(props) {
     id_tdocument: '', id_tmotivo: '', fecha_inicio: '', fecha_fin: '',
     sueldo: '', id_area: '', id_cargo: ''
   });
+
+  // ── Plantillas ──
+  var [plantillas, setPlantillas] = useState([]);
+  var [plantillaSeleccionada, setPlantillaSeleccionada] = useState('');
+  var [camposPlantilla, setCamposPlantilla] = useState([]);
+  var [camposManuales, setCamposManuales] = useState({});
+  var [generando, setGenerando] = useState(false);
+  var [cargandoCampos, setCargandoCampos] = useState(false);
 
   // Iconos según tipo de documento
   var ICONOS_TIPO = {
@@ -62,6 +70,11 @@ export default function DocumentosTab(props) {
     fetch(API_URL + '/documentos/motivos', { headers: headersAuth() })
       .then(function (r) { return r.json(); })
       .then(function (d) { setMotivos(d || []); })
+      .catch(function () {});
+    // Cargar plantillas disponibles
+    fetch(API_URL + '/plantillas', { headers: headersAuth() })
+      .then(function (r) { return r.json(); })
+      .then(function (d) { setPlantillas(d || []); })
       .catch(function () {});
   }, []);
 
@@ -127,6 +140,82 @@ export default function DocumentosTab(props) {
     fetch(API_URL + '/documentos/' + idDoc, { method: 'DELETE', headers: headersAuth() })
       .then(function () { cargarDocumentos(); })
       .catch(function (err) { alert('Error: ' + err.message); });
+  }
+
+  // ── Plantillas: cargar campos ──
+  function seleccionarPlantilla(archivo) {
+    setPlantillaSeleccionada(archivo);
+    setCamposPlantilla([]);
+    setCamposManuales({});
+    if (!archivo) return;
+
+    setCargandoCampos(true);
+    fetch(API_URL + '/plantillas/' + encodeURIComponent(archivo) + '/campos?id_personal=' + idPersonal, {
+      headers: headersAuth()
+    })
+      .then(function (r) { return r.json(); })
+      .then(function (data) {
+        var campos = data.campos || [];
+        setCamposPlantilla(campos);
+        // Inicializar campos manuales vacíos
+        var manuales = {};
+        campos.forEach(function (c) {
+          if (c.tipo === 'manual') manuales[c.campo] = '';
+        });
+        setCamposManuales(manuales);
+      })
+      .catch(function () { setCamposPlantilla([]); })
+      .finally(function () { setCargandoCampos(false); });
+  }
+
+  function cambiarCampoManual(campo, valor) {
+    setCamposManuales(function (prev) {
+      var copia = Object.assign({}, prev);
+      copia[campo] = valor;
+      return copia;
+    });
+  }
+
+  function generarDocumento(formato) {
+    if (!plantillaSeleccionada) return;
+    setGenerando(true);
+
+    var url = API_URL + '/plantillas/' + encodeURIComponent(plantillaSeleccionada)
+      + '/generar?id_personal=' + idPersonal + '&formato=' + formato;
+
+    fetch(url, {
+      method: 'POST',
+      headers: headersConToken(),
+      body: JSON.stringify({ campos_manuales: camposManuales })
+    })
+      .then(function (r) {
+        if (!r.ok) throw new Error('Error al generar');
+        return r.blob();
+      })
+      .then(function (blob) {
+        var a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        var nombreBase = plantillaSeleccionada.replace(/\.docx$/i, '');
+        a.download = nombreBase + '.' + formato;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(a.href);
+      })
+      .catch(function (err) { alert('Error: ' + err.message); })
+      .finally(function () { setGenerando(false); });
+  }
+
+  // Etiqueta legible para campos manuales
+  function etiquetaCampo(campo) {
+    var mapa = {
+      'fecha a eleccion1': 'Fecha (día)',
+      'mes a elección1': 'Mes',
+      'año a selección1': 'Año',
+      'mes seleccionado2': 'Mes (segundo)',
+      'año seleccionado2': 'Año (segundo)',
+    };
+    return mapa[campo] || campo;
   }
 
   function formatFecha(f) {
@@ -275,6 +364,108 @@ export default function DocumentosTab(props) {
               </div>
             );
           })}
+        </div>
+      )}
+
+      {/* ═══ Sección: Generar Documento desde Plantilla ═══ */}
+      {plantillas.length > 0 && (
+        <div className="doc-plantilla-seccion">
+          <div className="doc-header" style={{ marginTop: 24 }}>
+            <h3><IconoFa icono={faWandMagicSparkles} /> Generar Documento</h3>
+          </div>
+
+          <div className="doc-form-panel">
+            <div className="det-campo">
+              <label className="det-label">Plantilla</label>
+              <select className="det-select" value={plantillaSeleccionada}
+                onChange={function (e) { seleccionarPlantilla(e.target.value); }}>
+                <option value="">-- Seleccionar plantilla --</option>
+                {plantillas.map(function (p) {
+                  return <option key={p.archivo} value={p.archivo}>{p.nombre}</option>;
+                })}
+              </select>
+            </div>
+
+            {cargandoCampos && (
+              <p className="det-sin-datos"><IconoFa icono={faSpinner} /> Analizando plantilla...</p>
+            )}
+
+            {camposPlantilla.length > 0 && !cargandoCampos && (
+              <>
+                {/* Campos automáticos (solo lectura) */}
+                {camposPlantilla.filter(function (c) { return c.tipo === 'auto'; }).length > 0 && (
+                  <div className="doc-campos-auto">
+                    <h4 className="doc-campos-titulo">Campos Automáticos (desde BD)</h4>
+                    <div className="doc-form-grid">
+                      {camposPlantilla.filter(function (c) { return c.tipo === 'auto'; }).map(function (c) {
+                        return (
+                          <div className="det-campo" key={c.campo}>
+                            <label className="det-label">{c.campo}</label>
+                            <input className="det-input" type="text" value={c.valor || '—'} readOnly
+                              style={{ background: '#f1f5f9', cursor: 'default' }} />
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+
+                {/* Campos manuales (editables) */}
+                {camposPlantilla.filter(function (c) { return c.tipo === 'manual'; }).length > 0 && (
+                  <div className="doc-campos-manual">
+                    <h4 className="doc-campos-titulo">Campos a Completar</h4>
+                    <div className="doc-form-grid">
+                      {camposPlantilla.filter(function (c) { return c.tipo === 'manual'; }).map(function (c) {
+                        return (
+                          <div className="det-campo" key={c.campo}>
+                            <label className="det-label">{etiquetaCampo(c.campo)}</label>
+                            <input className="det-input" type="text"
+                              placeholder={'Ingrese ' + etiquetaCampo(c.campo).toLowerCase()}
+                              value={camposManuales[c.campo] || ''}
+                              onChange={function (e) { cambiarCampoManual(c.campo, e.target.value); }}
+                              readOnly={esMiPerfil}
+                            />
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+
+                {/* Botones de descarga */}
+                <div className="doc-form-acciones" style={{ marginTop: 14 }}>
+                  {!esMiPerfil && (
+                    <>
+                      <button className="det-btn det-btn-guardar" onClick={function () { generarDocumento('docx'); }}
+                        disabled={generando}>
+                        <IconoFa icono={generando ? faSpinner : faFileWord} />
+                        {generando ? ' Generando...' : ' Descargar Word'}
+                      </button>
+                      <button className="det-btn det-btn-nuevo" onClick={function () { generarDocumento('pdf'); }}
+                        disabled={generando}>
+                        <IconoFa icono={generando ? faSpinner : faFilePdf} />
+                        {generando ? ' Generando...' : ' Descargar PDF'}
+                      </button>
+                    </>
+                  )}
+                  {esMiPerfil && (
+                    <>
+                      <button className="det-btn det-btn-guardar" onClick={function () { generarDocumento('docx'); }}
+                        disabled={generando}>
+                        <IconoFa icono={generando ? faSpinner : faDownload} />
+                        {generando ? ' Descargando...' : ' Descargar Word'}
+                      </button>
+                      <button className="det-btn det-btn-nuevo" onClick={function () { generarDocumento('pdf'); }}
+                        disabled={generando}>
+                        <IconoFa icono={generando ? faSpinner : faDownload} />
+                        {generando ? ' Descargando...' : ' Descargar PDF'}
+                      </button>
+                    </>
+                  )}
+                </div>
+              </>
+            )}
+          </div>
         </div>
       )}
     </div>

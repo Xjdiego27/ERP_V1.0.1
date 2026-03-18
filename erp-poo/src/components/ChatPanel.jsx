@@ -2,9 +2,16 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import { io } from 'socket.io-client';
 import IconoFa from './IconoFa';
 import ChatVentana from './ChatVentana';
-import { faComments, faSearch, faTimes, faCircle, faMinus } from '@fortawesome/free-solid-svg-icons';
+import ChatGeneral from './ChatGeneral';
+import ChatGrupo from './ChatGrupo';
+import CrearGrupoModal from './CrearGrupoModal';
+import { faComments, faSearch, faTimes, faCircle, faMinus, faGlobe, faUsers, faPlus } from '@fortawesome/free-solid-svg-icons';
 import { CHAT_URL, obtenerToken } from '../auth';
 import '../styles/Chat.css';
+
+// Sonido de notificación MSN para mensajes cuando chat no está abierto
+const sonidoNotificacion = new Audio('/sounds/msn_messenger.mp3');
+sonidoNotificacion.volume = 0.5;
 
 /**
  * ChatPanel — Panel lateral de contactos + ventanas de chat flotantes.
@@ -18,6 +25,11 @@ export default function ChatPanel() {
     const [chatsAbiertos, setChatsAbiertos] = useState([]);  // [{id_personal, nombre, foto, cargo}]
     const [noLeidos, setNoLeidos] = useState({});             // {id_personal: count}
     const [conectados, setConectados] = useState(new Set());
+    const [chatGeneralAbierto, setChatGeneralAbierto] = useState(false);
+    const [grupos, setGrupos] = useState([]);                  // [{id, nombre, miembros, creador_id}]
+    const [gruposAbiertos, setGruposAbiertos] = useState([]);  // [{id, nombre, ...}]
+    const [modalGrupo, setModalGrupo] = useState(false);
+    const [tabActiva, setTabActiva] = useState('contactos');   // 'contactos' | 'grupos'
     const socketRef = useRef(null);
     const panelRef = useRef(null);
     const totalNoLeidos = Object.values(noLeidos).reduce((s, v) => s + v, 0);
@@ -25,32 +37,22 @@ export default function ChatPanel() {
     // ── Conectar Socket.IO ──
     useEffect(() => {
         const token = obtenerToken();
-        console.log('[Chat] Init — token:', token ? 'OK(' + token.substring(0, 20) + '...)' : 'NULL');
-        console.log('[Chat] Init — CHAT_URL:', CHAT_URL);
         if (!token) return;
 
-        let socket;
-        try {
-            socket = io(CHAT_URL, {
-                auth: { token },
-                transports: ['polling', 'websocket'],
-                reconnection: true,
-                reconnectionDelay: 3000,
-                reconnectionAttempts: 10,
-            });
-            console.log('[Chat] io() llamado OK, socket.id:', socket.id);
-        } catch (err) {
-            console.error('[Chat] Error creando socket:', err);
-            return;
-        }
+        const socket = io(CHAT_URL, {
+            auth: { token },
+            transports: ['polling', 'websocket'],
+            reconnection: true,
+            reconnectionDelay: 3000,
+            reconnectionAttempts: 10,
+        });
 
         socket.on('connect', () => {
-            console.log('[Chat] Socket CONECTADO, id:', socket.id);
             cargarContactos();
         });
 
         socket.on('connect_error', (err) => {
-            console.error('[Chat] Error conexión:', err.message, err);
+            console.warn('[Chat] Error conexión:', err.message);
         });
 
         socket.on('usuario_conectado', (data) => {
@@ -66,7 +68,7 @@ export default function ChatPanel() {
         });
 
         socket.on('mensaje_nuevo', (msg) => {
-            // Si la ventana de ese contacto NO está abierta, incrementar no leídos
+            // Si la ventana de ese contacto NO está abierta, incrementar no leídos y sonar
             setChatsAbiertos(prev => {
                 const estaAbierto = prev.some(c => c.id_personal === msg.remitente_id);
                 if (!estaAbierto) {
@@ -74,6 +76,8 @@ export default function ChatPanel() {
                         ...old,
                         [msg.remitente_id]: (old[msg.remitente_id] || 0) + 1,
                     }));
+                    sonidoNotificacion.currentTime = 0;
+                    sonidoNotificacion.play().catch(() => {});
                 }
                 return prev;
             });
@@ -126,25 +130,36 @@ export default function ChatPanel() {
             .catch(() => {});
     }, []);
 
+    // ── Cargar grupos ──
+    const cargarGrupos = useCallback(() => {
+        const token = obtenerToken();
+        if (!token) return;
+        fetch(CHAT_URL + '/grupos', {
+            headers: { 'Authorization': 'Bearer ' + token },
+        })
+            .then(r => r.ok ? r.json() : [])
+            .then(data => setGrupos(data))
+            .catch(() => {});
+    }, []);
+
     useEffect(() => {
         cargarContactos();
         cargarNoLeidos();
+        cargarGrupos();
         // Refrescar cada 30 segundos
         const interval = setInterval(() => {
             cargarContactos();
             cargarNoLeidos();
+            cargarGrupos();
         }, 30000);
         return () => clearInterval(interval);
-    }, [cargarContactos, cargarNoLeidos]);
+    }, [cargarContactos, cargarNoLeidos, cargarGrupos]);
 
     // ── Abrir ventana de chat con un contacto ──
     function abrirChat(contacto) {
         setChatsAbiertos(prev => {
             if (prev.some(c => c.id_personal === contacto.id_personal)) return prev;
-            // Máximo 3 ventanas simultáneas
-            const nuevos = [...prev, contacto];
-            if (nuevos.length > 3) nuevos.shift();
-            return nuevos;
+            return [...prev, contacto];
         });
         // Limpiar no leídos de este contacto
         setNoLeidos(old => {
@@ -157,6 +172,43 @@ export default function ChatPanel() {
     // ── Cerrar ventana de chat ──
     function cerrarChat(id_personal) {
         setChatsAbiertos(prev => prev.filter(c => c.id_personal !== id_personal));
+    }
+
+    // ── Abrir/cerrar grupo ──
+    function abrirGrupo(grupo) {
+        setGruposAbiertos(prev => {
+            if (prev.some(g => g.id === grupo.id)) return prev;
+            return [...prev, grupo];
+        });
+    }
+
+    function cerrarGrupo(grupoId) {
+        setGruposAbiertos(prev => prev.filter(g => g.id !== grupoId));
+    }
+
+    // ── Crear grupo ──
+    async function handleCrearGrupo(nombre, miembros) {
+        const token = obtenerToken();
+        if (!token) return;
+        try {
+            const resp = await fetch(CHAT_URL + '/grupos', {
+                method: 'POST',
+                headers: {
+                    'Authorization': 'Bearer ' + token,
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ nombre, miembros }),
+            });
+            const data = await resp.json();
+            if (data.ok) {
+                setModalGrupo(false);
+                cargarGrupos();
+                // Abrir el grupo recién creado
+                abrirGrupo({ id: data.grupo_id, nombre: data.nombre, miembros: data.miembros });
+            }
+        } catch (err) {
+            console.error('Error al crear grupo:', err);
+        }
     }
 
     // ── Filtrar contactos ──
@@ -199,91 +251,165 @@ export default function ChatPanel() {
                         </button>
                     </div>
 
-                    <div className="chat-busqueda">
-                        <IconoFa icono={faSearch} />
-                        <input
-                            type="text"
-                            placeholder="Buscar contacto..."
-                            value={busqueda}
-                            onChange={e => setBusqueda(e.target.value)}
-                        />
+                    {/* ── Botón Chat General ── */}
+                    <div
+                        className="chat-general-boton"
+                        onClick={() => setChatGeneralAbierto(true)}
+                    >
+                        <div className="chat-contacto-avatar">
+                            <div className="chat-avatar-placeholder chat-general-avatar">
+                                <IconoFa icono={faGlobe} />
+                            </div>
+                        </div>
+                        <div className="chat-contacto-info">
+                            <span className="chat-contacto-nombre">Chat General</span>
+                            <span className="chat-contacto-cargo">Todos los contactos</span>
+                        </div>
                     </div>
 
-                    <div className="chat-contactos-lista">
-                        {enLinea.length > 0 && (
-                            <div className="chat-grupo-titulo">
-                                En línea ({enLinea.length})
-                            </div>
-                        )}
-                        {enLinea.map(c => (
-                            <div
-                                key={c.id_personal}
-                                className="chat-contacto-item"
-                                onClick={() => abrirChat(c)}
-                            >
-                                <div className="chat-contacto-avatar">
-                                    {c.foto ? (
-                                        <img src={c.foto} alt="" />
-                                    ) : (
-                                        <div className="chat-avatar-placeholder">
-                                            {c.nombre.charAt(0)}
-                                        </div>
-                                    )}
-                                    <span className="chat-status online">
-                                        <IconoFa icono={faCircle} />
-                                    </span>
-                                </div>
-                                <div className="chat-contacto-info">
-                                    <span className="chat-contacto-nombre">{c.nombre}</span>
-                                    <span className="chat-contacto-cargo">{c.cargo}</span>
-                                </div>
-                                {noLeidos[c.id_personal] > 0 && (
-                                    <span className="chat-badge-noleido">{noLeidos[c.id_personal]}</span>
-                                )}
-                            </div>
-                        ))}
-
-                        {desconectados.length > 0 && (
-                            <div className="chat-grupo-titulo">
-                                Desconectados ({desconectados.length})
-                            </div>
-                        )}
-                        {desconectados.map(c => (
-                            <div
-                                key={c.id_personal}
-                                className="chat-contacto-item offline"
-                                onClick={() => abrirChat(c)}
-                            >
-                                <div className="chat-contacto-avatar">
-                                    {c.foto ? (
-                                        <img src={c.foto} alt="" />
-                                    ) : (
-                                        <div className="chat-avatar-placeholder">
-                                            {c.nombre.charAt(0)}
-                                        </div>
-                                    )}
-                                    <span className="chat-status offline-dot">
-                                        <IconoFa icono={faCircle} />
-                                    </span>
-                                </div>
-                                <div className="chat-contacto-info">
-                                    <span className="chat-contacto-nombre">{c.nombre}</span>
-                                    <span className="chat-contacto-cargo">{c.cargo}</span>
-                                </div>
-                                {noLeidos[c.id_personal] > 0 && (
-                                    <span className="chat-badge-noleido">{noLeidos[c.id_personal]}</span>
-                                )}
-                            </div>
-                        ))}
-
-                        {contactosFiltrados.length === 0 && (
-                            <p className="chat-sin-contactos">No se encontraron contactos</p>
-                        )}
+                    {/* ── Tabs: Contactos | Grupos ── */}
+                    <div className="chat-panel-tabs">
+                        <button
+                            className={'chat-panel-tab' + (tabActiva === 'contactos' ? ' activa' : '')}
+                            onClick={() => setTabActiva('contactos')}
+                        >
+                            Contactos
+                        </button>
+                        <button
+                            className={'chat-panel-tab' + (tabActiva === 'grupos' ? ' activa' : '')}
+                            onClick={() => setTabActiva('grupos')}
+                        >
+                            <IconoFa icono={faUsers} /> Grupos
+                        </button>
                     </div>
+
+                    {tabActiva === 'contactos' && (
+                        <>
+                            <div className="chat-busqueda">
+                                <IconoFa icono={faSearch} />
+                                <input
+                                    type="text"
+                                    placeholder="Buscar contacto..."
+                                    value={busqueda}
+                                    onChange={e => setBusqueda(e.target.value)}
+                                />
+                            </div>
+
+                            <div className="chat-contactos-lista">
+                                {enLinea.length > 0 && (
+                                    <div className="chat-grupo-titulo">
+                                        En línea ({enLinea.length})
+                                    </div>
+                                )}
+                                {enLinea.map(c => (
+                                    <div
+                                        key={c.id_personal}
+                                        className="chat-contacto-item"
+                                        onClick={() => abrirChat(c)}
+                                    >
+                                        <div className="chat-contacto-avatar">
+                                            {c.foto ? (
+                                                <img src={'/assets/perfiles/' + c.foto} alt="" />
+                                            ) : (
+                                                <div className="chat-avatar-placeholder">
+                                                    {c.nombre.charAt(0)}
+                                                </div>
+                                            )}
+                                            <span className="chat-status online">
+                                                <IconoFa icono={faCircle} />
+                                            </span>
+                                        </div>
+                                        <div className="chat-contacto-info">
+                                            <span className="chat-contacto-nombre">{c.nombre}</span>
+                                            <span className="chat-contacto-cargo">{c.cargo}</span>
+                                        </div>
+                                        {noLeidos[c.id_personal] > 0 && (
+                                            <span className="chat-badge-noleido">{noLeidos[c.id_personal]}</span>
+                                        )}
+                                    </div>
+                                ))}
+
+                                {desconectados.length > 0 && (
+                                    <div className="chat-grupo-titulo">
+                                        Desconectados ({desconectados.length})
+                                    </div>
+                                )}
+                                {desconectados.map(c => (
+                                    <div
+                                        key={c.id_personal}
+                                        className="chat-contacto-item offline"
+                                        onClick={() => abrirChat(c)}
+                                    >
+                                        <div className="chat-contacto-avatar">
+                                            {c.foto ? (
+                                                <img src={'/assets/perfiles/' + c.foto} alt="" />
+                                            ) : (
+                                                <div className="chat-avatar-placeholder">
+                                                    {c.nombre.charAt(0)}
+                                                </div>
+                                            )}
+                                            <span className="chat-status offline-dot">
+                                                <IconoFa icono={faCircle} />
+                                            </span>
+                                        </div>
+                                        <div className="chat-contacto-info">
+                                            <span className="chat-contacto-nombre">{c.nombre}</span>
+                                            <span className="chat-contacto-cargo">{c.cargo}</span>
+                                        </div>
+                                        {noLeidos[c.id_personal] > 0 && (
+                                            <span className="chat-badge-noleido">{noLeidos[c.id_personal]}</span>
+                                        )}
+                                    </div>
+                                ))}
+
+                                {contactosFiltrados.length === 0 && (
+                                    <p className="chat-sin-contactos">No se encontraron contactos</p>
+                                )}
+                            </div>
+                        </>
+                    )}
+
+                    {tabActiva === 'grupos' && (
+                        <div className="chat-contactos-lista">
+                            <button className="chat-crear-grupo-btn" onClick={() => setModalGrupo(true)}>
+                                <IconoFa icono={faPlus} /> Crear grupo
+                            </button>
+                            {grupos.length === 0 ? (
+                                <p className="chat-sin-contactos">No hay grupos. ¡Crea uno!</p>
+                            ) : (
+                                grupos.map(g => (
+                                    <div
+                                        key={g.id}
+                                        className="chat-contacto-item"
+                                        onClick={() => abrirGrupo(g)}
+                                    >
+                                        <div className="chat-contacto-avatar">
+                                            <div className="chat-avatar-placeholder chat-grupo-avatar">
+                                                <IconoFa icono={faUsers} />
+                                            </div>
+                                        </div>
+                                        <div className="chat-contacto-info">
+                                            <span className="chat-contacto-nombre">{g.nombre}</span>
+                                            <span className="chat-contacto-cargo">{g.miembros.length} miembros</span>
+                                        </div>
+                                    </div>
+                                ))
+                            )}
+                        </div>
+                    )}
                 </div>
             )}
 
-            {/* ── Ventanas de chat flotantes ── */}
+            {/* ── Chat General flotante ── */}
+            {chatGeneralAbierto && (
+                <ChatGeneral
+                    socket={socketRef.current}
+                    onCerrar={() => setChatGeneralAbierto(false)}
+                    panelAbierto={abierto}
+                />
+            )}
+
+            {/* ── Ventanas de chat individual flotantes ── */}
             {chatsAbiertos.map((chat, idx) => (
                 <ChatVentana
                     key={chat.id_personal}
@@ -292,8 +418,30 @@ export default function ChatPanel() {
                     onCerrar={() => cerrarChat(chat.id_personal)}
                     posicion={idx}
                     enLinea={conectados.has(chat.id_personal)}
+                    panelAbierto={abierto}
                 />
             ))}
+
+            {/* ── Ventanas de chat de grupo flotantes ── */}
+            {gruposAbiertos.map((grupo, idx) => (
+                <ChatGrupo
+                    key={grupo.id}
+                    grupo={grupo}
+                    socket={socketRef.current}
+                    onCerrar={() => cerrarGrupo(grupo.id)}
+                    posicion={chatsAbiertos.length + idx}
+                    panelAbierto={abierto}
+                />
+            ))}
+
+            {/* ── Modal crear grupo ── */}
+            {modalGrupo && (
+                <CrearGrupoModal
+                    contactos={contactos.filter(c => c.id_personal !== miIdPersonal)}
+                    onCrear={handleCrearGrupo}
+                    onCerrar={() => setModalGrupo(false)}
+                />
+            )}
         </>
     );
 }

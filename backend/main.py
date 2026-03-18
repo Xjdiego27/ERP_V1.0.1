@@ -33,6 +33,7 @@ from rutas_tickets import router as rutas_tickets
 from rutas_permisos import router as rutas_permisos
 from rutas_chip import router as rutas_chip
 from rutas_saludos_cumpleanos import router as rutas_saludos_cumpleanos
+from rutas_plantillas import router as rutas_plantillas
 from rutas_saludos_cumpleanos import tarea_limpieza_periodica
 
 load_dotenv()
@@ -90,6 +91,7 @@ app.include_router(rutas_tickets)
 app.include_router(rutas_permisos)
 app.include_router(rutas_chip)
 app.include_router(rutas_saludos_cumpleanos)
+app.include_router(rutas_plantillas)
 
 
 # ── Tarea en background: limpieza automática de saludos vencidos ──

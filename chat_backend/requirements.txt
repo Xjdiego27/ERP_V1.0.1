@@ -6,3 +6,5 @@ python-dotenv
 sqlalchemy
 pymysql
 motor
+python-multipart
+aiofiles
