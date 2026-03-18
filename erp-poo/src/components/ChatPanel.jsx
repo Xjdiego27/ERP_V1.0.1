@@ -5,7 +5,8 @@ import ChatVentana from './ChatVentana';
 import ChatGeneral from './ChatGeneral';
 import ChatGrupo from './ChatGrupo';
 import CrearGrupoModal from './CrearGrupoModal';
-import { faComments, faSearch, faTimes, faCircle, faMinus, faGlobe, faUsers, faPlus } from '@fortawesome/free-solid-svg-icons';
+import MiEspacio from './MiEspacio';
+import { faComments, faSearch, faTimes, faCircle, faMinus, faGlobe, faUsers, faPlus, faStickyNote } from '@fortawesome/free-solid-svg-icons';
 import { CHAT_URL, obtenerToken } from '../auth';
 import '../styles/Chat.css';
 
@@ -26,13 +27,25 @@ export default function ChatPanel() {
     const [noLeidos, setNoLeidos] = useState({});             // {id_personal: count}
     const [conectados, setConectados] = useState(new Set());
     const [chatGeneralAbierto, setChatGeneralAbierto] = useState(false);
+    const [miEspacioAbierto, setMiEspacioAbierto] = useState(false);
     const [grupos, setGrupos] = useState([]);                  // [{id, nombre, miembros, creador_id}]
     const [gruposAbiertos, setGruposAbiertos] = useState([]);  // [{id, nombre, ...}]
     const [modalGrupo, setModalGrupo] = useState(false);
     const [tabActiva, setTabActiva] = useState('contactos');   // 'contactos' | 'grupos'
+    const [chatActivoMobile, setChatActivoMobile] = useState(null); // id_personal del chat expandido en mobile
+    const [esMobile, setEsMobile] = useState(window.innerWidth <= 1024);
     const socketRef = useRef(null);
     const panelRef = useRef(null);
     const totalNoLeidos = Object.values(noLeidos).reduce((s, v) => s + v, 0);
+
+    // ── Detectar mobile/tablet ──
+    useEffect(() => {
+        function handleResize() {
+            setEsMobile(window.innerWidth <= 1024);
+        }
+        window.addEventListener('resize', handleResize);
+        return () => window.removeEventListener('resize', handleResize);
+    }, []);
 
     // ── Conectar Socket.IO ──
     useEffect(() => {
@@ -78,6 +91,20 @@ export default function ChatPanel() {
                     }));
                     sonidoNotificacion.currentTime = 0;
                     sonidoNotificacion.play().catch(() => {});
+                }
+                return prev;
+            });
+        });
+
+        // ── Zumbido: mover chat al inicio de la lista (estilo MSN) ──
+        socket.on('zumbido', (data) => {
+            setChatsAbiertos(prev => {
+                const idx = prev.findIndex(c => c.id_personal === data.remitente_id);
+                if (idx > 0) {
+                    // Mover al inicio
+                    const copia = [...prev];
+                    const [chat] = copia.splice(idx, 1);
+                    return [chat, ...copia];
                 }
                 return prev;
             });
@@ -167,6 +194,11 @@ export default function ChatPanel() {
             delete copia[contacto.id_personal];
             return copia;
         });
+        // En mobile: expandir este chat y cerrar panel
+        if (esMobile) {
+            setChatActivoMobile(contacto.id_personal);
+            setAbierto(false);
+        }
     }
 
     // ── Cerrar ventana de chat ──
@@ -264,6 +296,22 @@ export default function ChatPanel() {
                         <div className="chat-contacto-info">
                             <span className="chat-contacto-nombre">Chat General</span>
                             <span className="chat-contacto-cargo">Todos los contactos</span>
+                        </div>
+                    </div>
+
+                    {/* ── Botón Mi Espacio ── */}
+                    <div
+                        className="chat-general-boton mi-espacio-boton"
+                        onClick={() => setMiEspacioAbierto(true)}
+                    >
+                        <div className="chat-contacto-avatar">
+                            <div className="chat-avatar-placeholder mi-espacio-boton-avatar">
+                                <IconoFa icono={faStickyNote} />
+                            </div>
+                        </div>
+                        <div className="chat-contacto-info">
+                            <span className="chat-contacto-nombre">Mi Espacio</span>
+                            <span className="chat-contacto-cargo">Notas y recordatorios</span>
                         </div>
                     </div>
 
@@ -409,18 +457,84 @@ export default function ChatPanel() {
                 />
             )}
 
-            {/* ── Ventanas de chat individual flotantes ── */}
-            {chatsAbiertos.map((chat, idx) => (
-                <ChatVentana
-                    key={chat.id_personal}
-                    contacto={chat}
-                    socket={socketRef.current}
-                    onCerrar={() => cerrarChat(chat.id_personal)}
-                    posicion={idx}
-                    enLinea={conectados.has(chat.id_personal)}
+            {/* ── Mi Espacio flotante ── */}
+            {miEspacioAbierto && (
+                <MiEspacio
+                    onCerrar={() => setMiEspacioAbierto(false)}
                     panelAbierto={abierto}
                 />
-            ))}
+            )}
+
+            {/* ── Ventanas de chat individual flotantes ── */}
+            {esMobile ? (
+                <>
+                    {/* Burbujas tipo Messenger */}
+                    <div className="chat-heads-container">
+                        {chatsAbiertos.map((chat, idx) => {
+                            const esActivo = chatActivoMobile === chat.id_personal;
+                            return (
+                                <div
+                                    key={chat.id_personal}
+                                    className={'chat-head' + (esActivo ? ' chat-head-activo' : '') + (noLeidos[chat.id_personal] ? ' chat-head-noleido' : '')}
+                                    onClick={() => setChatActivoMobile(esActivo ? null : chat.id_personal)}
+                                    title={chat.nombre}
+                                >
+                                    {chat.foto ? (
+                                        <img src={'/assets/perfiles/' + chat.foto} alt="" />
+                                    ) : (
+                                        <span className="chat-head-letra">{chat.nombre.charAt(0)}</span>
+                                    )}
+                                    {conectados.has(chat.id_personal) && (
+                                        <span className="chat-head-online"></span>
+                                    )}
+                                    {noLeidos[chat.id_personal] > 0 && (
+                                        <span className="chat-head-badge">{noLeidos[chat.id_personal]}</span>
+                                    )}
+                                    <button
+                                        className="chat-head-cerrar"
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            cerrarChat(chat.id_personal);
+                                            if (esActivo) setChatActivoMobile(null);
+                                        }}
+                                    >
+                                        &times;
+                                    </button>
+                                </div>
+                            );
+                        })}
+                    </div>
+                    {/* Ventana expandida del chat activo */}
+                    {chatActivoMobile && chatsAbiertos.find(c => c.id_personal === chatActivoMobile) && (
+                        <ChatVentana
+                            key={chatActivoMobile}
+                            contacto={chatsAbiertos.find(c => c.id_personal === chatActivoMobile)}
+                            socket={socketRef.current}
+                            onCerrar={() => {
+                                cerrarChat(chatActivoMobile);
+                                setChatActivoMobile(null);
+                            }}
+                            posicion={0}
+                            enLinea={conectados.has(chatActivoMobile)}
+                            panelAbierto={false}
+                            modeMobile={true}
+                            onMinimizar={() => setChatActivoMobile(null)}
+                        />
+                    )}
+                </>
+            ) : (
+                chatsAbiertos.map((chat, idx) => (
+                    <ChatVentana
+                        key={chat.id_personal}
+                        contacto={chat}
+                        socket={socketRef.current}
+                        onCerrar={() => cerrarChat(chat.id_personal)}
+                        posicion={idx}
+                        enLinea={conectados.has(chat.id_personal)}
+                        panelAbierto={abierto}
+                    />
+                ))
+            )}
 
             {/* ── Ventanas de chat de grupo flotantes ── */}
             {gruposAbiertos.map((grupo, idx) => (

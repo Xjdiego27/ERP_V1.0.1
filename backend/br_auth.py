@@ -33,15 +33,15 @@ def validar_usuario_br(db: Session, usuario_input: str, password_input: str):
             asignaciones = db.query(AsignacionEmp).filter(
                 AsignacionEmp.ID_ACCS == usuario_db.ID_ACCS
             ).all()
-            for asig in asignaciones:
-                emp = db.query(Empresa).filter(Empresa.ID_EMP == asig.ID_EMP).first()
-                if emp:
-                    empresas_usuario.append({
-                        "id_emp": emp.ID_EMP,
-                        "nombre": emp.NOMBRE,
-                        "logo": emp.LOGO,
-                        "logo_dark": getattr(emp, 'LOGO_DARK', None),
-                    })
+            ids_emp = [a.ID_EMP for a in asignaciones]
+            if ids_emp:
+                empresas = db.query(Empresa).filter(Empresa.ID_EMP.in_(ids_emp)).all()
+                empresas_usuario = [{
+                    "id_emp": emp.ID_EMP,
+                    "nombre": emp.NOMBRE,
+                    "logo": emp.LOGO,
+                    "logo_dark": getattr(emp, 'LOGO_DARK', None),
+                } for emp in empresas]
 
 
         return {

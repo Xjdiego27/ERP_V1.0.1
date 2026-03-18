@@ -5,7 +5,7 @@ from fastapi import APIRouter, Depends, UploadFile, File
 from sqlalchemy.orm import Session
 from mongodb import coleccion_menus
 from auth_token import verificar_token
-from database import get_db, Personal, Acceso
+from database import get_db, Personal
 
 router = APIRouter()
 

@@ -7,9 +7,9 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from pydantic import BaseModel
-from typing import Optional, List
+from typing import Optional
 from database import (
-    get_db, Personal, Contrato, Acceso, Area, Cargo,
+    get_db, Personal, Contrato, Area, Cargo,
     Anexos, TipoDocumentoLab, MotivoDoc
 )
 from auth_token import verificar_token
@@ -77,34 +77,27 @@ def listar_documentos(id_personal: int, db: Session = Depends(get_db), token: di
 
     docs = db.query(Anexos).filter(Anexos.ID_CONTR.in_(ids_contr)).order_by(Anexos.ID_DOCUMENT.desc()).all()
 
-    resultado = []
-    for d in docs:
-        # Tipo de documento
-        tipo = db.query(TipoDocumentoLab).filter(TipoDocumentoLab.ID_TDOCUMENT == d.ID_TDOCUMENT).first() if TipoDocumentoLab and d.ID_TDOCUMENT else None
-        # Motivo
-        motivo = db.query(MotivoDoc).filter(MotivoDoc.ID_TMOTIVO == d.ID_TMOTIVO).first() if MotivoDoc and d.ID_TMOTIVO else None
-        # Area
-        area = db.query(Area).filter(Area.ID_AREA == d.ID_AREA).first() if d.ID_AREA else None
-        # Cargo
-        cargo = db.query(Cargo).filter(Cargo.ID_CARGO == d.ID_CARGO).first() if d.ID_CARGO else None
+    # Pre-cargar catálogos en dicts (evita N+1)
+    tipos_map = {t.ID_TDOCUMENT: t.DESCRIP for t in db.query(TipoDocumentoLab).all()} if TipoDocumentoLab else {}
+    motivos_map = {m.ID_TMOTIVO: m.DESCRIP for m in db.query(MotivoDoc).all()} if MotivoDoc else {}
+    areas_map = {a.ID_AREA: a.DESCRIP for a in db.query(Area).all()}
+    cargos_map = {c.ID_CARGO: c.DESCRIP for c in db.query(Cargo).all()}
 
-        resultado.append({
-            "id": d.ID_DOCUMENT,
-            "id_contr": d.ID_CONTR,
-            "id_tdocument": d.ID_TDOCUMENT,
-            "tipo_documento": tipo.DESCRIP if tipo else None,
-            "id_tmotivo": d.ID_TMOTIVO,
-            "motivo": motivo.DESCRIP if motivo else None,
-            "fecha_inicio": str(d.FECHA_INICIO) if d.FECHA_INICIO else None,
-            "fecha_fin": str(d.FECHA_FIN) if d.FECHA_FIN else None,
-            "sueldo": d.SUELDO,
-            "id_area": d.ID_AREA,
-            "area": area.DESCRIP if area else None,
-            "id_cargo": d.ID_CARGO,
-            "cargo": cargo.DESCRIP if cargo else None,
-        })
-
-    return resultado
+    return [{
+        "id": d.ID_DOCUMENT,
+        "id_contr": d.ID_CONTR,
+        "id_tdocument": d.ID_TDOCUMENT,
+        "tipo_documento": tipos_map.get(d.ID_TDOCUMENT),
+        "id_tmotivo": d.ID_TMOTIVO,
+        "motivo": motivos_map.get(d.ID_TMOTIVO),
+        "fecha_inicio": str(d.FECHA_INICIO) if d.FECHA_INICIO else None,
+        "fecha_fin": str(d.FECHA_FIN) if d.FECHA_FIN else None,
+        "sueldo": d.SUELDO,
+        "id_area": d.ID_AREA,
+        "area": areas_map.get(d.ID_AREA),
+        "id_cargo": d.ID_CARGO,
+        "cargo": cargos_map.get(d.ID_CARGO),
+    } for d in docs]
 
 
 # ─── CREAR DOCUMENTO ───────────────────────────

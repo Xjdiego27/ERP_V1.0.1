@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { API_URL, headersConToken } from '../auth';
+import PermisoService from '../servicios/PermisoService';
 import IconoFa from '../components/IconoFa';
 import PageContent from '../components/PageContent';
 import {
@@ -9,6 +10,10 @@ import {
 import '../styles/GestionPermisos.css';
 
 export default function GestionPermisos() {
+    var sessionData = JSON.parse(localStorage.getItem('session'));
+    var permisos = new PermisoService(sessionData);
+    var esAdmin = permisos.esAdmin;
+
     var [datos, setDatos] = useState(null);         // {roles, submodulos}
     var [usuarios, setUsuarios] = useState([]);
     var [busqueda, setBusqueda] = useState('');
@@ -17,22 +22,35 @@ export default function GestionPermisos() {
     var [mensaje, setMensaje] = useState('');
     var [cambiosPendientes, setCambiosPendientes] = useState({});    // {id_rol: [id_perm, ...]}
     var [cambiosRol, setCambiosRol] = useState({});                  // {id_accs: nuevo_id_rol}
+    var [error, setError] = useState('');
 
     useEffect(function () {
         cargarDatos();
     }, []);
 
     function cargarDatos() {
+        setError('');
         Promise.all([
-            fetch(API_URL + '/permisos/roles', { headers: headersConToken() }).then(function (r) { return r.json(); }),
-            fetch(API_URL + '/permisos/usuarios', { headers: headersConToken() }).then(function (r) { return r.json(); }),
+            fetch(API_URL + '/permisos/roles', { headers: headersConToken() }).then(function (r) {
+                if (!r.ok) throw new Error(r.status === 403 ? 'No tienes permisos de administrador para ver esta sección' : 'Error al cargar roles (' + r.status + ')');
+                return r.json();
+            }),
+            fetch(API_URL + '/permisos/usuarios', { headers: headersConToken() }).then(function (r) {
+                if (!r.ok) throw new Error(r.status === 403 ? 'No tienes permisos de administrador para ver esta sección' : 'Error al cargar usuarios (' + r.status + ')');
+                return r.json();
+            }),
         ]).then(function (res) {
             setDatos(res[0]);
             setUsuarios(Array.isArray(res[1]) ? res[1] : []);
-        }).catch(function () {});
+        }).catch(function (err) {
+            console.error('[Permisos] Error al cargar datos:', err);
+            setError(err.message || 'Error al cargar datos de permisos');
+            setDatos({ roles: [], submodulos: [] });
+        });
     }
 
-    if (!datos) return <PageContent><p>Cargando permisos...</p></PageContent>;
+    if (!datos && !error) return <PageContent><p>Cargando permisos...</p></PageContent>;
+    if (!datos && error) return <PageContent><div className="permisos-mensaje error">{error}</div></PageContent>;
 
     var roles = datos.roles || [];
     var submodulos = datos.submodulos || [];
@@ -227,6 +245,12 @@ export default function GestionPermisos() {
                     </div>
                 )}
 
+                {error && (
+                    <div className="permisos-mensaje error">
+                        {error}
+                    </div>
+                )}
+
                 {/* ══════════════════════════════════════
                     SECCIÓN 1: Matriz Roles × Submódulos
                    ══════════════════════════════════════ */}
@@ -265,6 +289,7 @@ export default function GestionPermisos() {
                                                         className={'check-btn' + (activo ? ' activo' : '')}
                                                         title={activo ? 'Quitar ' + s.nombre : 'Dar ' + s.nombre}
                                                         onClick={function () { togglePermiso(rol, s.id); }}
+                                                        disabled={!esAdmin}
                                                     >
                                                         <IconoFa icono={activo ? faCheck : faTimes} />
                                                     </button>
@@ -272,6 +297,7 @@ export default function GestionPermisos() {
                                             );
                                         })}
                                         <td className="col-acciones">
+                                            {esAdmin ? (
                                             <div className="acciones-grupo">
                                                 <button className="btn-mini btn-todos" onClick={function () { marcarTodos(rol); }}>Todos</button>
                                                 <button className="btn-mini btn-ninguno" onClick={function () { desmarcarTodos(rol); }}>Ninguno</button>
@@ -286,6 +312,9 @@ export default function GestionPermisos() {
                                                     </button>
                                                 )}
                                             </div>
+                                            ) : (
+                                                <span className="sin-cambios">Solo lectura</span>
+                                            )}
                                         </td>
                                     </tr>
                                 );
@@ -356,6 +385,7 @@ export default function GestionPermisos() {
                                                 className={'rol-select' + (cambiado ? ' cambiado' : '')}
                                                 value={rolActualUsuario(u)}
                                                 onChange={function (e) { onCambioRol(u, e.target.value); }}
+                                                disabled={!esAdmin}
                                             >
                                                 {roles.map(function (r) {
                                                     return <option key={r.id_rol} value={r.id_rol}>{r.nombre}</option>;

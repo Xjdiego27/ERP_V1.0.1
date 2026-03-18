@@ -7,7 +7,6 @@ from fastapi import FastAPI, Depends, HTTPException, Request
 from fastapi.responses import JSONResponse
 from sqlalchemy.orm import Session
 from fastapi.middleware.cors import CORSMiddleware
-from dotenv import load_dotenv
 
 from database import get_db, Empresa, Acceso, Personal, RolAccs, AsignacionEmp, settings
 from br_auth import validar_usuario_br
@@ -36,28 +35,23 @@ from rutas_saludos_cumpleanos import router as rutas_saludos_cumpleanos
 from rutas_plantillas import router as rutas_plantillas
 from rutas_saludos_cumpleanos import tarea_limpieza_periodica
 
-load_dotenv()
-
 app = FastAPI()
 
-# Middleware para medir tiempo de respuesta (ms)
+# Middleware unificado: mide tiempo + captura errores 500 (un solo traversal)
 @app.middleware("http")
-async def log_request_time(request: Request, call_next):
+async def unified_middleware(request: Request, call_next):
     start = time.time()
-    response = await call_next(request)
-    ms = (time.time() - start) * 1000
-    response.headers["X-Process-Time-Ms"] = f"{ms:.2f}"
-    print(f"⏱  {request.method} {request.url.path} — {ms:.2f} ms")
-    return response
-
-# Middleware para loguear errores 500
-@app.middleware("http")
-async def log_exceptions(request: Request, call_next):
     try:
         response = await call_next(request)
+        ms = (time.time() - start) * 1000
+        response.headers["X-Process-Time-Ms"] = f"{ms:.2f}"
+        if ms > 200:
+            print(f"⚠️  LENTO {request.method} {request.url.path} — {ms:.2f} ms")
         return response
     except Exception as e:
+        ms = (time.time() - start) * 1000
         traceback.print_exc()
+        print(f"💥 ERROR {request.method} {request.url.path} — {ms:.2f} ms")
         return JSONResponse(status_code=500, content={"detail": str(e)})
 
 # CORS — origenes permitidos desde .env + acceso LAN automatico

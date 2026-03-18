@@ -336,6 +336,7 @@ SALA_GENERAL = 'sala_general'
 coleccion_msg_general = db_mongo["chat_general"]
 coleccion_grupos = db_mongo["chat_grupos"]
 coleccion_msg_grupo = db_mongo["chat_grupo_mensajes"]
+coleccion_notas = db_mongo["chat_notas_personales"]
 
 
 @sio.event
@@ -710,6 +711,113 @@ async def eliminar_grupo(
         raise HTTPException(status_code=403, detail="Solo el creador puede eliminar")
     await coleccion_grupos.delete_one({'_id': ObjectId(grupo_id)})
     await coleccion_msg_grupo.delete_many({'grupo_id': grupo_id})
+    return {'ok': True}
+
+
+# ══════════════════════════════════════════════════════════
+# MI ESPACIO — Notas personales
+# ══════════════════════════════════════════════════════════
+class NotaCrear(BaseModel):
+    contenido: str
+    color: Optional[str] = '#fef9c3'  # amarillo pastel por defecto
+
+
+@fastapi_app.get("/notas")
+async def listar_notas(
+    token: dict = Depends(verificar_token),
+    db=Depends(get_db),
+):
+    """Listar notas personales del usuario."""
+    id_personal, _ = _resolver_id_personal(token)
+    if not id_personal:
+        raise HTTPException(status_code=404, detail="Personal no encontrado")
+
+    cursor = coleccion_notas.find({'usuario_id': id_personal}).sort('fecha', -1)
+    docs = await cursor.to_list(length=200)
+    resultado = []
+    for n in docs:
+        resultado.append({
+            'id': str(n['_id']),
+            'contenido': n['contenido'],
+            'color': n.get('color', '#fef9c3'),
+            'fecha': n['fecha'].isoformat() if n.get('fecha') else '',
+            'editado': n.get('editado', False),
+        })
+    return resultado
+
+
+@fastapi_app.post("/notas")
+async def crear_nota(
+    body: NotaCrear,
+    token: dict = Depends(verificar_token),
+    db=Depends(get_db),
+):
+    """Crear una nota personal."""
+    id_personal, _ = _resolver_id_personal(token)
+    if not id_personal:
+        raise HTTPException(status_code=404, detail="Personal no encontrado")
+
+    doc = {
+        'usuario_id': id_personal,
+        'contenido': body.contenido.strip(),
+        'color': body.color,
+        'fecha': datetime.now(),
+        'editado': False,
+    }
+    resultado = await coleccion_notas.insert_one(doc)
+    return {
+        'ok': True,
+        'nota': {
+            'id': str(resultado.inserted_id),
+            'contenido': doc['contenido'],
+            'color': doc['color'],
+            'fecha': doc['fecha'].isoformat(),
+            'editado': False,
+        }
+    }
+
+
+@fastapi_app.put("/notas/{nota_id}")
+async def editar_nota(
+    nota_id: str,
+    body: NotaCrear,
+    token: dict = Depends(verificar_token),
+    db=Depends(get_db),
+):
+    """Editar una nota existente."""
+    id_personal, _ = _resolver_id_personal(token)
+    if not id_personal:
+        raise HTTPException(status_code=404, detail="Personal no encontrado")
+
+    result = await coleccion_notas.update_one(
+        {'_id': ObjectId(nota_id), 'usuario_id': id_personal},
+        {'$set': {
+            'contenido': body.contenido.strip(),
+            'color': body.color,
+            'editado': True,
+        }}
+    )
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Nota no encontrada")
+    return {'ok': True}
+
+
+@fastapi_app.delete("/notas/{nota_id}")
+async def eliminar_nota(
+    nota_id: str,
+    token: dict = Depends(verificar_token),
+    db=Depends(get_db),
+):
+    """Eliminar una nota personal."""
+    id_personal, _ = _resolver_id_personal(token)
+    if not id_personal:
+        raise HTTPException(status_code=404, detail="Personal no encontrado")
+
+    result = await coleccion_notas.delete_one(
+        {'_id': ObjectId(nota_id), 'usuario_id': id_personal}
+    )
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Nota no encontrada")
     return {'ok': True}
 
 

@@ -1,7 +1,7 @@
 from datetime import datetime, timedelta
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
-from sqlalchemy import extract
+from sqlalchemy import extract, or_, and_
 from database import get_db, Personal, Contrato, Acceso, Horario, HorarioDetalle, Cargo
 try:
     from database import Ticket
@@ -11,6 +11,17 @@ from mongodb import coleccion_menus, coleccion_eventos, coleccion_asistencia, co
 from auth_token import verificar_token
 
 router = APIRouter()
+
+
+def _deduplicar_personal(raw_list):
+    """Deduplica personal por ID_PERSONAL."""
+    vistos = set()
+    resultado = []
+    for p in raw_list:
+        if p.ID_PERSONAL not in vistos:
+            vistos.add(p.ID_PERSONAL)
+            resultado.append(p)
+    return resultado
 
 
 @router.get("/notificaciones")
@@ -65,25 +76,38 @@ async def obtener_notificaciones(db: Session = Depends(get_db), token: dict = De
                       "urgente": dias_restantes <= 2,
                   })
 
-    # ── 2. Cumpleaños de hoy (TODAS las empresas) ──
-    cumples_raw = db.query(Personal).join(
+    # ── 2. Cumpleaños: HOY + próximos 2 días — UNA sola query ──
+    fechas_cumple = [hoy + timedelta(days=d) for d in range(3)]  # hoy, mañana, pasado
+    filtros_cumple = [
+        and_(
+            extract('month', Personal.FECH_NAC) == f.month,
+            extract('day', Personal.FECH_NAC) == f.day,
+        ) for f in fechas_cumple
+    ]
+    cumples_all_raw = db.query(Personal).join(
         Acceso, Acceso.ID_ACCS == Personal.ID_ACCS
     ).join(
         Contrato, Contrato.ID_PERSONAL == Personal.ID_PERSONAL
     ).filter(
         Acceso.ID_ESTADO == 1,
         Contrato.ID_ESTADO_CONTRATO == 1,
-        extract('month', Personal.FECH_NAC) == hoy.month,
-        extract('day', Personal.FECH_NAC) == hoy.day,
+        or_(*filtros_cumple),
     ).all()
 
-    # Deduplicar (un empleado puede tener varios contratos)
-    _vistos = set()
-    cumples = []
-    for _p in cumples_raw:
-        if _p.ID_PERSONAL not in _vistos:
-            _vistos.add(_p.ID_PERSONAL)
-            cumples.append(_p)
+    # Clasificar por día
+    cumples = []       # hoy
+    cumples_prox = {}  # {dias_antes: [personal]}
+    for p in _deduplicar_personal(cumples_all_raw):
+        if not p.FECH_NAC:
+            continue
+        nac = p.FECH_NAC.date() if hasattr(p.FECH_NAC, 'date') else p.FECH_NAC
+        for dias_offset, fecha_obj in enumerate(fechas_cumple):
+            if nac.month == fecha_obj.month and nac.day == fecha_obj.day:
+                if dias_offset == 0:
+                    cumples.append(p)
+                else:
+                    cumples_prox.setdefault(dias_offset, []).append(p)
+                break
 
     for p in cumples:
         items.append({
@@ -94,28 +118,9 @@ async def obtener_notificaciones(db: Session = Depends(get_db), token: dict = De
             "urgente": False,
         })
 
-    # ── 2b. Aviso de cumpleaños próximos (1–2 días antes) — para TODO el personal, TODAS las empresas ──
+    # ── 2b. Aviso de cumpleaños próximos (1–2 días antes) ──
     for dias_antes in [1, 2]:
-        fecha_objetivo = hoy + timedelta(days=dias_antes)
-        cumples_prox_raw = db.query(Personal).join(
-            Acceso, Acceso.ID_ACCS == Personal.ID_ACCS
-        ).join(
-            Contrato, Contrato.ID_PERSONAL == Personal.ID_PERSONAL
-        ).filter(
-            Acceso.ID_ESTADO == 1,
-            Contrato.ID_ESTADO_CONTRATO == 1,
-            extract('month', Personal.FECH_NAC) == fecha_objetivo.month,
-            extract('day', Personal.FECH_NAC) == fecha_objetivo.day,
-        ).all()
-
-        _vistos_prox = set()
-        cumples_prox = []
-        for _pp in cumples_prox_raw:
-            if _pp.ID_PERSONAL not in _vistos_prox:
-                _vistos_prox.add(_pp.ID_PERSONAL)
-                cumples_prox.append(_pp)
-
-        for p in cumples_prox:
+        for p in cumples_prox.get(dias_antes, []):
             if dias_antes == 1:
                 texto = f"¡Mañana es el cumpleaños de {p.NOMBRES} {p.APE_PATERNO}! Prepara tu saludo"
             else:
@@ -263,21 +268,26 @@ async def obtener_notificaciones(db: Session = Depends(get_db), token: dict = De
                 "urgente": abiertos >= 3,
             })
 
-        # Tickets creados hoy
+        # Tickets creados hoy — batch-load creators
         inicio_hoy = datetime.combine(hoy, datetime.min.time())
         nuevos_hoy = db.query(Ticket).filter(
             Ticket.FECH_CREACION >= inicio_hoy
         ).order_by(desc(Ticket.FECH_CREACION)).limit(10).all()
-        for tk in nuevos_hoy:
-            creador = db.query(Personal).filter(Personal.ID_PERSONAL == tk.ID_PERSONAL).first()
-            nombre_c = f"{creador.NOMBRES} {creador.APE_PATERNO}" if creador else "Usuario"
-            pri = getattr(tk, 'PRIORIDAD', 'MEDIA') or 'MEDIA'
-            items.append({
-                "tipo": "ticket_nuevo",
-                "texto": f"Nuevo ticket: {tk.ASUNTO} — {nombre_c} [{pri}]",
-                "icono": "ticket",
-                "urgente": pri in ("ALTA", "URGENTE"),
-            })
+
+        if nuevos_hoy:
+            ids_creadores = {tk.ID_PERSONAL for tk in nuevos_hoy if tk.ID_PERSONAL}
+            creadores = db.query(Personal).filter(Personal.ID_PERSONAL.in_(ids_creadores)).all() if ids_creadores else []
+            creadores_map = {c.ID_PERSONAL: f"{c.NOMBRES} {c.APE_PATERNO}" for c in creadores}
+
+            for tk in nuevos_hoy:
+                nombre_c = creadores_map.get(tk.ID_PERSONAL, "Usuario")
+                pri = getattr(tk, 'PRIORIDAD', 'MEDIA') or 'MEDIA'
+                items.append({
+                    "tipo": "ticket_nuevo",
+                    "texto": f"Nuevo ticket: {tk.ASUNTO} — {nombre_c} [{pri}]",
+                    "icono": "ticket",
+                    "urgente": pri in ("ALTA", "URGENTE"),
+                })
 
         # Tickets asignados hoy (cambio de estado)
         asignados_hoy = db.query(Ticket).filter(

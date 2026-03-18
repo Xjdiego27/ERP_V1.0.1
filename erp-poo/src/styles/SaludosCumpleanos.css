@@ -330,12 +330,39 @@
     align-items: center;
     gap: 8px;
     margin-bottom: 8px;
+    justify-content: space-between;
 }
 
 .saludo-card-nombre {
     font-weight: 700;
     font-size: 0.88rem;
     color: var(--text-primary, #2c3e50);
+}
+
+/* Botón copiar saludo */
+.saludo-copiar-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 4px 10px;
+    border: 1px solid var(--border-color, #d1d5db);
+    border-radius: 6px;
+    background: var(--bg-card, #fff);
+    color: var(--text-secondary, #64748b);
+    font-size: 0.72rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    white-space: nowrap;
+}
+.saludo-copiar-btn:hover {
+    border-color: var(--color-primario, #2563eb);
+    color: var(--color-primario, #2563eb);
+    background: rgba(37, 99, 235, 0.06);
+}
+.saludo-copiar-btn.copiado {
+    border-color: #22c55e;
+    color: #22c55e;
+    background: rgba(34, 197, 94, 0.08);
 }
 
 .saludo-card-mensaje {

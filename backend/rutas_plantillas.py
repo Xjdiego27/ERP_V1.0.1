@@ -6,20 +6,17 @@
 
 import os
 import re
-import copy
-import locale
 from io import BytesIO
 from datetime import datetime
 from fastapi import APIRouter, Depends, HTTPException, Query
 from fastapi.responses import StreamingResponse
 from sqlalchemy.orm import Session
 from pydantic import BaseModel
-from typing import Optional, Dict
+from typing import Dict
 from docx import Document as DocxDocument
-from docx.shared import Pt
 
 from database import (
-    get_db, Personal, Contrato, Area, Cargo, Distrito, Departamento
+    get_db, Personal, Contrato, Distrito
 )
 from auth_token import verificar_token
 

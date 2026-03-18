@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import IconoFa from './IconoFa';
 import StickerPicker from './StickerPicker';
-import { faTimes, faPaperPlane, faCircle, faMinus, faExpand, faFaceSmile, faBolt, faPaperclip } from '@fortawesome/free-solid-svg-icons';
+import { faTimes, faPaperPlane, faCircle, faMinus, faExpand, faFaceSmile, faBolt, faPaperclip, faDownload } from '@fortawesome/free-solid-svg-icons';
 import { CHAT_URL, obtenerToken } from '../auth';
 import { buildStickerToken, parseStickerToken } from '../data/stickerCatalog';
 
@@ -36,7 +36,7 @@ function parpadearTitulo(texto) {
  * ChatVentana — Ventana de chat individual flotante.
  * Se comunica vía Socket.IO (recibido desde ChatPanel).
  */
-export default function ChatVentana({ contacto, socket, onCerrar, posicion, enLinea, panelAbierto }) {
+export default function ChatVentana({ contacto, socket, onCerrar, posicion, enLinea, panelAbierto, modeMobile, onMinimizar }) {
     const [mensajes, setMensajes] = useState([]);
     const [texto, setTexto] = useState('');
     const [cargando, setCargando] = useState(true);
@@ -44,6 +44,7 @@ export default function ChatVentana({ contacto, socket, onCerrar, posicion, enLi
     const [minimizada, setMinimizada] = useState(false);
     const [pickerAbierto, setPickerAbierto] = useState(false);
     const [sacudiendo, setSacudiendo] = useState(false);
+    const [arrastrando, setArrastrando] = useState(false);
     const chatBodyRef = useRef(null);
     const inputRef = useRef(null);
     const escribiendoTimer = useRef(null);
@@ -194,9 +195,8 @@ export default function ChatVentana({ contacto, socket, onCerrar, posicion, enLi
         }]);
     }
 
-    // ── Adjuntar archivo ──
-    async function handleFileUpload(e) {
-        const file = e.target.files?.[0];
+    // ── Subir archivo (reutilizable para input y drag & drop) ──
+    async function subirArchivo(file) {
         if (!file || !socket) return;
         const token = obtenerToken();
         const formData = new FormData();
@@ -225,7 +225,32 @@ export default function ChatVentana({ contacto, socket, onCerrar, posicion, enLi
         } catch (err) {
             console.error('Error al subir archivo:', err);
         }
+    }
+
+    // ── Adjuntar archivo (input file) ──
+    async function handleFileUpload(e) {
+        const file = e.target.files?.[0];
+        await subirArchivo(file);
         e.target.value = '';
+    }
+
+    // ── Drag & Drop ──
+    function handleDragOver(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        setArrastrando(true);
+    }
+    function handleDragLeave(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        setArrastrando(false);
+    }
+    async function handleDrop(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        setArrastrando(false);
+        const file = e.dataTransfer?.files?.[0];
+        if (file) await subirArchivo(file);
     }
 
     // ── Notificar que estoy escribiendo ──
@@ -248,7 +273,28 @@ export default function ChatVentana({ contacto, socket, onCerrar, posicion, enLi
     }
 
     // Posición de la ventana
-    const offsetRight = (panelAbierto ? 400 : 80) + posicion * 330;
+    const offsetRight = modeMobile ? 0 : (panelAbierto ? 400 : 80) + posicion * 330;
+
+    // Clase mobile
+    const clasesMobile = modeMobile ? ' chat-ventana-mobile' : '';
+
+    // ── Descargar archivo al equipo local ──
+    function descargarArchivo(url, nombreArchivo) {
+        fetch(url)
+            .then(function (resp) { return resp.blob(); })
+            .then(function (blob) {
+                var a = document.createElement('a');
+                a.href = URL.createObjectURL(blob);
+                a.download = nombreArchivo || 'archivo';
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(a.href);
+            })
+            .catch(function (err) {
+                console.error('Error al descargar:', err);
+            });
+    }
 
     function renderContenidoMensaje(mensaje) {
         // Archivo adjunto
@@ -260,7 +306,16 @@ export default function ChatVentana({ contacto, socket, onCerrar, posicion, enLi
                         <a href={CHAT_URL + mensaje.archivo_url} target="_blank" rel="noopener noreferrer">
                             <img src={CHAT_URL + mensaje.archivo_url} alt={mensaje.archivo_nombre} className="chat-msg-img-preview" />
                         </a>
-                        <span className="chat-msg-archivo-nombre">{mensaje.archivo_nombre}</span>
+                        <div className="chat-msg-archivo-footer">
+                            <span className="chat-msg-archivo-nombre">{mensaje.archivo_nombre}</span>
+                            <button
+                                className="chat-msg-descargar-btn"
+                                title="Guardar en tu equipo"
+                                onClick={function () { descargarArchivo(CHAT_URL + mensaje.archivo_url, mensaje.archivo_nombre); }}
+                            >
+                                <IconoFa icono={faDownload} /> Guardar
+                            </button>
+                        </div>
                     </div>
                 );
             }
@@ -269,6 +324,13 @@ export default function ChatVentana({ contacto, socket, onCerrar, posicion, enLi
                     <a href={CHAT_URL + mensaje.archivo_url} target="_blank" rel="noopener noreferrer" className="chat-msg-file-link">
                         📎 {mensaje.archivo_nombre}
                     </a>
+                    <button
+                        className="chat-msg-descargar-btn"
+                        title="Guardar en tu equipo"
+                        onClick={function () { descargarArchivo(CHAT_URL + mensaje.archivo_url, mensaje.archivo_nombre); }}
+                    >
+                        <IconoFa icono={faDownload} /> Guardar
+                    </button>
                 </div>
             );
         }
@@ -282,8 +344,8 @@ export default function ChatVentana({ contacto, socket, onCerrar, posicion, enLi
     return (
         <div
             ref={ventanaRef}
-            className={'chat-ventana' + (minimizada ? ' chat-ventana-minimizada' : '') + (sacudiendo ? ' chat-ventana-zumbido' : '')}
-            style={{ right: offsetRight + 'px' }}
+            className={'chat-ventana' + clasesMobile + (minimizada ? ' chat-ventana-minimizada' : '') + (sacudiendo ? ' chat-ventana-zumbido' : '')}
+            style={modeMobile ? {} : { right: offsetRight + 'px' }}
         >
             {/* ── Header de la ventana ── */}
             <div 
@@ -315,7 +377,7 @@ export default function ChatVentana({ contacto, socket, onCerrar, posicion, enLi
                     <button onClick={enviarZumbido} title="Enviar zumbido" className="chat-btn-zumbido-header">
                         <IconoFa icono={faBolt} />
                     </button>
-                    <button onClick={() => setMinimizada(!minimizada)} title={minimizada ? 'Expandir' : 'Minimizar'}>
+                    <button onClick={() => modeMobile && onMinimizar ? onMinimizar() : setMinimizada(!minimizada)} title={minimizada ? 'Expandir' : 'Minimizar'}>
                         <IconoFa icono={minimizada ? faExpand : faMinus} />
                     </button>
                     <button onClick={onCerrar} title="Cerrar">
@@ -327,7 +389,18 @@ export default function ChatVentana({ contacto, socket, onCerrar, posicion, enLi
             {/* ── Cuerpo del chat ── */}
             {!minimizada && (
                 <>
-                    <div className="chat-ventana-body" ref={chatBodyRef}>
+                    <div
+                        className={'chat-ventana-body' + (arrastrando ? ' chat-drop-active' : '')}
+                        ref={chatBodyRef}
+                        onDragOver={handleDragOver}
+                        onDragLeave={handleDragLeave}
+                        onDrop={handleDrop}
+                    >
+                        {arrastrando && (
+                            <div className="chat-drop-overlay">
+                                <span>📁 Suelta el archivo aquí</span>
+                            </div>
+                        )}
                         {cargando ? (
                             <p className="chat-cargando">Cargando mensajes...</p>
                         ) : mensajes.length === 0 ? (

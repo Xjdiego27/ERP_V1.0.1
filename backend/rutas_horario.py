@@ -55,13 +55,20 @@ def listar_horarios(db: Session = Depends(get_db), token: dict = Depends(verific
 
     id_empresa = token.get("id_emp")
     horarios = db.query(Horario).filter(Horario.ID_EMP == id_empresa).order_by(Horario.NOMBRE).all()
+    ids_horario = [h.ID_HORARIO for h in horarios]
+
+    # Batch: cargar TODOS los detalles de una sola vez (evita N+1)
+    todos_detalles = db.query(HorarioDetalle).filter(
+        HorarioDetalle.ID_HORARIO.in_(ids_horario)
+    ).order_by(HorarioDetalle.DIA).all() if ids_horario else []
+
+    from collections import defaultdict
+    detalles_map = defaultdict(list)
+    for d in todos_detalles:
+        detalles_map[d.ID_HORARIO].append(d)
 
     resultado = []
     for h in horarios:
-        detalles = db.query(HorarioDetalle).filter(
-            HorarioDetalle.ID_HORARIO == h.ID_HORARIO
-        ).order_by(HorarioDetalle.DIA).all()
-
         resultado.append({
             "id": h.ID_HORARIO,
             "nombre": h.NOMBRE,
@@ -74,7 +81,7 @@ def listar_horarios(db: Session = Depends(get_db), token: dict = Depends(verific
                 "hora_e": str(d.HORA_E) if d.HORA_E else None,
                 "hora_s": str(d.HORA_S) if d.HORA_S else None,
                 "descanso": bool(getattr(d, "DIA_DESC", 0))
-            } for d in detalles]
+            } for d in detalles_map[h.ID_HORARIO]]
         })
     return resultado
 
@@ -182,19 +189,18 @@ class AsignarMasivo(BaseModel):
 
 @router.put("/horarios/asignar-masivo")
 def asignar_masivo(data: AsignarMasivo, db: Session = Depends(get_db), token: dict = Depends(verificar_token)):
-    """Asigna un mismo horario a varios trabajadores a la vez."""
+    """Asigna un mismo horario a varios trabajadores con un solo UPDATE."""
     if Horario:
         h = db.query(Horario).filter(Horario.ID_HORARIO == data.id_horario).first()
         if not h:
             raise HTTPException(status_code=404, detail="Horario no encontrado")
 
-    count = 0
-    for id_p in data.ids_personal:
-        c = db.query(Contrato).filter(Contrato.ID_PERSONAL == id_p, Contrato.ID_ESTADO_CONTRATO == 1).first()
-        if c:
-            db.execute(text("UPDATE contrato SET ID_HORARIO = :id_h WHERE ID_PERSONAL = :id_p AND ID_ESTADO_CONTRATO = 1"),
-                       {"id_h": data.id_horario, "id_p": id_p})
-            count += 1
+    # Batch UPDATE — una sola sentencia SQL en vez de N queries
+    count = db.execute(
+        text("""UPDATE contrato SET ID_HORARIO = :id_h
+                WHERE ID_PERSONAL IN :ids AND ID_ESTADO_CONTRATO = 1"""),
+        {"id_h": data.id_horario, "ids": tuple(data.ids_personal) if data.ids_personal else (0,)}
+    ).rowcount
 
     db.commit()
     return {"ok": True, "mensaje": f"Horario asignado a {count} trabajador(es)"}

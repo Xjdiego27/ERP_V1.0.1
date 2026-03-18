@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import IconoFa from '../components/IconoFa';
-import { faCakeCandles, faEnvelopeOpenText, faUserClock, faChevronDown, faChevronUp, faGift, faCalendarDay, faHourglassHalf, faCircleCheck } from '@fortawesome/free-solid-svg-icons';
+import { faCakeCandles, faEnvelopeOpenText, faUserClock, faChevronDown, faChevronUp, faGift, faCalendarDay, faHourglassHalf, faCircleCheck, faCopy, faCheck } from '@fortawesome/free-solid-svg-icons';
 import { headersConToken, API_URL } from '../auth';
 import '../styles/SaludosCumpleanos.css';
 
@@ -20,6 +20,14 @@ export default function SaludosCumpleanos() {
     var [totalFaltantes, setTotalFaltantes] = useState(0);
     var [cargando, setCargando] = useState(true);
     var [tab, setTab] = useState('faltantes'); // 'faltantes' | 'saludos'
+    var [copiado, setCopiado] = useState(null); // id del saludo copiado temporalmente
+
+    function copiarSaludo(texto, idx) {
+        navigator.clipboard.writeText(texto).then(function () {
+            setCopiado(idx);
+            setTimeout(function () { setCopiado(null); }, 1500);
+        }).catch(function () {});
+    }
 
     // Cargar cumpleaños activos
     var cargarActivos = useCallback(function () {
@@ -180,6 +188,14 @@ export default function SaludosCumpleanos() {
                                         <div key={i} className="saludo-card">
                                             <div className="saludo-card-header">
                                                 <span className="saludo-card-nombre">{s.nombre}</span>
+                                                <button
+                                                    className={'saludo-copiar-btn' + (copiado === i ? ' copiado' : '')}
+                                                    title="Copiar mensaje"
+                                                    onClick={function () { copiarSaludo(s.nombre + ':\n' + s.mensaje, i); }}
+                                                >
+                                                    <IconoFa icono={copiado === i ? faCheck : faCopy} />
+                                                    <span>{copiado === i ? '¡Copiado!' : 'Copiar'}</span>
+                                                </button>
                                             </div>
                                             <p className="saludo-card-mensaje">{s.mensaje}</p>
                                         </div>

@@ -1,11 +1,9 @@
 # ============================================
 # RUTAS HISTORIAL — Log de subidas desde MongoDB
-# Lee las colecciones "menus" y "eventos" de MongoDB
-# Muestra quién subió, cuándo, qué archivo
-# Ya NO usa las tablas SQL de Menu/Evento
+# Batch-loads Personal names (1 SQL query per endpoint)
 # ============================================
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Query
 from sqlalchemy.orm import Session
 from mongodb import coleccion_menus, coleccion_eventos
 from auth_token import verificar_token
@@ -13,93 +11,77 @@ from database import get_db, Personal
 
 router = APIRouter()
 
+LIMIT_DEFAULT = 200
 
-# === HISTORIAL COMPLETO (menú + evento desde MongoDB) ===
+
+async def _cargar_docs(coleccion, limite: int) -> list:
+    """Lee documentos MongoDB con límite, ordenados por fecha desc."""
+    cursor = coleccion.find().sort("fecha_subida", -1).limit(limite)
+    return await cursor.to_list(length=limite)
+
+
+def _resolver_nombres(db: Session, docs: list) -> dict:
+    """Batch-load Personal por id_accs → {id_accs: 'Nombre Apellido'}."""
+    ids_sin_nombre = {
+        d["id_accs"] for d in docs
+        if not d.get("nombre_usuario") and d.get("id_accs")
+    }
+    if not ids_sin_nombre:
+        return {}
+    personas = db.query(Personal).filter(Personal.ID_ACCS.in_(ids_sin_nombre)).all()
+    return {p.ID_ACCS: f"{p.NOMBRES} {p.APE_PATERNO}" for p in personas}
+
+
+def _serializar(doc, tipo: str, carpeta: str, nombres_map: dict) -> dict:
+    nombre = doc.get("nombre_usuario") or nombres_map.get(doc.get("id_accs"))
+    return {
+        "tipo": tipo,
+        "archivo": doc.get("archivo", ""),
+        "url": f"/assets/{carpeta}/" + doc.get("archivo", ""),
+        "fecha_subida": str(doc.get("fecha_subida", "")),
+        "id_accs": doc.get("id_accs"),
+        "nombre_usuario": nombre,
+    }
+
+
+# === HISTORIAL COMPLETO (menú + evento) — 1 SQL query total ===
 @router.get("/historial")
-async def listar_historial(db: Session = Depends(get_db), token: dict = Depends(verificar_token)):
-    resultado = []
+async def listar_historial(
+    limite: int = Query(LIMIT_DEFAULT, ge=1, le=1000),
+    db: Session = Depends(get_db),
+    token: dict = Depends(verificar_token),
+):
+    menus = await _cargar_docs(coleccion_menus, limite)
+    eventos = await _cargar_docs(coleccion_eventos, limite)
 
-    # --- Registros de Menú desde MongoDB ---
-    cursor_menus = coleccion_menus.find().sort("fecha_subida", -1)
-    async for m in cursor_menus:
-        # Obtener nombre: del documento MongoDB, o buscar en SQL si no existe
-        nombre = m.get("nombre_usuario", None)
-        if not nombre and m.get("id_accs"):
-            personal = db.query(Personal).filter(Personal.ID_ACCS == m["id_accs"]).first()
-            nombre = (personal.NOMBRES + " " + personal.APE_PATERNO) if personal else None
-        resultado.append({
-            "tipo": "menu",
-            "archivo": m.get("archivo", ""),
-            "url": "/assets/menus/" + m.get("archivo", ""),
-            "fecha_subida": str(m.get("fecha_subida", "")),
-            "id_accs": m.get("id_accs", None),
-            "nombre_usuario": nombre,
-        })
+    todos = menus + eventos
+    nombres_map = _resolver_nombres(db, todos)
 
-    # --- Registros de Evento desde MongoDB ---
-    cursor_eventos = coleccion_eventos.find().sort("fecha_subida", -1)
-    async for e in cursor_eventos:
-        # Obtener nombre: del documento MongoDB, o buscar en SQL si no existe
-        nombre = e.get("nombre_usuario", None)
-        if not nombre and e.get("id_accs"):
-            personal = db.query(Personal).filter(Personal.ID_ACCS == e["id_accs"]).first()
-            nombre = (personal.NOMBRES + " " + personal.APE_PATERNO) if personal else None
-        resultado.append({
-            "tipo": "evento",
-            "archivo": e.get("archivo", ""),
-            "url": "/assets/eventos/" + e.get("archivo", ""),
-            "fecha_subida": str(e.get("fecha_subida", "")),
-            "id_accs": e.get("id_accs", None),
-            "nombre_usuario": nombre,
-        })
-
-    # Ordenar todo por fecha (más reciente primero)
+    resultado = [_serializar(m, "menu", "menus", nombres_map) for m in menus]
+    resultado += [_serializar(e, "evento", "eventos", nombres_map) for e in eventos]
     resultado.sort(key=lambda x: x["fecha_subida"] or "", reverse=True)
-
     return resultado
 
 
-# === HISTORIAL SOLO MENÚS (desde MongoDB) ===
+# === HISTORIAL SOLO MENÚS ===
 @router.get("/historial/menus")
-async def historial_menus(db: Session = Depends(get_db), token: dict = Depends(verificar_token)):
-    resultado = []
-
-    cursor = coleccion_menus.find().sort("fecha_subida", -1)
-    async for m in cursor:
-        nombre = m.get("nombre_usuario", None)
-        if not nombre and m.get("id_accs"):
-            personal = db.query(Personal).filter(Personal.ID_ACCS == m["id_accs"]).first()
-            nombre = (personal.NOMBRES + " " + personal.APE_PATERNO) if personal else None
-        resultado.append({
-            "tipo": "menu",
-            "archivo": m.get("archivo", ""),
-            "url": "/assets/menus/" + m.get("archivo", ""),
-            "fecha_subida": str(m.get("fecha_subida", "")),
-            "id_accs": m.get("id_accs", None),
-            "nombre_usuario": nombre,
-        })
-
-    return resultado
+async def historial_menus(
+    limite: int = Query(LIMIT_DEFAULT, ge=1, le=1000),
+    db: Session = Depends(get_db),
+    token: dict = Depends(verificar_token),
+):
+    docs = await _cargar_docs(coleccion_menus, limite)
+    nombres_map = _resolver_nombres(db, docs)
+    return [_serializar(d, "menu", "menus", nombres_map) for d in docs]
 
 
-# === HISTORIAL SOLO EVENTOS (desde MongoDB) ===
+# === HISTORIAL SOLO EVENTOS ===
 @router.get("/historial/eventos")
-async def historial_eventos(db: Session = Depends(get_db), token: dict = Depends(verificar_token)):
-    resultado = []
-
-    cursor = coleccion_eventos.find().sort("fecha_subida", -1)
-    async for e in cursor:
-        nombre = e.get("nombre_usuario", None)
-        if not nombre and e.get("id_accs"):
-            personal = db.query(Personal).filter(Personal.ID_ACCS == e["id_accs"]).first()
-            nombre = (personal.NOMBRES + " " + personal.APE_PATERNO) if personal else None
-        resultado.append({
-            "tipo": "evento",
-            "archivo": e.get("archivo", ""),
-            "url": "/assets/eventos/" + e.get("archivo", ""),
-            "fecha_subida": str(e.get("fecha_subida", "")),
-            "id_accs": e.get("id_accs", None),
-            "nombre_usuario": nombre,
-        })
-
-    return resultado
+async def historial_eventos(
+    limite: int = Query(LIMIT_DEFAULT, ge=1, le=1000),
+    db: Session = Depends(get_db),
+    token: dict = Depends(verificar_token),
+):
+    docs = await _cargar_docs(coleccion_eventos, limite)
+    nombres_map = _resolver_nombres(db, docs)
+    return [_serializar(d, "evento", "eventos", nombres_map) for d in docs]

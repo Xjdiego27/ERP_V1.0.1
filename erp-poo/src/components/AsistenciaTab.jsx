@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 import { faPen, faFloppyDisk, faXmark, faCalendarCheck, faCalendarDays, faClock } from '@fortawesome/free-solid-svg-icons';
 import IconoFa from './IconoFa';
 import { headersConToken, headersAuth, API_URL } from '../auth';
@@ -24,10 +24,8 @@ export default function AsistenciaTab(props) {
   var datosJustif = props.datosJustif;
   var setDatosJustif = props.setDatosJustif;
 
-  // Polling en tiempo real
+  // Última actualización
   var [ultimaAct, setUltimaAct] = useState(null);
-  var pollingRef = useRef(null);
-  var POLLING_INTERVAL = 15000; // 15 segundos
 
   var nombreEmpleado = empleado
     ? (empleado.ape_paterno + ' ' + empleado.ape_materno + ', ' + empleado.nombres)

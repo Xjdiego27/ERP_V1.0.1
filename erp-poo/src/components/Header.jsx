@@ -9,6 +9,10 @@ import { headersAuth, API_URL } from '../auth';
 import UserDropdown from './UserMenu';
 import '../styles/Header.css';
 
+// ── Sonido para notificaciones ──
+const sonidoNotificacion = new Audio('/sounds/msn_notificacion.mp3');
+sonidoNotificacion.volume = 0.5;
+
 export default function Header({ onToggleMenu, onToggleEmpresa }) {
     const { usuario, menuOpen, toggleMenu, closeMenu } = useHeader();
     const [notiOpen, setNotiOpen] = useState(false);
@@ -19,6 +23,7 @@ export default function Header({ onToggleMenu, onToggleEmpresa }) {
     });
     const menuRef = useRef(null);
     const notiRef = useRef(null);
+    const prevNotiTotal = useRef(0);
     const navigate = useNavigate();
 
     useClickAfuera(menuRef, closeMenu);
@@ -54,6 +59,12 @@ export default function Header({ onToggleMenu, onToggleEmpresa }) {
                         return vistas.indexOf(claveNoti(n)) === -1;
                     });
                     setNotiTotal(nuevas.length);
+                    // Reproducir sonido si hay notificaciones nuevas
+                    if (nuevas.length > prevNotiTotal.current && nuevas.length > 0) {
+                        sonidoNotificacion.currentTime = 0;
+                        sonidoNotificacion.play().catch(function () {});
+                    }
+                    prevNotiTotal.current = nuevas.length;
                 }
             })
             .catch(function () {});

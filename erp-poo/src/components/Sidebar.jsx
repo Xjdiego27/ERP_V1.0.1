@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import IconoFa from './IconoFa'; 
 import PermisoService from '../servicios/PermisoService';
-import { faBars, faHouse, faFileLines, faBoxArchive, faUsers, faRightFromBracket, faChevronDown, faChevronRight, faPeopleGroup, faUserTie, faCalendarCheck, faClock, faLaptop, faPlus, faArrowsRotate, faTicket, faListCheck, faShieldHalved, faSimCard, faUserCircle, faCakeCandles } from '@fortawesome/free-solid-svg-icons';
+import { faBars, faHouse, faBoxArchive, faUsers, faRightFromBracket, faChevronDown, faChevronRight, faPeopleGroup, faUserTie, faCalendarCheck, faClock, faLaptop, faPlus, faArrowsRotate, faTicket, faListCheck, faShieldHalved, faSimCard, faUserCircle, faCakeCandles } from '@fortawesome/free-solid-svg-icons';
 import '../styles/Sidebar.css';
 
 export default function Sidebar({ isOpen, onToggleMenu }) {
@@ -74,7 +74,7 @@ export default function Sidebar({ isOpen, onToggleMenu }) {
 
     // ── Cargo del usuario (para módulos específicos por cargo) ──
     var cargoUsuario = (sessionData && sessionData.usuario && sessionData.usuario.cargo) ? sessionData.usuario.cargo.toUpperCase() : '';
-    var esMarketing = cargoUsuario.indexOf('MARKETING') >= 0;
+    var esMarketing = cargoUsuario.indexOf('MARKETING') >= 0 || permisos.esAdmin;
 
     // Wrapper para mantener compatibilidad con el resto del JSX
     function tieneAcceso(clave) { return permisos.tieneAcceso(clave); }

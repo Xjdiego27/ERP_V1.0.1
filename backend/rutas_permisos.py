@@ -24,10 +24,22 @@ def _es_admin(token: dict) -> bool:
     return rol in ("ADMINISTRADOR", "ADMIN")
 
 
+def _puede_ver_permisos(token: dict) -> bool:
+    """ADMIN y SUPERVISOR pueden VER permisos (lectura)."""
+    rol = (token.get("rol") or "").strip().upper()
+    return rol in ("ADMINISTRADOR", "ADMIN", "SUPERVISOR")
+
+
 def _solo_admin(token: dict):
     """Lanza 403 si el usuario no es ADMINISTRADOR."""
     if not _es_admin(token):
         raise HTTPException(status_code=403, detail="Solo ADMINISTRADOR puede gestionar permisos")
+
+
+def _solo_lectura_o_admin(token: dict):
+    """Lanza 403 si el usuario no puede ver permisos (ni ADMIN ni SUPERVISOR)."""
+    if not _puede_ver_permisos(token):
+        raise HTTPException(status_code=403, detail="No tienes permisos para acceder a esta secci\u00f3n")
 
 
 # ── Catálogo: submódulos disponibles ─────────────
@@ -41,7 +53,7 @@ def listar_submodulos(db: Session = Depends(get_db), _: dict = Depends(verificar
 @router.get("/permisos/roles")
 def listar_roles_permisos(db: Session = Depends(get_db), token: dict = Depends(verificar_token)):
     """Todos los roles con sus submódulos asignados + catálogo."""
-    _solo_admin(token)
+    _solo_lectura_o_admin(token)
     return PermisoService(db).obtener_roles_con_permisos()
 
 
@@ -69,7 +81,7 @@ def actualizar_permisos_rol(
 @router.get("/permisos/usuarios")
 def listar_usuarios_permisos(db: Session = Depends(get_db), token: dict = Depends(verificar_token)):
     """Personal de la empresa con permisos derivados del rol (solo lectura)."""
-    _solo_admin(token)
+    _solo_lectura_o_admin(token)
     id_empresa = token.get("id_emp")
     return PermisoService(db).listar_personal_empresa(id_empresa)
 
