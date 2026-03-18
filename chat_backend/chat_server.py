@@ -196,6 +196,10 @@ async def connect(sid, environ, auth):
     # Notificar a todos que este usuario está en línea
     await sio.emit('usuario_conectado', {'id_personal': id_personal})
 
+    # Enviar al recién conectado la lista completa de usuarios en línea
+    ids_conectados = list(usuarios_conectados.keys())
+    await sio.emit('lista_conectados', {'ids': ids_conectados}, to=sid)
+
 
 @sio.event
 async def disconnect(sid):

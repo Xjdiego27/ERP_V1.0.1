@@ -72,6 +72,13 @@ export default function ChatPanel() {
             setConectados(prev => new Set([...prev, data.id_personal]));
         });
 
+        // Lista completa de conectados (recibida al conectarse)
+        socket.on('lista_conectados', (data) => {
+            if (data && data.ids) {
+                setConectados(new Set(data.ids));
+            }
+        });
+
         socket.on('usuario_desconectado', (data) => {
             setConectados(prev => {
                 const next = new Set(prev);
@@ -155,6 +162,25 @@ export default function ChatPanel() {
                 setNoLeidos(data.por_contacto || {});
             })
             .catch(() => {});
+    }, []);
+
+    // ── Sincronizar conectados periódicamente (cada 30s) ──
+    useEffect(() => {
+        const intervalo = setInterval(() => {
+            const token = obtenerToken();
+            if (!token) return;
+            fetch(CHAT_URL + '/conectados', {
+                headers: { 'Authorization': 'Bearer ' + token },
+            })
+                .then(r => r.ok ? r.json() : null)
+                .then(data => {
+                    if (data && data.ids) {
+                        setConectados(new Set(data.ids));
+                    }
+                })
+                .catch(() => {});
+        }, 30000);
+        return () => clearInterval(intervalo);
     }, []);
 
     // ── Cargar grupos ──
