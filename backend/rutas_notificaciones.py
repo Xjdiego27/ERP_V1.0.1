@@ -144,7 +144,7 @@ async def obtener_notificaciones(db: Session = Depends(get_db), token: dict = De
             doc_saludo = await coleccion_saludos_cumple.find_one({
                 "id_personal_cumple": c.ID_PERSONAL,
                 "anio": anio_actual,
-            })
+            }, {"saludos.id_personal": 1})
             ya_saludo = False
             if doc_saludo and doc_saludo.get("saludos"):
                 ya_saludo = any(s["id_personal"] == mi_personal.ID_PERSONAL for s in doc_saludo["saludos"])
@@ -162,7 +162,7 @@ async def obtener_notificaciones(db: Session = Depends(get_db), token: dict = De
 
     menu_hoy = await coleccion_menus.find_one({
         "fecha_subida": {"$gte": inicio_hoy, "$lte": fin_hoy}
-    }, sort=[("fecha_subida", -1)])
+    }, {"_id": 1}, sort=[("fecha_subida", -1)])
 
     if menu_hoy:
         items.append({
@@ -175,9 +175,9 @@ async def obtener_notificaciones(db: Session = Depends(get_db), token: dict = De
     # ── 4. Eventos recientes (hoy — pueden ser varios) ──
     cursor = coleccion_eventos.find({
         "fecha_subida": {"$gte": inicio_hoy, "$lte": fin_hoy}
-    }).sort("fecha_subida", -1)
+    }, {"_id": 1}).sort("fecha_subida", -1).limit(10)
 
-    eventos_hoy = await cursor.to_list(length=50)
+    eventos_hoy = await cursor.to_list(length=10)
     for ev in eventos_hoy:
         items.append({
             "tipo": "evento",
@@ -215,7 +215,7 @@ async def obtener_notificaciones(db: Session = Depends(get_db), token: dict = De
         pins_hoy = set(str(p).strip() for p in marcajes_hoy)
 
         # IDs de personal que tienen justificación hoy en MongoDB
-        justif_hoy_cursor = coleccion_justificaciones.find({"fecha": hoy_str}, {"id_personal": 1})
+        justif_hoy_cursor = coleccion_justificaciones.find({"fecha": hoy_str}, {"id_personal": 1, "_id": 0})
         justif_hoy_list = await justif_hoy_cursor.to_list(length=5000)
         ids_justificados = set(j["id_personal"] for j in justif_hoy_list)
 
@@ -323,7 +323,7 @@ async def obtener_notificaciones(db: Session = Depends(get_db), token: dict = De
             "id_personal": persona_actual.ID_PERSONAL,
             "leido": False,
             "fecha": {"$gte": hace_24h},
-        }).sort("fecha", -1).limit(20)
+        }, {"tipo": 1, "texto": 1}).sort("fecha", -1).limit(20)
         notifs_ticket = await cursor_notif.to_list(length=20)
         for nt in notifs_ticket:
             items.append({

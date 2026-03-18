@@ -295,7 +295,7 @@ def generar_documento(
     nombre_archivo: str,
     data: GenerarDocumentoRequest,
     id_personal: int = Query(...),
-    formato: str = Query('docx', regex='^(docx|pdf)$'),
+    formato: str = Query('docx', pattern='^(docx|pdf)$'),
     db: Session = Depends(get_db),
     token: dict = Depends(verificar_token)
 ):

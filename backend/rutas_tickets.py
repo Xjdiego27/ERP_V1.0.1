@@ -5,7 +5,7 @@
 # Roles: ADMINISTRADOR y SOPORTE ven todos; USUARIO solo los propios.
 # ============================================
 
-from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Form
+from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Form, Query
 from sqlalchemy.orm import Session
 from sqlalchemy import func, case
 from pydantic import BaseModel
@@ -371,7 +371,12 @@ def estadisticas_tickets(db: Session = Depends(get_db), token: dict = Depends(ve
 # ── CRUD Tickets ─────────────────────────────────
 
 @router.get("/tickets")
-def listar_tickets(db: Session = Depends(get_db), token: dict = Depends(verificar_token)):
+def listar_tickets(
+    db: Session = Depends(get_db),
+    token: dict = Depends(verificar_token),
+    limite: int = Query(100, ge=1, le=500, description="Máximo de tickets a retornar"),
+    pagina: int = Query(1, ge=1, description="Página (1-based)"),
+):
     """Admin/Soporte ven todos los tickets de TODAS las empresas; Usuario solo los propios de su empresa."""
     if not Ticket:
         return []
@@ -381,7 +386,6 @@ def listar_tickets(db: Session = Depends(get_db), token: dict = Depends(verifica
     es_ti = _es_ti(token)
 
     if es_ti:
-        # ADMIN/SOPORTE ven tickets de TODAS las empresas
         query = (
             db.query(Ticket)
             .join(Personal, Personal.ID_PERSONAL == Ticket.ID_PERSONAL)
@@ -389,7 +393,6 @@ def listar_tickets(db: Session = Depends(get_db), token: dict = Depends(verifica
             .filter(Contrato.ID_ESTADO_CONTRATO == 1)
         )
     else:
-        # Usuarios normales solo ven sus propios tickets de su empresa
         query = (
             db.query(Ticket)
             .join(Personal, Personal.ID_PERSONAL == Ticket.ID_PERSONAL)
@@ -402,8 +405,128 @@ def listar_tickets(db: Session = Depends(get_db), token: dict = Depends(verifica
             return []
         query = query.filter(Ticket.ID_PERSONAL == persona.ID_PERSONAL)
 
-    tickets = query.order_by(Ticket.FECH_CREACION.desc()).all()
-    return [_serializar_ticket(db, t) for t in tickets]
+    offset = (pagina - 1) * limite
+    tickets = query.order_by(Ticket.FECH_CREACION.desc()).offset(offset).limit(limite).all()
+
+    if not tickets:
+        return []
+
+    # ── Batch-load para eliminar N+1 queries ──
+    ids_personal = {t.ID_PERSONAL for t in tickets if t.ID_PERSONAL}
+    ids_ti = {t.ID_TI for t in tickets if t.ID_TI}
+    ids_cat = {t.ID_CATEGORIA for t in tickets if t.ID_CATEGORIA}
+    ids_subcat = {t.ID_SUBCATEGORIA for t in tickets if t.ID_SUBCATEGORIA}
+
+    # Pre-cargar todas las personas (creadores + técnicos) en 1 sola query
+    todos_ids_persona = ids_personal | ids_ti
+    personas = db.query(Personal).filter(Personal.ID_PERSONAL.in_(todos_ids_persona)).all() if todos_ids_persona else []
+    personas_map = {p.ID_PERSONAL: p for p in personas}
+
+    # Pre-cargar categorías y subcategorías en 1 query cada una
+    cats = db.query(CategoriaTicket).filter(CategoriaTicket.ID_CATEGORIA.in_(ids_cat)).all() if ids_cat and CategoriaTicket else []
+    cats_map = {c.ID_CATEGORIA: c for c in cats}
+
+    subcats = db.query(SubcategoriaTicket).filter(SubcategoriaTicket.ID_SUBCATEGORIA.in_(ids_subcat)).all() if ids_subcat and SubcategoriaTicket else []
+    subcats_map = {s.ID_SUBCATEGORIA: s for s in subcats}
+
+    # Pre-cargar equipos asignados en batch
+    equipos_map = {}
+    if ids_personal and AsignacionEquipo and Equipo:
+        from sqlalchemy import func as sqlfunc
+        # Subquery: última asignación por persona
+        sub = (
+            db.query(
+                AsignacionEquipo.ID_PERSONAL,
+                sqlfunc.max(AsignacionEquipo.ID_ASIG).label("max_asig")
+            )
+            .filter(AsignacionEquipo.ID_PERSONAL.in_(ids_personal))
+            .group_by(AsignacionEquipo.ID_PERSONAL)
+            .subquery()
+        )
+        asigs = (
+            db.query(AsignacionEquipo, Equipo)
+            .join(sub, AsignacionEquipo.ID_ASIG == sub.c.max_asig)
+            .join(Equipo, Equipo.ID_EQUIPO == AsignacionEquipo.ID_EQUIPO)
+            .all()
+        )
+        for asig, eq in asigs:
+            tipo = None
+            if TipoEquipo:
+                t_eq = db.query(TipoEquipo).filter(TipoEquipo.ID_TEQUIPO == eq.ID_TEQUIPO).first()
+                tipo = t_eq.DESCRIP if t_eq else None
+            codigo = ""
+            if EspecificacionesTec and eq.ID_ESPEC:
+                espec = db.query(EspecificacionesTec).filter(EspecificacionesTec.ID_ESPEC == eq.ID_ESPEC).first()
+                codigo = espec.CODIGOE if espec and espec.CODIGOE else ""
+            equipos_map[asig.ID_PERSONAL] = {
+                "id_equipo": eq.ID_EQUIPO,
+                "codigo": codigo,
+                "serie": eq.SERIE_EQUIPO,
+                "tipo": tipo,
+            }
+
+    # Pre-cargar datos SAP en batch (solo si hay tickets SAP)
+    ids_tickets_sap = set()
+    for t in tickets:
+        cat = cats_map.get(t.ID_CATEGORIA)
+        if cat and cat.DESCRIP and cat.DESCRIP.upper() == 'SAP':
+            ids_tickets_sap.add(t.ID_TICKET)
+
+    sap_map = {}
+    if ids_tickets_sap:
+        if SapArticulo:
+            for sa in db.query(SapArticulo).filter(SapArticulo.ID_TICKET.in_(ids_tickets_sap)).all():
+                sap_map[sa.ID_TICKET] = {"tipo": "articulo", "codigo_sap": sa.CODIGO_SAP}
+        if SapServicio:
+            for ss in db.query(SapServicio).filter(SapServicio.ID_TICKET.in_(ids_tickets_sap)).all():
+                if ss.ID_TICKET not in sap_map:
+                    sap_map[ss.ID_TICKET] = {"tipo": "servicio", "codigo_sap": ss.CODIGO_SAP}
+        if SapSocioNegocio:
+            for sn in db.query(SapSocioNegocio).filter(SapSocioNegocio.ID_TICKET.in_(ids_tickets_sap)).all():
+                if sn.ID_TICKET not in sap_map:
+                    sap_map[sn.ID_TICKET] = {"tipo": "socio", "codigo_sap": sn.CODIGO_SAP}
+
+    # ── Serializar usando los mapas pre-cargados ──
+    resultado = []
+    for t in tickets:
+        p = personas_map.get(t.ID_PERSONAL)
+        nombre = f"{p.APE_PATERNO} {p.APE_MATERNO}, {p.NOMBRES}" if p else ""
+        foto_persona = getattr(p, "FOTO", None) if p else None
+
+        cat = cats_map.get(t.ID_CATEGORIA)
+        subcat = subcats_map.get(t.ID_SUBCATEGORIA)
+
+        tec = personas_map.get(t.ID_TI)
+        tecnico_nombre = f"{tec.NOMBRES} {tec.APE_PATERNO}" if tec else None
+
+        es_sap = bool(cat and cat.DESCRIP and cat.DESCRIP.upper() == 'SAP')
+
+        resultado.append({
+            "id_ticket": t.ID_TICKET,
+            "estado": t.ESTADO,
+            "prioridad": t.PRIORIDAD,
+            "asunto": t.ASUNTO,
+            "descripcion": t.DESCRIP,
+            "categoria": cat.DESCRIP if cat else None,
+            "id_categoria": t.ID_CATEGORIA,
+            "subcategoria": subcat.DESCRIP if subcat else None,
+            "id_subcategoria": t.ID_SUBCATEGORIA,
+            "nombre_creador": nombre,
+            "foto_creador": foto_persona,
+            "id_personal": t.ID_PERSONAL,
+            "id_ti": t.ID_TI,
+            "tecnico": tecnico_nombre,
+            "fech_creacion": str(t.FECH_CREACION) if t.FECH_CREACION else None,
+            "fech_cierre": str(t.FECH_CIERRE) if t.FECH_CIERRE else None,
+            "mensaje_ti": t.MENSAJE_TI,
+            "valoracion": t.VALORACION,
+            "foto": t.FOTO,
+            "equipo": equipos_map.get(t.ID_PERSONAL),
+            "es_sap": es_sap,
+            "sap_data": sap_map.get(t.ID_TICKET),
+        })
+
+    return resultado
 
 
 @router.get("/tickets/{id_ticket}")
