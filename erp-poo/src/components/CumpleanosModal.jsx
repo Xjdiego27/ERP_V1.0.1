@@ -1,7 +1,9 @@
 import { useState, useEffect, useCallback } from 'react';
 import IconoFa from './IconoFa';
-import { faCakeCandles, faCalendarDay, faPaperPlane, faCircleCheck } from '@fortawesome/free-solid-svg-icons';
+import StickerPicker from './StickerPicker';
+import { faCakeCandles, faCalendarDay, faPaperPlane, faCircleCheck, faFaceSmile, faTimes } from '@fortawesome/free-solid-svg-icons';
 import { headersConToken, API_URL } from '../auth';
+import { getSession } from '../utils/session';
 import '../styles/SaludosCumpleanos.css';
 
 // ═══════════════════════════════════════════════════════════════════
@@ -18,8 +20,10 @@ export default function CumpleanosModal() {
     var [mensaje, setMensaje] = useState('');
     var [enviando, setEnviando] = useState(false);
     var [enviado, setEnviado] = useState(false);
+    var [stickerSeleccionado, setStickerSeleccionado] = useState(null);
+    var [mostrarStickers, setMostrarStickers] = useState(false);
 
-    var sessionData = JSON.parse(localStorage.getItem('session'));
+    var sessionData = getSession();
     var miIdPersonal = sessionData && sessionData.usuario ? sessionData.usuario.id_personal : null;
 
     var verificarPendiente = useCallback(function () {
@@ -49,13 +53,20 @@ export default function CumpleanosModal() {
         if (!cumpleanero || !mensaje.trim()) return;
         setEnviando(true);
         try {
+            var body = {
+                id_personal_cumple: cumpleanero.id_personal,
+                mensaje: mensaje.trim(),
+            };
+            if (stickerSeleccionado) {
+                // Si es sticker imagen (tiene .img con URL), guardar la URL; si es emoji, guardar el emoji
+                body.sticker = typeof stickerSeleccionado === 'string'
+                    ? stickerSeleccionado
+                    : stickerSeleccionado.img || null;
+            }
             var resp = await fetch(API_URL + '/saludos-cumpleanos/enviar', {
                 method: 'POST',
                 headers: headersConToken(),
-                body: JSON.stringify({
-                    id_personal_cumple: cumpleanero.id_personal,
-                    mensaje: mensaje.trim(),
-                }),
+                body: JSON.stringify(body),
             });
             if (!resp.ok) {
                 var err = await resp.json();
@@ -66,6 +77,8 @@ export default function CumpleanosModal() {
                 setModalVisible(false);
                 setCumpleanero(null);
                 setMensaje('');
+                setStickerSeleccionado(null);
+                setMostrarStickers(false);
                 setEnviado(false);
                 verificarPendiente();
             }, 2000);
@@ -115,7 +128,55 @@ export default function CumpleanosModal() {
                             rows={4}
                             maxLength={500}
                         ></textarea>
-                        <div className="cumple-modal-chars">{mensaje.length}/500</div>
+                        <div className="cumple-modal-textarea-tools">
+                            <div className="cumple-modal-chars">{mensaje.length}/500</div>
+                            <button
+                                type="button"
+                                className={'cumple-modal-sticker-btn' + (mostrarStickers ? ' activo' : '')}
+                                onClick={function () { setMostrarStickers(!mostrarStickers); }}
+                                title="Agregar sticker o emoji"
+                            >
+                                <IconoFa icono={faFaceSmile} />
+                                <span>Sticker</span>
+                            </button>
+                        </div>
+
+                        {/* Sticker seleccionado — preview */}
+                        {stickerSeleccionado && (
+                            <div className="cumple-modal-sticker-preview">
+                                {typeof stickerSeleccionado === 'string' ? (
+                                    <span className="cumple-sticker-emoji">{stickerSeleccionado}</span>
+                                ) : (
+                                    <img src={stickerSeleccionado.img} alt={stickerSeleccionado.label || 'sticker'} />
+                                )}
+                                <button
+                                    type="button"
+                                    className="cumple-sticker-quitar"
+                                    onClick={function () { setStickerSeleccionado(null); }}
+                                    title="Quitar sticker"
+                                >
+                                    <IconoFa icono={faTimes} />
+                                </button>
+                            </div>
+                        )}
+
+                        {/* StickerPicker flotante */}
+                        {mostrarStickers && (
+                            <div className="cumple-modal-sticker-picker">
+                                <StickerPicker
+                                    onSelectSticker={function (stk) {
+                                        setStickerSeleccionado(stk);
+                                        setMostrarStickers(false);
+                                    }}
+                                    onSelectEmoji={function (emoji) {
+                                        setStickerSeleccionado(emoji);
+                                        setMostrarStickers(false);
+                                    }}
+                                    onClose={function () { setMostrarStickers(false); }}
+                                />
+                            </div>
+                        )}
+
                         <button
                             className="cumple-modal-btn-enviar"
                             onClick={enviarSaludo}

@@ -15,9 +15,10 @@ from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
 from sqlalchemy import extract, or_, and_
-from database import get_db, Personal, Contrato, Acceso
+from database import get_db, Personal
 from mongodb import coleccion_saludos_cumple, coleccion_archivo_saludos
 from auth_token import verificar_token
+from helpers import empleados_activos_query, empleados_activos_unicos
 
 router = APIRouter(prefix="/saludos-cumpleanos", tags=["Saludos Cumpleaños"])
 
@@ -25,8 +26,8 @@ router = APIRouter(prefix="/saludos-cumpleanos", tags=["Saludos Cumpleaños"])
 # ── Schema ──────────────────────────
 class SaludoRequest(BaseModel):
     id_personal_cumple: int
-    mensaje: str
-
+    mensaje: str    
+    sticker: str | None = None  # URL o emoji del sticker adjunto
 
 # ── Helpers ─────────────────────────
 def _cumpleaneros_proximos(db):
@@ -47,14 +48,8 @@ def _cumpleaneros_proximos(db):
         )
 
     rows = (
-        db.query(Personal)
-        .join(Acceso, Acceso.ID_ACCS == Personal.ID_ACCS)
-        .join(Contrato, Contrato.ID_PERSONAL == Personal.ID_PERSONAL)
-        .filter(
-            Acceso.ID_ESTADO == 1,
-            Contrato.ID_ESTADO_CONTRATO == 1,
-            or_(*filtros_fecha),
-        )
+        empleados_activos_query(db)
+        .filter(or_(*filtros_fecha))
         .all()
     )
     # Deduplicar y calcular días restantes
@@ -65,9 +60,13 @@ def _cumpleaneros_proximos(db):
             continue
         vistos.add(p.ID_PERSONAL)
         # Calcular cuántos días faltan para su cumpleaños
-        cumple_este_anio = p.FECH_NAC.replace(year=hoy.year)
+        # Protección Feb 29: si nacido el 29/feb y este año no es bisiesto → usar 28/feb
+        try:
+            cumple_este_anio = p.FECH_NAC.replace(year=hoy.year)
+        except ValueError:
+            cumple_este_anio = p.FECH_NAC.replace(year=hoy.year, day=28)
         if hasattr(cumple_este_anio, 'date'):
-            cumple_este_anio = cumple_este_anio.date() if hasattr(cumple_este_anio, 'date') else cumple_este_anio
+            cumple_este_anio = cumple_este_anio.date()
         dias_para = (cumple_este_anio - hoy).days
         resultado.append((p, dias_para))
     return resultado
@@ -75,23 +74,7 @@ def _cumpleaneros_proximos(db):
 
 def _todo_el_personal(db):
     """Retorna TODOS los empleados activos de TODAS las empresas (sin duplicados)."""
-    rows = (
-        db.query(Personal)
-        .join(Acceso, Acceso.ID_ACCS == Personal.ID_ACCS)
-        .join(Contrato, Contrato.ID_PERSONAL == Personal.ID_PERSONAL)
-        .filter(
-            Acceso.ID_ESTADO == 1,
-            Contrato.ID_ESTADO_CONTRATO == 1,
-        )
-        .all()
-    )
-    vistos = set()
-    unicos = []
-    for p in rows:
-        if p.ID_PERSONAL not in vistos:
-            vistos.add(p.ID_PERSONAL)
-            unicos.append(p)
-    return unicos
+    return empleados_activos_unicos(db)
 
 
 # ═════════════════════════════════════════════════════════════
@@ -184,6 +167,7 @@ async def enviar_saludo(
         "id_personal": mi_id,
         "nombre": f"{personal.NOMBRES} {personal.APE_PATERNO} {personal.APE_MATERNO}",
         "mensaje": datos.mensaje.strip(),
+        "sticker": datos.sticker or None,
         "fecha_envio": hoy,
     }
 
@@ -278,6 +262,7 @@ async def recopilado_saludos(
                 "nombre": s["nombre"],
                 "mensaje": s["mensaje"],
                 "fecha_envio": str(s.get("fecha_envio", "")),
+                "sticker": s.get("sticker"),
             }
             for s in (doc.get("saludos") or [])
         ],

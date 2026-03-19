@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
+import { getSession } from '../utils/session';
 import { API_URL, headersConToken } from '../auth';
 import IconoFa from '../components/IconoFa';
 import { faEye, faEyeSlash, faCheck, faXmark, faLock } from '@fortawesome/free-solid-svg-icons';
@@ -63,7 +64,7 @@ export default function CambioPassword({ onCambiado }) {
             if (result.ok) {
                 setExito(true);
                 setMensaje('¡Contraseña actualizada correctamente!');
-                var session = JSON.parse(localStorage.getItem('session'));
+                var session = getSession();
                 if (session) {
                     delete session.requiere_cambio_password;
                     localStorage.setItem('session', JSON.stringify(session));

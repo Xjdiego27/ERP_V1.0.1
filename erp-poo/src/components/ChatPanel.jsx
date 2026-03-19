@@ -2,12 +2,12 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import { io } from 'socket.io-client';
 import IconoFa from './IconoFa';
 import ChatVentana from './ChatVentana';
-import ChatGeneral from './ChatGeneral';
-import ChatGrupo from './ChatGrupo';
+import ChatSala from './ChatSala';
 import CrearGrupoModal from './CrearGrupoModal';
 import MiEspacio from './MiEspacio';
-import { faComments, faSearch, faTimes, faCircle, faMinus, faGlobe, faUsers, faPlus, faStickyNote } from '@fortawesome/free-solid-svg-icons';
+import { faComments, faSearch, faTimes, faCircle, faMinus, faGlobe, faUsers, faPlus, faStickyNote, faTrash } from '@fortawesome/free-solid-svg-icons';
 import { CHAT_URL, obtenerToken } from '../auth';
+import { getSession } from '../utils/session';
 import '../styles/Chat.css';
 
 // Sonido de notificación MSN para mensajes cuando chat no está abierto
@@ -244,6 +244,26 @@ export default function ChatPanel() {
         setGruposAbiertos(prev => prev.filter(g => g.id !== grupoId));
     }
 
+    // ── Eliminar grupo ──
+    async function eliminarGrupo(grupoId, e) {
+        e.stopPropagation();
+        if (!window.confirm('¿Estás seguro de eliminar este grupo? Se perderán todos los mensajes.')) return;
+        const token = obtenerToken();
+        if (!token) return;
+        try {
+            const resp = await fetch(CHAT_URL + '/grupos/' + grupoId, {
+                method: 'DELETE',
+                headers: { 'Authorization': 'Bearer ' + token },
+            });
+            if (resp.ok) {
+                cerrarGrupo(grupoId);
+                cargarGrupos();
+            }
+        } catch (err) {
+            console.error('Error al eliminar grupo:', err);
+        }
+    }
+
     // ── Crear grupo ──
     async function handleCrearGrupo(nombre, miembros) {
         const token = obtenerToken();
@@ -270,7 +290,7 @@ export default function ChatPanel() {
     }
 
     // ── Filtrar contactos ──
-    const session = JSON.parse(localStorage.getItem('session'));
+    const session = getSession();
     const miIdPersonal = session?.usuario?.id_personal;
     const contactosFiltrados = contactos.filter(c => {
         if (c.id_personal === miIdPersonal) return false;
@@ -466,6 +486,15 @@ export default function ChatPanel() {
                                             <span className="chat-contacto-nombre">{g.nombre}</span>
                                             <span className="chat-contacto-cargo">{g.miembros.length} miembros</span>
                                         </div>
+                                        {g.creador_id === miIdPersonal && (
+                                            <button
+                                                className="chat-grupo-eliminar-btn"
+                                                title="Eliminar grupo"
+                                                onClick={(e) => eliminarGrupo(g.id, e)}
+                                            >
+                                                <IconoFa icono={faTrash} />
+                                            </button>
+                                        )}
                                     </div>
                                 ))
                             )}
@@ -476,7 +505,8 @@ export default function ChatPanel() {
 
             {/* ── Chat General flotante ── */}
             {chatGeneralAbierto && (
-                <ChatGeneral
+                <ChatSala
+                    tipo="general"
                     socket={socketRef.current}
                     onCerrar={() => setChatGeneralAbierto(false)}
                     panelAbierto={abierto}
@@ -564,8 +594,9 @@ export default function ChatPanel() {
 
             {/* ── Ventanas de chat de grupo flotantes ── */}
             {gruposAbiertos.map((grupo, idx) => (
-                <ChatGrupo
+                <ChatSala
                     key={grupo.id}
+                    tipo="grupo"
                     grupo={grupo}
                     socket={socketRef.current}
                     onCerrar={() => cerrarGrupo(grupo.id)}

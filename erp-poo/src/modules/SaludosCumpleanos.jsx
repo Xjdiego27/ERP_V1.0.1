@@ -1,8 +1,75 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef, memo } from 'react';
 import IconoFa from '../components/IconoFa';
 import { faCakeCandles, faEnvelopeOpenText, faUserClock, faChevronDown, faChevronUp, faGift, faCalendarDay, faHourglassHalf, faCircleCheck, faCopy, faCheck } from '@fortawesome/free-solid-svg-icons';
 import { headersConToken, API_URL } from '../auth';
 import '../styles/SaludosCumpleanos.css';
+
+// ─── Sub-componente memoizado: Tarjeta de saludo ─────────────
+var SaludoCard = memo(function SaludoCard(props) {
+    var s = props.saludo;
+    var i = props.indice;
+    var copiado = props.copiado;
+    var onCopiar = props.onCopiar;
+
+    var stickerTexto = '';
+    if (s.sticker) {
+        var esEmojiCopy = typeof s.sticker === 'string' && !s.sticker.startsWith('/');
+        stickerTexto = esEmojiCopy ? '\n' + s.sticker : '';
+    }
+    var textoParaCopiar = s.nombre + ':\n' + s.mensaje + stickerTexto;
+    var esEmoji = s.sticker && typeof s.sticker === 'string' && !s.sticker.startsWith('/');
+
+    return (
+        <div className="saludo-card">
+            <div className="saludo-card-header">
+                <span className="saludo-card-nombre">{s.nombre}</span>
+                <button
+                    className={'saludo-copiar-btn' + (copiado === i ? ' copiado' : '')}
+                    title="Copiar mensaje"
+                    onClick={function () { onCopiar(textoParaCopiar, i); }}
+                >
+                    <IconoFa icono={copiado === i ? faCheck : faCopy} />
+                    <span>{copiado === i ? '¡Copiado!' : 'Copiar'}</span>
+                </button>
+            </div>
+            <p className="saludo-card-mensaje">{s.mensaje}</p>
+            {s.sticker && (
+                <div className="saludo-card-sticker">
+                    {esEmoji
+                        ? <span className="saludo-card-sticker-emoji">{s.sticker}</span>
+                        : <img src={typeof s.sticker === 'object' ? s.sticker.img : s.sticker} alt="sticker" className="saludo-card-sticker-img" />
+                    }
+                </div>
+            )}
+        </div>
+    );
+});
+
+// ─── Sub-componente memoizado: Lista de faltantes ────────────
+var FaltantesLista = memo(function FaltantesLista(props) {
+    var faltantes = props.faltantes;
+    if (faltantes.length === 0) {
+        return (
+            <div className="saludos-faltantes-lista">
+                <div className="saludos-grid-vacio">
+                    <p><IconoFa icono={faCircleCheck} /> ¡Todos ya enviaron su saludo!</p>
+                </div>
+            </div>
+        );
+    }
+    return (
+        <div className="saludos-faltantes-lista">
+            {faltantes.map(function (f, i) {
+                return (
+                    <div key={i} className="faltante-item">
+                        <div className="faltante-icono"><IconoFa icono={faHourglassHalf} /></div>
+                        <span className="faltante-nombre">{f.nombre}</span>
+                    </div>
+                );
+            })}
+        </div>
+    );
+});
 
 // ═══════════════════════════════════════════════════════════════════
 // SaludosCumpleanos — Módulo para Marketing
@@ -22,6 +89,12 @@ export default function SaludosCumpleanos() {
     var [tab, setTab] = useState('faltantes'); // 'faltantes' | 'saludos'
     var [copiado, setCopiado] = useState(null); // id del saludo copiado temporalmente
 
+    // Refs para evitar actualizaciones innecesarias de estado
+    var prevActivosRef = useRef(null);
+    var prevSaludosRef = useRef(null);
+    var prevFaltantesRef = useRef(null);
+    var cargaInicialRef = useRef(true);
+
     function copiarSaludo(texto, idx) {
         navigator.clipboard.writeText(texto).then(function () {
             setCopiado(idx);
@@ -31,19 +104,29 @@ export default function SaludosCumpleanos() {
 
     // Cargar cumpleaños activos
     var cargarActivos = useCallback(function () {
-        setCargando(true);
+        // Solo mostrar "cargando" en la primera carga
+        if (cargaInicialRef.current) setCargando(true);
         fetch(API_URL + '/saludos-cumpleanos/activos', { headers: headersConToken() })
             .then(function (r) { return r.json(); })
             .then(function (data) {
                 if (Array.isArray(data)) {
-                    setCumpleActivos(data);
-                    if (data.length > 0 && !seleccionado) {
-                        setSeleccionado(data[0]);
+                    var nuevoJSON = JSON.stringify(data);
+                    if (nuevoJSON !== prevActivosRef.current) {
+                        prevActivosRef.current = nuevoJSON;
+                        setCumpleActivos(data);
+                        if (data.length > 0 && !seleccionado) {
+                            setSeleccionado(data[0]);
+                        }
                     }
                 }
             })
             .catch(function () {})
-            .finally(function () { setCargando(false); });
+            .finally(function () {
+                if (cargaInicialRef.current) {
+                    setCargando(false);
+                    cargaInicialRef.current = false;
+                }
+            });
     }, []);
 
     // Cargar saludos y faltantes del seleccionado
@@ -57,21 +140,31 @@ export default function SaludosCumpleanos() {
         ]).then(function (resultados) {
             var recopilado = resultados[0];
             var faltantesData = resultados[1];
-            setSaludos(recopilado.saludos || []);
-            setFaltantes(faltantesData.faltantes || []);
-            setTotalFaltantes(faltantesData.total || 0);
+
+            var saludosJSON = JSON.stringify(recopilado.saludos || []);
+            if (saludosJSON !== prevSaludosRef.current) {
+                prevSaludosRef.current = saludosJSON;
+                setSaludos(recopilado.saludos || []);
+            }
+
+            var faltantesJSON = JSON.stringify(faltantesData.faltantes || []);
+            if (faltantesJSON !== prevFaltantesRef.current) {
+                prevFaltantesRef.current = faltantesJSON;
+                setFaltantes(faltantesData.faltantes || []);
+                setTotalFaltantes(faltantesData.total || 0);
+            }
         }).catch(function () {});
     }, [seleccionado]);
 
     useEffect(function () { cargarActivos(); }, [cargarActivos]);
     useEffect(function () { cargarDetalle(); }, [cargarDetalle]);
 
-    // Auto-refresh cada 15 segundos
+    // Auto-refresh cada 45 segundos (silencioso, sin flicker)
     useEffect(function () {
         var intervalo = setInterval(function () {
             cargarActivos();
             cargarDetalle();
-        }, 15000);
+        }, 45000);
         return function () { clearInterval(intervalo); };
     }, [cargarActivos, cargarDetalle]);
 
@@ -156,22 +249,7 @@ export default function SaludosCumpleanos() {
 
                     {/* Contenido de faltantes (tab principal) */}
                     {tab === 'faltantes' && (
-                        <div className="saludos-faltantes-lista">
-                            {faltantes.length === 0 ? (
-                                <div className="saludos-grid-vacio">
-                                    <p><IconoFa icono={faCircleCheck} /> ¡Todos ya enviaron su saludo!</p>
-                                </div>
-                            ) : (
-                                faltantes.map(function (f, i) {
-                                    return (
-                                        <div key={i} className="faltante-item">
-                                            <div className="faltante-icono"><IconoFa icono={faHourglassHalf} /></div>
-                                            <span className="faltante-nombre">{f.nombre}</span>
-                                        </div>
-                                    );
-                                })
-                            )}
-                        </div>
+                        <FaltantesLista faltantes={faltantes} />
                     )}
 
                     {/* Contenido de saludos recibidos */}
@@ -185,20 +263,13 @@ export default function SaludosCumpleanos() {
                             ) : (
                                 saludos.map(function (s, i) {
                                     return (
-                                        <div key={i} className="saludo-card">
-                                            <div className="saludo-card-header">
-                                                <span className="saludo-card-nombre">{s.nombre}</span>
-                                                <button
-                                                    className={'saludo-copiar-btn' + (copiado === i ? ' copiado' : '')}
-                                                    title="Copiar mensaje"
-                                                    onClick={function () { copiarSaludo(s.nombre + ':\n' + s.mensaje, i); }}
-                                                >
-                                                    <IconoFa icono={copiado === i ? faCheck : faCopy} />
-                                                    <span>{copiado === i ? '¡Copiado!' : 'Copiar'}</span>
-                                                </button>
-                                            </div>
-                                            <p className="saludo-card-mensaje">{s.mensaje}</p>
-                                        </div>
+                                        <SaludoCard
+                                            key={i}
+                                            saludo={s}
+                                            indice={i}
+                                            copiado={copiado}
+                                            onCopiar={copiarSaludo}
+                                        />
                                     );
                                 })
                             )}

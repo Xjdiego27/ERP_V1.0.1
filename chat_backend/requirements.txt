@@ -7,4 +7,3 @@ sqlalchemy
 pymysql
 motor
 python-multipart
-aiofiles

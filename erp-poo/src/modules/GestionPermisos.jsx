@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { API_URL, headersConToken } from '../auth';
+import { getSession } from '../utils/session';
 import PermisoService from '../servicios/PermisoService';
 import IconoFa from '../components/IconoFa';
 import PageContent from '../components/PageContent';
@@ -10,7 +11,7 @@ import {
 import '../styles/GestionPermisos.css';
 
 export default function GestionPermisos() {
-    var sessionData = JSON.parse(localStorage.getItem('session'));
+    var sessionData = getSession();
     var permisos = new PermisoService(sessionData);
     var esAdmin = permisos.esAdmin;
 

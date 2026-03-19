@@ -18,8 +18,12 @@ export default function ValoracionModal() {
     var [motivoReabrir, setMotivoReabrir] = useState('');
     var [mostrarMotivo, setMostrarMotivo] = useState(false);
 
-    var sessionData = JSON.parse(localStorage.getItem('session'));
-    var miIdPersonal = sessionData && sessionData.usuario ? sessionData.usuario.id_personal : null;
+    var miIdPersonal = (function () {
+        try {
+            var s = JSON.parse(localStorage.getItem('session'));
+            return s && s.usuario ? s.usuario.id_personal : null;
+        } catch (_) { return null; }
+    })();
 
     var verificarPendientes = useCallback(function () {
         if (!miIdPersonal) return;
@@ -45,10 +49,10 @@ export default function ValoracionModal() {
             .catch(function () {});
     }, [miIdPersonal]);
 
-    // Verificar al montar y cada 5 segundos
+    // Verificar al montar y cada 30 segundos
     useEffect(function () {
         verificarPendientes();
-        var intervalo = setInterval(verificarPendientes, 5000);
+        var intervalo = setInterval(verificarPendientes, 30000);
         return function () { clearInterval(intervalo); };
     }, [verificarPendientes]);
 

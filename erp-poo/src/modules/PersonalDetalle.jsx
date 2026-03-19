@@ -62,6 +62,7 @@ export default function PersonalDetalle() {
     id_tipocontr: '1', id_modalidad: '', sueldo: '', asig_fam: 0,
     fech_ingr: '', fech_cese: '',
     id_estcivil: '', id_acadm: '', id_distr: '',
+    depart_y_provinc: '',
   });
 
   // Cargar catálogos + empleado (Promise.all para llamadas independientes)
@@ -178,6 +179,7 @@ export default function PersonalDetalle() {
       fech_ingr: empleado.fech_ingreso || '', fech_cese: empleado.fech_cese || '',
       id_estcivil: empleado.id_estcivil || '', id_acadm: empleado.id_acadm || '',
       id_distr: empleado.id_distr || '',
+      depart_y_provinc: empleado.depart_y_provinc || '',
     });
     // Cargar contactos al estado editable
     var ctsList = empleado.contactos ? empleado.contactos.map(function (c) {
@@ -216,6 +218,7 @@ export default function PersonalDetalle() {
     if (!datosLimpios.email) datosLimpios.email = null;
     if (!datosLimpios.celular) datosLimpios.celular = null;
     if (!datosLimpios.direccion) datosLimpios.direccion = null;
+    if (!datosLimpios.depart_y_provinc) datosLimpios.depart_y_provinc = null;
     if (!datosLimpios.sueldo) datosLimpios.sueldo = null;
     if (!datosLimpios.fech_ingr) datosLimpios.fech_ingr = null;
     if (!datosLimpios.fech_cese) datosLimpios.fech_cese = null;
@@ -569,11 +572,19 @@ export default function PersonalDetalle() {
                     </div>
                   </div>
 
+                  {/* Depart. y Provincia */}
+                  <div className="det-fila">
+                    <div className="det-campo">
+                      <label className="det-label">Departamento y Provincia</label>
+                      <span className="det-valor">{empleado.depart_y_provinc || '—'}</span>
+                    </div>
+                  </div>
+
                   {/* Contactos de emergencia */}
                   <div className="det-contactos">
                     <label className="det-label">Contactos de Emergencia</label>
                     {empleado.contactos && empleado.contactos.length > 0 ? (
-                      <ul className="det-contactos-lista">
+                      <ul className="det-contactos-lista det-contactos-scroll">
                         {empleado.contactos.map(function (c, i) {
                           return <li key={i}><strong>{c.tipo_familiar || 'OTRO'}</strong> — {c.nombre} — {c.celular}</li>;
                         })}
@@ -782,48 +793,60 @@ export default function PersonalDetalle() {
                     </div>
                   </div>
 
+                  {/* Depart. y Provincia */}
+                  <div className="det-fila">
+                    <div className="det-campo">
+                      <label className="det-label">Departamento y Provincia</label>
+                      <input className="det-input" value={datos.depart_y_provinc}
+                        placeholder="Ej: Lima - Lima"
+                        onChange={function (e) { cambiarCampo('depart_y_provinc', e.target.value); }} />
+                    </div>
+                  </div>
+
                   {/* Contactos de emergencia — EDITABLES */}
                   <div className="det-contactos">
                     <label className="det-label">Contactos de Emergencia</label>
-                    {contactos.map(function (c, i) {
-                      return (
-                        <div className="det-contacto-fila" key={i}>
-                          <select className="det-select det-contacto-tipo" value={c.id_tipfam || ''}
-                            onChange={function (e) {
-                              var copia = contactos.slice();
-                              copia[i] = Object.assign({}, copia[i], { id_tipfam: e.target.value });
-                              setContactos(copia);
-                            }}>
-                            <option value="">-- Parentesco --</option>
-                            {tiposFamiliar.map(function (t) {
-                              return <option key={t.id} value={t.id}>{t.nombre}</option>;
-                            })}
-                          </select>
-                          <input className="det-input det-contacto-nombre" placeholder="Nombre"
-                            value={c.nombre}
-                            onChange={function (e) {
-                              var copia = contactos.slice();
-                              copia[i] = Object.assign({}, copia[i], { nombre: e.target.value });
-                              setContactos(copia);
-                            }} />
-                          <input className="det-input det-contacto-cel" placeholder="Celular"
-                            value={c.celular}
-                            onChange={function (e) {
-                              var copia = contactos.slice();
-                              copia[i] = Object.assign({}, copia[i], { celular: e.target.value });
-                              setContactos(copia);
-                            }} />
-                          <button className="det-btn det-btn-quitar" type="button"
-                            onClick={function () {
-                              var copia = contactos.slice();
-                              copia.splice(i, 1);
-                              setContactos(copia);
-                            }}>
-                            <IconoFa icono={faTrash} />
-                          </button>
-                        </div>
-                      );
-                    })}
+                    <div className="det-contactos-scroll">
+                      {contactos.map(function (c, i) {
+                        return (
+                          <div className="det-contacto-fila" key={i}>
+                            <select className="det-select det-contacto-tipo" value={c.id_tipfam || ''}
+                              onChange={function (e) {
+                                var copia = contactos.slice();
+                                copia[i] = Object.assign({}, copia[i], { id_tipfam: e.target.value });
+                                setContactos(copia);
+                              }}>
+                              <option value="">-- Parentesco --</option>
+                              {tiposFamiliar.map(function (t) {
+                                return <option key={t.id} value={t.id}>{t.nombre}</option>;
+                              })}
+                            </select>
+                            <input className="det-input det-contacto-nombre" placeholder="Nombre"
+                              value={c.nombre}
+                              onChange={function (e) {
+                                var copia = contactos.slice();
+                                copia[i] = Object.assign({}, copia[i], { nombre: e.target.value });
+                                setContactos(copia);
+                              }} />
+                            <input className="det-input det-contacto-cel" placeholder="Celular"
+                              value={c.celular}
+                              onChange={function (e) {
+                                var copia = contactos.slice();
+                                copia[i] = Object.assign({}, copia[i], { celular: e.target.value });
+                                setContactos(copia);
+                              }} />
+                            <button className="det-btn det-btn-quitar" type="button"
+                              onClick={function () {
+                                var copia = contactos.slice();
+                                copia.splice(i, 1);
+                                setContactos(copia);
+                              }}>
+                              <IconoFa icono={faTrash} />
+                            </button>
+                          </div>
+                        );
+                      })}
+                    </div>
                     <button className="det-btn det-btn-agregar-contacto" type="button"
                       onClick={function () { setContactos(contactos.concat([{ nombre: '', celular: '', id_tipfam: '' }])); }}>
                       <IconoFa icono={faPlus} /> Agregar contacto

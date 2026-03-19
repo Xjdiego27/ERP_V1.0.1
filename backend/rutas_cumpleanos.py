@@ -2,8 +2,9 @@ from datetime import datetime
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 from sqlalchemy import extract
-from database import get_db, Personal, Contrato, Acceso
+from database import get_db, Personal
 from auth_token import verificar_token
+from helpers import empleados_activos_query
 
 router = APIRouter()
 
@@ -15,13 +16,7 @@ router = APIRouter()
 async def cumpleanos_mes(db: Session = Depends(get_db), token: dict = Depends(verificar_token)):
     mes_actual = datetime.now().month
 
-    lista = db.query(Personal).join(
-        Acceso, Acceso.ID_ACCS == Personal.ID_ACCS
-    ).join(
-        Contrato, Contrato.ID_PERSONAL == Personal.ID_PERSONAL
-    ).filter(
-        Acceso.ID_ESTADO == 1,
-        Contrato.ID_ESTADO_CONTRATO == 1,
+    lista = empleados_activos_query(db).filter(
         extract('month', Personal.FECH_NAC) == mes_actual
     ).all()
 

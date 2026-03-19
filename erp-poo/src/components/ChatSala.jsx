@@ -1,17 +1,27 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import IconoFa from './IconoFa';
 import StickerPicker from './StickerPicker';
-import { faTimes, faPaperPlane, faMinus, faExpand, faFaceSmile, faUsers, faPaperclip } from '@fortawesome/free-solid-svg-icons';
+import { faTimes, faPaperPlane, faMinus, faExpand, faFaceSmile, faGlobe, faUsers, faPaperclip } from '@fortawesome/free-solid-svg-icons';
 import { CHAT_URL, obtenerToken } from '../auth';
+import { getSession } from '../utils/session';
+import { formatHora, subirArchivo, renderContenidoMensaje } from '../utils/chatUtils';
 import { buildStickerToken, parseStickerToken } from '../data/stickerCatalog';
 
 const sonidoMensaje = new Audio('/sounds/msn_messenger.mp3');
 sonidoMensaje.volume = 0.5;
 
 /**
- * ChatGrupo — Ventana de chat de grupo (miembros seleccionados).
+ * ChatSala — Componente unificado para Chat General y Chat de Grupo.
+ *
+ * Props:
+ *   tipo        'general' | 'grupo'
+ *   grupo       { id, nombre }          (solo para tipo='grupo')
+ *   socket      Socket.IO instance
+ *   onCerrar    callback al cerrar
+ *   posicion    offset numérico          (solo para tipo='grupo')
+ *   panelAbierto  boolean
  */
-export default function ChatGrupo({ grupo, socket, onCerrar, posicion, panelAbierto }) {
+export default function ChatSala({ tipo = 'general', grupo, socket, onCerrar, posicion = 0, panelAbierto }) {
     const [mensajes, setMensajes] = useState([]);
     const [texto, setTexto] = useState('');
     const [cargando, setCargando] = useState(true);
@@ -21,44 +31,67 @@ export default function ChatGrupo({ grupo, socket, onCerrar, posicion, panelAbie
     const inputRef = useRef(null);
     const fileInputRef = useRef(null);
 
-    const session = JSON.parse(localStorage.getItem('session'));
+    const session = getSession();
     const miIdPersonal = session?.usuario?.id_personal;
+
+    // ── Config por tipo ──
+    const esGeneral = tipo === 'general';
+    const salaId = esGeneral ? null : grupo?.id;
+    const nombreSala = esGeneral ? '💬 Chat General' : `👥 ${grupo?.nombre || 'Grupo'}`;
+    const icono = esGeneral ? faGlobe : faUsers;
+    const claseHeader = esGeneral ? 'chat-ventana-header-general' : 'chat-ventana-header-grupo';
+    const claseVentana = esGeneral ? 'chat-ventana-general' : 'chat-ventana-grupo';
+    const claseIcono = esGeneral ? 'chat-general-icono' : 'chat-grupo-icono';
+    const placeholder = esGeneral ? 'Escribe al chat general...' : `Escribe en ${grupo?.nombre || 'grupo'}...`;
+    const mensajeVacio = esGeneral
+        ? 'No hay mensajes en el chat general. ¡Sé el primero!'
+        : 'No hay mensajes en este grupo. ¡Comienza la conversación!';
+
+    // Socket event names
+    const eventoEmit = esGeneral ? 'msg_general' : 'msg_grupo';
+    const eventoListen = esGeneral ? 'msg_general' : 'msg_grupo';
 
     // ── Cargar historial ──
     const cargarHistorial = useCallback(() => {
         const token = obtenerToken();
         if (!token) return;
-        fetch(CHAT_URL + `/grupos/${grupo.id}/mensajes?limite=80`, {
-            headers: { 'Authorization': 'Bearer ' + token },
-        })
+        const url = esGeneral
+            ? CHAT_URL + '/mensajes/general?limite=80'
+            : CHAT_URL + `/grupos/${salaId}/mensajes?limite=80`;
+        fetch(url, { headers: { 'Authorization': 'Bearer ' + token } })
             .then(r => r.ok ? r.json() : [])
             .then(data => { setMensajes(data); setCargando(false); })
             .catch(() => setCargando(false));
-    }, [grupo.id]);
+    }, [esGeneral, salaId]);
 
     useEffect(() => { cargarHistorial(); }, [cargarHistorial]);
 
-    // ── Unirse a la sala del grupo ──
+    // ── Unirse a la sala ──
     useEffect(() => {
         if (!socket) return;
-        socket.emit('join_grupo', { grupo_id: grupo.id });
-    }, [socket, grupo.id]);
+        if (esGeneral) {
+            socket.emit('join_general');
+        } else {
+            socket.emit('join_grupo', { grupo_id: salaId });
+        }
+    }, [socket, esGeneral, salaId]);
 
     // ── Escuchar mensajes ──
     useEffect(() => {
         if (!socket) return;
-        function onMsgGrupo(msg) {
-            if (msg.grupo_id === grupo.id) {
-                setMensajes(prev => [...prev, msg]);
-                if (msg.remitente_id !== miIdPersonal) {
-                    sonidoMensaje.currentTime = 0;
-                    sonidoMensaje.play().catch(() => {});
-                }
+        function onMsg(msg) {
+            // Para grupo, filtrar solo mensajes de esta sala
+            if (!esGeneral && msg.grupo_id !== salaId) return;
+            setMensajes(prev => [...prev, msg]);
+            // Sonido (en general siempre, en grupo solo si no es mío)
+            if (esGeneral || msg.remitente_id !== miIdPersonal) {
+                sonidoMensaje.currentTime = 0;
+                sonidoMensaje.play().catch(() => {});
             }
         }
-        socket.on('msg_grupo', onMsgGrupo);
-        return () => { socket.off('msg_grupo', onMsgGrupo); };
-    }, [socket, grupo.id, miIdPersonal]);
+        socket.on(eventoListen, onMsg);
+        return () => { socket.off(eventoListen, onMsg); };
+    }, [socket, esGeneral, salaId, miIdPersonal, eventoListen]);
 
     // ── Auto-scroll ──
     useEffect(() => {
@@ -66,26 +99,25 @@ export default function ChatGrupo({ grupo, socket, onCerrar, posicion, panelAbie
     }, [mensajes]);
 
     // ── Enviar mensaje ──
+    function enviarContenido(contenido) {
+        if (!contenido || !socket) return;
+        const payload = esGeneral
+            ? { contenido }
+            : { grupo_id: salaId, contenido };
+        socket.emit(eventoEmit, payload, (resp) => {
+            if (resp?.ok && resp.mensaje) {
+                setMensajes(prev => [...prev, resp.mensaje]);
+            }
+        });
+    }
+
     function enviarMensaje(e) {
         e.preventDefault();
         const contenido = texto.trim();
-        if (!contenido || !socket) return;
-        socket.emit('msg_grupo', { grupo_id: grupo.id, contenido }, (resp) => {
-            if (resp && resp.ok && resp.mensaje) {
-                setMensajes(prev => [...prev, resp.mensaje]);
-            }
-        });
+        if (!contenido) return;
+        enviarContenido(contenido);
         setTexto('');
         inputRef.current?.focus();
-    }
-
-    function enviarContenido(contenido) {
-        if (!contenido || !socket) return;
-        socket.emit('msg_grupo', { grupo_id: grupo.id, contenido }, (resp) => {
-            if (resp && resp.ok && resp.mensaje) {
-                setMensajes(prev => [...prev, resp.mensaje]);
-            }
-        });
     }
 
     function insertarEmoji(emoji) {
@@ -103,26 +135,26 @@ export default function ChatGrupo({ grupo, socket, onCerrar, posicion, panelAbie
     async function handleFileUpload(e) {
         const file = e.target.files?.[0];
         if (!file) return;
-        const token = obtenerToken();
-        const formData = new FormData();
-        formData.append('file', file);
         try {
-            const resp = await fetch(CHAT_URL + '/upload', {
-                method: 'POST',
-                headers: { 'Authorization': 'Bearer ' + token },
-                body: formData,
-            });
-            const data = await resp.json();
+            const data = await subirArchivo(file);
             if (data.ok) {
-                const esImagen = file.type.startsWith('image/');
-                socket.emit('msg_grupo', {
-                    grupo_id: grupo.id,
-                    contenido: esImagen ? `📷 ${data.nombre_original}` : `📎 ${data.nombre_original}`,
-                    tipo: 'archivo',
-                    archivo_url: data.url,
-                    archivo_nombre: data.nombre_original,
-                }, (resp2) => {
-                    if (resp2 && resp2.ok && resp2.mensaje) {
+                const esImg = file.type.startsWith('image/');
+                const payload = esGeneral
+                    ? {
+                        contenido: esImg ? `📷 ${data.nombre_original}` : `📎 ${data.nombre_original}`,
+                        tipo: 'archivo',
+                        archivo_url: data.url,
+                        archivo_nombre: data.nombre_original,
+                    }
+                    : {
+                        grupo_id: salaId,
+                        contenido: esImg ? `📷 ${data.nombre_original}` : `📎 ${data.nombre_original}`,
+                        tipo: 'archivo',
+                        archivo_url: data.url,
+                        archivo_nombre: data.nombre_original,
+                    };
+                socket.emit(eventoEmit, payload, (resp2) => {
+                    if (resp2?.ok && resp2.mensaje) {
                         setMensajes(prev => [...prev, resp2.mensaje]);
                     }
                 });
@@ -133,61 +165,22 @@ export default function ChatGrupo({ grupo, socket, onCerrar, posicion, panelAbie
         e.target.value = '';
     }
 
-    // ── Formato hora ──
-    function formatHora(fecha) {
-        if (!fecha) return '';
-        const d = new Date(fecha);
-        const hoy = new Date();
-        const esHoy = d.toDateString() === hoy.toDateString();
-        const hora = d.toLocaleTimeString('es-PE', { hour: '2-digit', minute: '2-digit' });
-        if (esHoy) return hora;
-        return d.toLocaleDateString('es-PE', { day: '2-digit', month: '2-digit' }) + ' ' + hora;
-    }
-
-    function renderContenidoMensaje(m) {
-        if (m.tipo === 'archivo' && m.archivo_url) {
-            const esImagen = /\.(jpg|jpeg|png|gif|webp|bmp|svg)$/i.test(m.archivo_url);
-            if (esImagen) {
-                return (
-                    <div className="chat-msg-archivo">
-                        <a href={CHAT_URL + m.archivo_url} target="_blank" rel="noopener noreferrer">
-                            <img src={CHAT_URL + m.archivo_url} alt={m.archivo_nombre} className="chat-msg-img-preview" />
-                        </a>
-                        <span className="chat-msg-archivo-nombre">{m.archivo_nombre}</span>
-                    </div>
-                );
-            }
-            return (
-                <div className="chat-msg-archivo">
-                    <a href={CHAT_URL + m.archivo_url} target="_blank" rel="noopener noreferrer" className="chat-msg-file-link">
-                        📎 {m.archivo_nombre}
-                    </a>
-                </div>
-            );
-        }
-        const sticker = parseStickerToken(m.contenido);
-        if (sticker) {
-            return <img src={sticker.img} alt={sticker.label} className="chat-msg-sticker" />;
-        }
-        return <span className="chat-msg-texto">{m.contenido}</span>;
-    }
-
-    const offsetRight = (panelAbierto ? 400 : 80) + posicion * 330;
+    const offsetRight = (panelAbierto ? 400 : 80) + (esGeneral ? 0 : posicion * 330);
 
     return (
-        <div className={'chat-ventana chat-ventana-grupo' + (minimizada ? ' chat-ventana-minimizada' : '')} style={{ right: offsetRight + 'px' }}>
+        <div className={'chat-ventana ' + claseVentana + (minimizada ? ' chat-ventana-minimizada' : '')} style={{ right: offsetRight + 'px' }}>
             {/* ── Header ── */}
             <div
-                className="chat-ventana-header chat-ventana-header-grupo"
+                className={'chat-ventana-header ' + claseHeader}
                 onClick={(e) => { if (minimizada && !e.target.closest('button')) setMinimizada(false); }}
                 style={{ cursor: minimizada ? 'pointer' : 'default' }}
             >
                 <div className="chat-ventana-header-info">
-                    <div className="chat-ventana-avatar-mini chat-grupo-icono">
-                        <IconoFa icono={faUsers} />
+                    <div className={'chat-ventana-avatar-mini ' + claseIcono}>
+                        <IconoFa icono={icono} />
                     </div>
                     <div className="chat-ventana-nombre">
-                        <strong>👥 {grupo.nombre}</strong>
+                        <strong>{nombreSala}</strong>
                     </div>
                 </div>
                 <div className="chat-ventana-acciones" onClick={(e) => e.stopPropagation()}>
@@ -207,7 +200,7 @@ export default function ChatGrupo({ grupo, socket, onCerrar, posicion, panelAbie
                         {cargando ? (
                             <p className="chat-cargando">Cargando mensajes...</p>
                         ) : mensajes.length === 0 ? (
-                            <p className="chat-sin-mensajes">No hay mensajes en este grupo. ¡Comienza la conversación!</p>
+                            <p className="chat-sin-mensajes">{mensajeVacio}</p>
                         ) : (
                             mensajes.map((m, idx) => {
                                 const esMio = m.remitente_id === miIdPersonal;
@@ -246,7 +239,7 @@ export default function ChatGrupo({ grupo, socket, onCerrar, posicion, panelAbie
                                 <StickerPicker onSelectEmoji={insertarEmoji} onSelectSticker={enviarSticker} onClose={() => setPickerAbierto(false)} />
                             )}
                         </div>
-                        <input ref={inputRef} type="text" placeholder={`Escribe en ${grupo.nombre}...`} value={texto} onChange={e => setTexto(e.target.value)} autoFocus />
+                        <input ref={inputRef} type="text" placeholder={placeholder} value={texto} onChange={e => setTexto(e.target.value)} autoFocus />
                         <button type="submit" disabled={!texto.trim()}>
                             <IconoFa icono={faPaperPlane} />
                         </button>

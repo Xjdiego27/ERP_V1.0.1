@@ -1,11 +1,13 @@
-import React, { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { API_URL, headersConToken } from '../auth';
+import { getSession } from '../utils/session';
 import IconoFa from '../components/IconoFa';
 import ModalImagen from '../components/ModalImagen';
 import PageContent from '../components/PageContent';
 import {
     faTicket, faFolderOpen, faUserCheck, faSpinner as faProgress,
-    faTimes, faCheckCircle, faSearch, faFileExport, faChevronLeft, faStar
+    faTimes, faCheckCircle, faSearch, faFileExport, faChevronLeft, faStar,
+    faFilePdf, faSpinner
 } from '@fortawesome/free-solid-svg-icons';
 import '../styles/Tickets.css';
 
@@ -40,8 +42,13 @@ export default function Tickets() {
     var [fotoPreview, setFotoPreview] = useState(null);
     var canvasRef = useRef(null);
 
+    // Informe PDF
+    var [informeMes, setInformeMes] = useState(new Date().getMonth() + 1);
+    var [informeAnio, setInformeAnio] = useState(new Date().getFullYear());
+    var [descargandoPdf, setDescargandoPdf] = useState(false);
+
     // Detectar si el usuario actual es TI
-    var sessionData = JSON.parse(localStorage.getItem('session'));
+    var sessionData = getSession();
     var rolUsuario = (sessionData && sessionData.usuario && sessionData.usuario.rol || '').toUpperCase();
     var esRolTI = ['ADMINISTRADOR', 'ADMIN', 'SOPORTE'].indexOf(rolUsuario) >= 0;
 
@@ -209,14 +216,49 @@ export default function Tickets() {
 
     // Exportar CSV
     function exportarCSV() {
+        function escaparCSV(val) {
+            var s = val == null ? '' : String(val);
+            if (s.indexOf(',') >= 0 || s.indexOf('"') >= 0 || s.indexOf('\n') >= 0) {
+                return '"' + s.replace(/"/g, '""') + '"';
+            }
+            return s;
+        }
         var cabecera = 'ID,NOMBRE,CATEGORIA,ASUNTO,PRIORIDAD,ESTADO,FECHA CREACIÓN\n';
         var filas = ticketsFiltrados.map(function (t) {
-            return [t.id_ticket, t.nombre_creador, t.categoria, t.asunto, t.prioridad, t.estado, t.fech_creacion].join(',');
+            return [t.id_ticket, t.nombre_creador, t.categoria, t.asunto, t.prioridad, t.estado, t.fech_creacion].map(escaparCSV).join(',');
         }).join('\n');
-        var blob = new Blob([cabecera + filas], { type: 'text/csv' });
+        var blob = new Blob(['\uFEFF' + cabecera + filas], { type: 'text/csv;charset=utf-8' });
         var url = URL.createObjectURL(blob);
         var a = document.createElement('a');
         a.href = url; a.download = 'tickets.csv'; a.click();
+        URL.revokeObjectURL(url);
+    }
+
+    async function descargarInformePdf() {
+        setDescargandoPdf(true);
+        try {
+            var resp = await fetch(
+                API_URL + '/tickets/informe-pdf?mes=' + informeMes + '&anio=' + informeAnio,
+                { headers: headersConToken() }
+            );
+            if (!resp.ok) {
+                var err = await resp.json().catch(function () { return {}; });
+                throw new Error(err.detail || 'Error al generar el informe');
+            }
+            var blob = await resp.blob();
+            var url = URL.createObjectURL(blob);
+            var a = document.createElement('a');
+            a.href = url;
+            a.download = 'Informe_Tickets_' + informeMes + '_' + informeAnio + '.pdf';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        } catch (e) {
+            alert(e.message);
+        } finally {
+            setDescargandoPdf(false);
+        }
     }
 
     var stats = estadisticas || { abiertos: 0, asignados: 0, en_progreso: 0, cerrados: 0, total: 0, por_mes: [] };
@@ -231,6 +273,32 @@ export default function Tickets() {
                         <h2>Tickets de Soporte</h2>
                     </div>
                     <div className="tickets-dash-actions">
+                        <select value={informeMes} onChange={function (e) { setInformeMes(Number(e.target.value)); }}
+                            className="informe-select">
+                            <option value={1}>Enero</option>
+                            <option value={2}>Febrero</option>
+                            <option value={3}>Marzo</option>
+                            <option value={4}>Abril</option>
+                            <option value={5}>Mayo</option>
+                            <option value={6}>Junio</option>
+                            <option value={7}>Julio</option>
+                            <option value={8}>Agosto</option>
+                            <option value={9}>Septiembre</option>
+                            <option value={10}>Octubre</option>
+                            <option value={11}>Noviembre</option>
+                            <option value={12}>Diciembre</option>
+                        </select>
+                        <select value={informeAnio} onChange={function (e) { setInformeAnio(Number(e.target.value)); }}
+                            className="informe-select">
+                            {Array.from({ length: 6 }, function (_, i) {
+                                var y = new Date().getFullYear() - i;
+                                return <option key={y} value={y}>{y}</option>;
+                            })}
+                        </select>
+                        <button className="btn-descargar-pdf" onClick={descargarInformePdf} disabled={descargandoPdf}>
+                            <IconoFa icono={descargandoPdf ? faSpinner : faFilePdf} clase={descargandoPdf ? 'spin' : ''} />
+                            {descargandoPdf ? 'Generando...' : 'Informe PDF'}
+                        </button>
                         <button className="btn-exportar" onClick={exportarCSV}>
                             <IconoFa icono={faFileExport} /> Exportar
                         </button>

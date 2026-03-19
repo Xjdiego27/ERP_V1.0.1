@@ -44,58 +44,56 @@ def listar_chips(db: Session = Depends(get_db), token: dict = Depends(verificar_
     if not Chips:
         return []
     chips = db.query(Chips).order_by(Chips.NUMERO).all()
+
+    # ── Precargar catálogos para evitar N+1 ──
+    operadores_map = {}
+    if OperadorChips:
+        for op in db.query(OperadorChips).all():
+            operadores_map[op.ID_OPERADOR] = op.DESCRIP
+
+    planes_map = {}
+    if PlanChips:
+        for pl in db.query(PlanChips).all():
+            planes_map[pl.ID_PLAN] = pl.DESCRIP
+
+    descuentos_map = {}
+    if DescuentoChips:
+        for dc in db.query(DescuentoChips).all():
+            descuentos_map[dc.ID_DESCUENTO] = (dc.DESCRIP, dc.DESCUENTO)
+
+    # Precargar asignaciones activas con datos de personal
+    asignaciones_map = {}
+    if AsignacionChip:
+        activas = db.query(AsignacionChip).filter(AsignacionChip.FECHA_DEVOL == None).all()
+        ids_personal = [a.ID_PERSONAL for a in activas]
+        personal_map = {}
+        if ids_personal and Personal:
+            for p in db.query(Personal).filter(Personal.ID_PERSONAL.in_(ids_personal)).all():
+                personal_map[p.ID_PERSONAL] = f"{p.NOMBRES} {p.APE_PATERNO} {p.APE_MATERNO}"
+        for a in activas:
+            asignaciones_map[a.ID_CHIPS] = {
+                "id_asignacion": a.ID_CHIP_ASIG,
+                "id_personal": a.ID_PERSONAL,
+                "empleado": personal_map.get(a.ID_PERSONAL, 'Desconocido'),
+                "fecha_asig": str(a.FECH_ASIG) if a.FECH_ASIG else None,
+            }
+
     resultado = []
     for c in chips:
-        # Operador
-        operador = None
-        if c.ID_OPERADOR and OperadorChips:
-            op = db.query(OperadorChips).filter(OperadorChips.ID_OPERADOR == c.ID_OPERADOR).first()
-            operador = op.DESCRIP if op else None
-
-        # Plan
-        plan = None
-        if c.ID_PLAN and PlanChips:
-            pl = db.query(PlanChips).filter(PlanChips.ID_PLAN == c.ID_PLAN).first()
-            plan = pl.DESCRIP if pl else None
-
-        # Descuento
-        descuento = None
-        descuento_pct = None
-        if c.ID_DESCUENTO and DescuentoChips:
-            dc = db.query(DescuentoChips).filter(DescuentoChips.ID_DESCUENTO == c.ID_DESCUENTO).first()
-            if dc:
-                descuento = dc.DESCRIP
-                descuento_pct = dc.DESCUENTO
-
-        # Asignación activa (FECHA_DEVOL IS NULL)
-        asignacion = None
-        if AsignacionChip:
-            asig = db.query(AsignacionChip).filter(
-                AsignacionChip.ID_CHIPS == c.ID_CHIPS,
-                AsignacionChip.FECHA_DEVOL == None
-            ).first()
-            if asig and Personal:
-                per = db.query(Personal).filter(Personal.ID_PERSONAL == asig.ID_PERSONAL).first()
-                asignacion = {
-                    "id_asignacion": asig.ID_CHIP_ASIG,
-                    "id_personal": asig.ID_PERSONAL,
-                    "empleado": (per.NOMBRES + ' ' + per.APE_PATERNO + ' ' + per.APE_MATERNO) if per else 'Desconocido',
-                    "fecha_asig": str(asig.FECH_ASIG) if asig.FECH_ASIG else None,
-                }
-
+        desc_info = descuentos_map.get(c.ID_DESCUENTO)
         resultado.append({
             "id": c.ID_CHIPS,
             "numero": c.NUMERO,
             "precio": float(c.PRECIO) if c.PRECIO else 0,
             "id_operador": c.ID_OPERADOR,
-            "operador": operador,
+            "operador": operadores_map.get(c.ID_OPERADOR),
             "id_plan": c.ID_PLAN,
-            "plan": plan,
+            "plan": planes_map.get(c.ID_PLAN),
             "id_descuento": c.ID_DESCUENTO,
-            "descuento": descuento,
-            "descuento_pct": descuento_pct,
+            "descuento": desc_info[0] if desc_info else None,
+            "descuento_pct": desc_info[1] if desc_info else None,
             "fech_asignacion": str(c.FECH_ASIGNACION) if c.FECH_ASIGNACION else None,
-            "asignacion": asignacion,
+            "asignacion": asignaciones_map.get(c.ID_CHIPS),
         })
     return resultado
 
@@ -284,12 +282,19 @@ def historial_chip(id_chip: int, db: Session = Depends(get_db), _=Depends(verifi
     asignaciones = db.query(AsignacionChip).filter(
         AsignacionChip.ID_CHIPS == id_chip
     ).order_by(AsignacionChip.FECH_ASIG.desc()).all()
+
+    # Precargar personal para evitar N+1
+    ids_personal = list({a.ID_PERSONAL for a in asignaciones})
+    personal_map = {}
+    if ids_personal and Personal:
+        for p in db.query(Personal).filter(Personal.ID_PERSONAL.in_(ids_personal)).all():
+            personal_map[p.ID_PERSONAL] = f"{p.NOMBRES} {p.APE_PATERNO} {p.APE_MATERNO}"
+
     resultado = []
     for a in asignaciones:
-        per = db.query(Personal).filter(Personal.ID_PERSONAL == a.ID_PERSONAL).first() if Personal else None
         resultado.append({
             "id": a.ID_CHIP_ASIG,
-            "empleado": (per.NOMBRES + ' ' + per.APE_PATERNO + ' ' + per.APE_MATERNO) if per else 'Desconocido',
+            "empleado": personal_map.get(a.ID_PERSONAL, 'Desconocido'),
             "fecha_asig": str(a.FECH_ASIG) if a.FECH_ASIG else None,
             "fecha_devol": str(a.FECHA_DEVOL) if a.FECHA_DEVOL else None,
             "activa": a.FECHA_DEVOL is None,

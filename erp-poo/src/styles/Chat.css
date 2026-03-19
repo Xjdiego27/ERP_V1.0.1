@@ -1909,6 +1909,28 @@ body.dark-mode .chat-head-letra {
     background: #dbeafe;
 }
 
+/* ── Botón eliminar grupo ── */
+.chat-grupo-eliminar-btn {
+    background: none;
+    border: none;
+    color: #94a3b8;
+    font-size: 0.78rem;
+    cursor: pointer;
+    padding: 4px 6px;
+    border-radius: 6px;
+    transition: all 0.2s;
+    margin-left: auto;
+    flex-shrink: 0;
+    opacity: 0;
+}
+.chat-contacto-item:hover .chat-grupo-eliminar-btn {
+    opacity: 1;
+}
+.chat-grupo-eliminar-btn:hover {
+    color: #ef4444;
+    background: rgba(239, 68, 68, 0.1);
+}
+
 /* ── Avatar de grupo ── */
 .chat-grupo-avatar {
     background: linear-gradient(135deg, #8b5cf6, #6d28d9) !important;

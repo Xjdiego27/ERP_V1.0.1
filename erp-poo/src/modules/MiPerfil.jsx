@@ -5,6 +5,7 @@ import IconoFa from '../components/IconoFa';
 import AsistenciaTab from '../components/AsistenciaTab';
 import DocumentosTab from '../components/DocumentosTab';
 import { headersAuth, API_URL } from '../auth';
+import { getSession } from '../utils/session';
 import '../styles/PersonalDetalle.css';
 
 // ═══════════════════════════════════════════════════════════════════
@@ -83,7 +84,7 @@ export default function MiPerfil() {
     var formData = new FormData();
     formData.append('foto', archivo);
 
-    var session = JSON.parse(localStorage.getItem('session'));
+    var session = getSession();
     fetch(API_URL + '/personal/' + empleado.id + '/foto', {
       method: 'POST',
       headers: { 'Authorization': 'Bearer ' + session.access_token },
@@ -97,7 +98,7 @@ export default function MiPerfil() {
         setEmpleado(Object.assign({}, empleado, { foto: resp.foto }));
         // Actualizar foto en localStorage para Header
         try {
-          var s = JSON.parse(localStorage.getItem('session'));
+          var s = getSession();
           if (s && s.usuario && String(s.usuario.id_personal) === String(empleado.id)) {
             s.usuario.foto = resp.foto;
             localStorage.setItem('session', JSON.stringify(s));

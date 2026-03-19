@@ -6,6 +6,7 @@ import CompanyPanel from '../components/CompanyPanel';
 import CambioPassword from './CambioPassword';
 import ValoracionModal from '../components/ValoracionModal';
 import CumpleanosModal from '../components/CumpleanosModal';
+import { getSession } from '../utils/session';
 import ReaperturaModal from '../components/ReaperturaModal';
 import ChatPanel from '../components/ChatPanel';
 import { API_URL } from '../auth';
@@ -42,7 +43,7 @@ export default function Dashboard() {
     }, []);
 
     useEffect(() => {
-        const session = JSON.parse(localStorage.getItem('session'));
+        const session = getSession();
         if (!session || !session.usuario || !session.access_token) {
             navigate("/");
             return;
@@ -76,7 +77,7 @@ export default function Dashboard() {
         }).then(function (data) {
             if (data && data.usuario) {
                 // Actualizar sesion con datos frescos de la BD
-                var sessionActual = JSON.parse(localStorage.getItem('session'));
+                var sessionActual = getSession();
                 if (sessionActual) {
                     sessionActual.usuario = data.usuario;
                     localStorage.setItem('session', JSON.stringify(sessionActual));

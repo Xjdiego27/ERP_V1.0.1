@@ -823,3 +823,49 @@
 .val-star-inactive {
     color: #e2e8f0;
 }
+
+/* ── Informe PDF controles ── */
+.informe-select {
+    padding: 7px 12px;
+    border: 1.5px solid var(--borde, #e2e8f0);
+    border-radius: 8px;
+    font-size: 0.82rem;
+    background: var(--fondo-card, #fff);
+    color: var(--texto-primario, #1e293b);
+    cursor: pointer;
+    transition: border-color 0.2s;
+}
+.informe-select:focus {
+    outline: none;
+    border-color: var(--color-primario, #3b82f6);
+}
+.btn-descargar-pdf {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 16px;
+    border: none;
+    border-radius: 8px;
+    font-size: 0.82rem;
+    font-weight: 700;
+    letter-spacing: 0.03em;
+    background: #dc2626;
+    color: #fff;
+    cursor: pointer;
+    transition: background 0.2s, transform 0.15s;
+    white-space: nowrap;
+}
+.btn-descargar-pdf:hover:not(:disabled) {
+    background: #b91c1c;
+    transform: translateY(-1px);
+}
+.btn-descargar-pdf:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+.btn-descargar-pdf .spin {
+    animation: spin-pdf 1s linear infinite;
+}
+@keyframes spin-pdf {
+    to { transform: rotate(360deg); }
+}

@@ -6,6 +6,7 @@ import SeccionImagen from './SeccionImagen';
 import SeccionCumpleanos from './SeccionCumpleanos';
 import ModalImagen from './ModalImagen';
 import { headersAuth, API_URL } from '../auth';
+import { getSession } from '../utils/session';
 
 export default function CompanyPanel({ isOpen, onClose, idRol, idAccs }) {
   const [menuUrl, setMenuUrl] = useState(null);
@@ -18,7 +19,7 @@ export default function CompanyPanel({ isOpen, onClose, idRol, idAccs }) {
   const esAdmin = idRol === 1;
 
   // Obtener género del usuario actual
-  var sessionData = JSON.parse(localStorage.getItem('session'));
+  var sessionData = getSession();
   var generoUsuario = sessionData && sessionData.usuario ? sessionData.usuario.genero : null;
   var esMujer = generoUsuario === 'F';
 

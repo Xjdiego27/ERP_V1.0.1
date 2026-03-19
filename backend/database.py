@@ -1,23 +1,24 @@
-import os
 from sqlalchemy import create_engine
 from sqlalchemy.ext.automap import automap_base
 from sqlalchemy.orm import sessionmaker
-from dotenv import load_dotenv
-from pydantic_settings import BaseSettings 
-
-load_dotenv()
+from pydantic_settings import BaseSettings
 
 
 class Settings(BaseSettings):
-    db_user: str = os.getenv('DB_USER')
-    db_password: str = os.getenv('DB_PASSWORD')
-    db_host: str = os.getenv('DB_HOST')
-    db_port: str = os.getenv('DB_PORT')
-    db_name: str = os.getenv('DB_NAME')
+    db_user: str
+    db_password: str
+    db_host: str = 'localhost'
+    db_port: str = '3306'
+    db_name: str
 
-    secret_key: str = os.getenv('SECRET_KEY')
-    algorithm: str = os.getenv('ALGORITHM')
-    access_token_expire_minutes: int = int(os.getenv('ACCESS_TOKEN_EXPIRE_MINUTES'))
+    secret_key: str
+    algorithm: str = 'HS256'
+    access_token_expire_minutes: int = 480
+
+    class Config:
+        env_file = '.env'
+        env_file_encoding = 'utf-8'
+        extra = 'ignore'
 
 settings = Settings()
 

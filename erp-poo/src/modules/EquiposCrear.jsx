@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { API_URL, headersConToken, headersAuth } from '../auth';
 import IconoFa from '../components/IconoFa';
 import { faPlus, faTrash, faCamera, faSave, faPen } from '@fortawesome/free-solid-svg-icons';

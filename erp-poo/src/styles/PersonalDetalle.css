@@ -410,23 +410,32 @@ body.dark-mode .asist-horario-badge {
 }
 
 .det-contactos {
-  margin-top: 12px;
+  margin-top: 6px;
+  max-width: 640px;
 }
 
 .det-contactos-lista {
   list-style: none;
   padding: 0;
-  margin: 8px 0 0 0;
+  margin: 4px 0 0 0;
+  max-width: 640px;
 }
 
+
 .det-contactos-lista li {
-  padding: 6px 12px;
+  display: grid;
+  grid-template-columns: minmax(90px, 120px) minmax(0, 1fr) minmax(88px, 110px);
+  gap: 6px;
+  align-items: center;
+  padding: 4px 8px;
   background: var(--bg-page, #f5f7fa);
-  border-radius: 10px;
-  font-size: 13px;
-  margin-bottom: 4px;
+  border-radius: 8px;
+  font-size: 11px;
+  margin-bottom: 2px;
   color: var(--text-primary, #2c3e50);
   border-left: 3px solid #7cb3f0;
+  line-height: 1.2;
+  word-break: break-word;
 }
 
 .det-sin-datos {
@@ -436,10 +445,19 @@ body.dark-mode .asist-horario-badge {
 }
 
 .det-contacto-fila {
-  display: flex;
-  gap: 8px;
+  display: grid;
+  grid-template-columns: minmax(110px, 130px) minmax(0, 1fr) minmax(90px, 110px) auto;
+  gap: 4px;
   align-items: center;
-  margin-bottom: 6px;
+  margin-bottom: 3px;
+  max-width: 640px;
+}
+
+.det-contacto-fila .det-input,
+.det-contacto-fila .det-select {
+  padding: 4px 7px;
+  font-size: 11px;
+  min-width: 0;
 }
 
 .det-contacto-nombre {
@@ -455,9 +473,9 @@ body.dark-mode .asist-horario-badge {
   border: none;
   color: #d32f2f;
   cursor: pointer;
-  font-size: 14px;
-  padding: 6px 8px;
-  border-radius: 6px;
+  font-size: 11px;
+  padding: 3px 5px;
+  border-radius: 5px;
   transition: background 0.2s;
 }
 
@@ -466,17 +484,17 @@ body.dark-mode .asist-horario-badge {
 }
 
 .det-btn-agregar-contacto {
-  margin-top: 6px;
+  margin-top: 3px;
   background: var(--bg-input, #f0f0f0);
   color: var(--text-secondary, #555);
   border: 1px dashed var(--border-color, #ccc);
-  padding: 6px 14px;
-  border-radius: 8px;
+  padding: 3px 10px;
+  border-radius: 7px;
   cursor: pointer;
-  font-size: 13px;
+  font-size: 11px;
   display: inline-flex;
   align-items: center;
-  gap: 6px;
+  gap: 4px;
   transition: background 0.2s;
 }
 
@@ -518,8 +536,31 @@ body.dark-mode .asist-horario-badge {
 }
 
 .det-contacto-tipo {
-  min-width: 140px;
-  max-width: 160px;
+  min-width: 0;
+  max-width: 130px;
+}
+
+@media (max-width: 900px) {
+  .det-contacto-fila {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .det-btn-quitar {
+    justify-self: start;
+  }
+}
+
+@media (max-width: 640px) {
+  .det-contactos,
+  .det-contactos-lista,
+  .det-contacto-fila {
+    max-width: 100%;
+  }
+
+  .det-contactos-lista li,
+  .det-contacto-fila {
+    grid-template-columns: 1fr;
+  }
 }
 
 .det-seguros-view,

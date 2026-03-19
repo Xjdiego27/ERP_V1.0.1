@@ -96,7 +96,90 @@
     text-align: right;
     font-size: 0.75rem;
     color: var(--text-muted, #999);
-    margin: 4px 0 12px;
+    margin: 0;
+}
+
+/* Toolbar debajo del textarea (chars + sticker btn) */
+.cumple-modal-textarea-tools {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin: 4px 0 10px;
+}
+
+.cumple-modal-sticker-btn {
+    background: none;
+    border: 1px solid var(--border-color, #d1d5db);
+    border-radius: 8px;
+    padding: 4px 10px;
+    font-size: 1.05rem;
+    cursor: pointer;
+    color: var(--text-secondary, #666);
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+.cumple-modal-sticker-btn:hover {
+    border-color: #f59e0b;
+    color: #f59e0b;
+    background: rgba(245, 158, 11, 0.06);
+}
+
+/* Preview del sticker seleccionado */
+.cumple-modal-sticker-preview {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 10px;
+    margin-bottom: 10px;
+    background: var(--bg-subtle, #f0f4f8);
+    border-radius: 10px;
+    border: 1px dashed var(--border-color, #d1d5db);
+    position: relative;
+}
+.cumple-modal-sticker-preview img {
+    max-width: 80px;
+    max-height: 80px;
+    object-fit: contain;
+}
+.cumple-modal-sticker-preview .sticker-emoji-preview {
+    font-size: 2.5rem;
+}
+.cumple-sticker-quitar {
+    position: absolute;
+    top: 4px;
+    right: 4px;
+    background: rgba(0,0,0,0.5);
+    color: #fff;
+    border: none;
+    border-radius: 50%;
+    width: 22px;
+    height: 22px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.65rem;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+.cumple-sticker-quitar:hover {
+    background: rgba(220, 38, 38, 0.8);
+}
+
+/* StickerPicker flotante dentro del modal */
+.cumple-modal-sticker-picker {
+    position: relative;
+    margin-bottom: 10px;
+    z-index: 10;
+}
+.cumple-modal-sticker-picker .sticker-picker-container {
+    position: relative;
+    width: 100%;
+    max-height: 260px;
+    border-radius: 10px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.12);
 }
 
 .cumple-modal-btn-enviar {
@@ -402,4 +485,20 @@
     font-size: 0.88rem;
     font-weight: 500;
     color: var(--text-primary, #2c3e50);
+}
+
+/* Sticker dentro de saludo-card */
+.saludo-card-sticker {
+    margin-top: 8px;
+    display: flex;
+    justify-content: flex-start;
+}
+.saludo-card-sticker-img {
+    max-width: 64px;
+    max-height: 64px;
+    object-fit: contain;
+    border-radius: 6px;
+}
+.saludo-card-sticker-emoji {
+    font-size: 2rem;
 }

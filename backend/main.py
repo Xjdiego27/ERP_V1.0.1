@@ -52,7 +52,7 @@ async def unified_middleware(request: Request, call_next):
         ms = (time.time() - start) * 1000
         traceback.print_exc()
         print(f"💥 ERROR {request.method} {request.url.path} — {ms:.2f} ms")
-        return JSONResponse(status_code=500, content={"detail": str(e)})
+        return JSONResponse(status_code=500, content={"detail": "Error interno del servidor"})
 
 # CORS — origenes permitidos desde .env + acceso LAN automatico
 cors_env = os.getenv("CORS_ORIGINS", "http://localhost:5173").split(",")
@@ -99,21 +99,6 @@ async def iniciar_tareas_background():
 def ping():
     """Health-check instantáneo — devuelve pong."""
     return {"status": "pong", "ts": time.time()}
-
-
-@app.get("/stress-test")
-def stress_test(n: int = 100_000):
-    """Prueba de estrés CPU pura (sin BD). ?n=iteraciones."""
-    start = time.time()
-    total = 0
-    for i in range(n):
-        total += i * i
-    elapsed_ms = (time.time() - start) * 1000
-    return {
-        "iteraciones": n,
-        "resultado": total,
-        "tiempo_ms": round(elapsed_ms, 2),
-    }
 
 
 # ── Helpers locales ──────────────────────────────

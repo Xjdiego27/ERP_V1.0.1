@@ -1,8 +1,8 @@
 # rutas_equipo.py
 # CRUD para el módulo de Equipos IT
-import os, uuid, shutil
+import os, uuid
 from datetime import date
-from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Form
+from fastapi import APIRouter, Depends, HTTPException, UploadFile, File
 from sqlalchemy.orm import Session
 from database import (
     get_db, Equipo, TipoEquipo, EstadoEquipo, Gama, Marca, Modelo,
@@ -39,16 +39,19 @@ def catalogos_equipo(db: Session = Depends(get_db), _=Depends(verificar_token)):
     def _lista_disco(db):
         if not Disco or not TipoDisco or not CapacidadDisco:
             return []
+        # Precargar catálogos
+        td_map = {t.ID_TDISCO: t.DESCRIP for t in db.query(TipoDisco).all()}
+        cd_map = {c.ID_CAPDISCO: c.DESCRIP for c in db.query(CapacidadDisco).all()}
         discos = db.query(Disco).all()
         result = []
         for d in discos:
-            td = db.query(TipoDisco).filter(TipoDisco.ID_TDISCO == d.ID_TDISCO).first()
-            cd = db.query(CapacidadDisco).filter(CapacidadDisco.ID_CAPDISCO == d.ID_CAPDISCO).first()
+            td_nombre = td_map.get(d.ID_TDISCO, '?')
+            cd_nombre = cd_map.get(d.ID_CAPDISCO, '?')
             result.append({
                 "id": d.ID_DISCO,
-                "nombre": f"{td.DESCRIP if td else '?'} - {cd.DESCRIP if cd else '?'}",
-                "tipo": td.DESCRIP if td else '',
-                "capacidad": cd.DESCRIP if cd else '',
+                "nombre": f"{td_nombre} - {cd_nombre}",
+                "tipo": td_nombre,
+                "capacidad": cd_nombre,
                 "id_tdisco": d.ID_TDISCO,
                 "id_capdisco": d.ID_CAPDISCO,
             })
@@ -177,55 +180,114 @@ def listar_equipos(db: Session = Depends(get_db), _=Depends(verificar_token)):
         return []
 
     equipos = db.query(Equipo).all()
-    resultado = []
 
+    # ── Precargar catálogos para evitar N+1 ──
+    tipos_map = {}
+    if TipoEquipo:
+        for t in db.query(TipoEquipo).all():
+            tipos_map[t.ID_TEQUIPO] = t.DESCRIP
+
+    estados_map = {}
+    if EstadoEquipo:
+        for e in db.query(EstadoEquipo).all():
+            estados_map[e.ID_EST_EQUIPO] = e.DESCRIP
+
+    marcas_map = {}
+    if Marca:
+        for m in db.query(Marca).all():
+            marcas_map[m.ID_MARCA] = m.DESCRIP
+
+    modelos_map = {}
+    if Modelo:
+        for m in db.query(Modelo).all():
+            modelos_map[m.ID_MODELO] = m.DESCRIP
+
+    procs_map = {}
+    if Procesador:
+        for p in db.query(Procesador).all():
+            procs_map[p.ID_PROCESADOR] = p.DESCRIP
+
+    gamas_map = {}
+    if Gama:
+        for g in db.query(Gama).all():
+            gamas_map[g.ID_GAMA] = g.DESCRIP
+
+    trams_map = {}
+    if TipoRam:
+        for t in db.query(TipoRam).all():
+            trams_map[t.ID_TIPO_RAM] = t.DESCRIP
+
+    rams_map = {}
+    if Ram:
+        for r in db.query(Ram).all():
+            rams_map[r.ID_RAM] = r.DESCRIP
+
+    tdiscos_map = {}
+    if TipoDisco:
+        for t in db.query(TipoDisco).all():
+            tdiscos_map[t.ID_TDISCO] = t.DESCRIP
+
+    capdiscos_map = {}
+    if CapacidadDisco:
+        for c in db.query(CapacidadDisco).all():
+            capdiscos_map[c.ID_CAPDISCO] = c.DESCRIP
+
+    discos_map = {}
+    if Disco:
+        for d in db.query(Disco).all():
+            discos_map[d.ID_DISCO] = (d.ID_TDISCO, d.ID_CAPDISCO)
+
+    # Precargar especificaciones
+    espec_ids = [eq.ID_ESPEC for eq in equipos if eq.ID_ESPEC]
+    espec_map = {}
+    if espec_ids and EspecificacionesTec:
+        for e in db.query(EspecificacionesTec).filter(EspecificacionesTec.ID_ESPEC.in_(espec_ids)).all():
+            espec_map[e.ID_ESPEC] = e
+
+    # Precargar almacenamiento
+    eq_ids = [eq.ID_EQUIPO for eq in equipos]
+    almc_map = {}
+    if Almacenamiento and eq_ids:
+        for a in db.query(Almacenamiento).filter(Almacenamiento.ID_EQUIPO.in_(eq_ids)).all():
+            almc_map.setdefault(a.ID_EQUIPO, []).append(a)
+
+    resultado = []
     for eq in equipos:
-        tipo = db.query(TipoEquipo).filter(TipoEquipo.ID_TEQUIPO == eq.ID_TEQUIPO).first() if TipoEquipo else None
-        estado = db.query(EstadoEquipo).filter(EstadoEquipo.ID_EST_EQUIPO == eq.ID_EST_EQUIPO).first() if EstadoEquipo else None
-        espec = db.query(EspecificacionesTec).filter(EspecificacionesTec.ID_ESPEC == eq.ID_ESPEC).first() if EspecificacionesTec and eq.ID_ESPEC else None
+        espec = espec_map.get(eq.ID_ESPEC)
 
         info = {
             "id_equipo": eq.ID_EQUIPO,
             "serie": eq.SERIE_EQUIPO,
-            "tipo": tipo.DESCRIP if tipo else '',
+            "tipo": tipos_map.get(eq.ID_TEQUIPO, ''),
             "id_tequipo": eq.ID_TEQUIPO,
-            "estado": estado.DESCRIP if estado else '',
+            "estado": estados_map.get(eq.ID_EST_EQUIPO, ''),
             "id_est_equipo": eq.ID_EST_EQUIPO,
         }
 
         if espec:
-            marca = db.query(Marca).filter(Marca.ID_MARCA == espec.ID_MARCA).first() if Marca else None
-            modelo = db.query(Modelo).filter(Modelo.ID_MODELO == espec.ID_MODELO).first() if Modelo else None
-            proc = db.query(Procesador).filter(Procesador.ID_PROCESADOR == espec.ID_PROCESADOR).first() if Procesador else None
-            gama = db.query(Gama).filter(Gama.ID_GAMA == espec.ID_GAMA).first() if Gama else None
-            tram = db.query(TipoRam).filter(TipoRam.ID_TIPO_RAM == espec.ID_TIPO_RAM).first() if TipoRam else None
-            ram = db.query(Ram).filter(Ram.ID_RAM == espec.ID_RAM).first() if Ram else None
             info.update({
                 "codigoe": espec.CODIGOE,
                 "fech_compra": str(espec.FECH_COMPRA) if espec.FECH_COMPRA else None,
                 "garantia": espec.GARANTIA,
-                "gama": gama.DESCRIP if gama else '',
-                "marca": marca.DESCRIP if marca else '',
-                "modelo": modelo.DESCRIP if modelo else '',
-                "procesador": proc.DESCRIP if proc else '',
-                "tipo_ram": tram.DESCRIP if tram else '',
-                "ram": ram.DESCRIP if ram else '',
+                "gama": gamas_map.get(espec.ID_GAMA, ''),
+                "marca": marcas_map.get(espec.ID_MARCA, ''),
+                "modelo": modelos_map.get(espec.ID_MODELO, ''),
+                "procesador": procs_map.get(espec.ID_PROCESADOR, ''),
+                "tipo_ram": trams_map.get(espec.ID_TIPO_RAM, ''),
+                "ram": rams_map.get(espec.ID_RAM, ''),
             })
 
         # Almacenamiento
         almacenes = []
-        if Almacenamiento:
-            for almc in db.query(Almacenamiento).filter(Almacenamiento.ID_EQUIPO == eq.ID_EQUIPO).all():
-                disco = db.query(Disco).filter(Disco.ID_DISCO == almc.ID_DISCO).first() if Disco else None
-                td = db.query(TipoDisco).filter(TipoDisco.ID_TDISCO == disco.ID_TDISCO).first() if disco and TipoDisco else None
-                cd = db.query(CapacidadDisco).filter(CapacidadDisco.ID_CAPDISCO == disco.ID_CAPDISCO).first() if disco and CapacidadDisco else None
-                almacenes.append({
-                    "id_almc": almc.ID_ALMC,
-                    "descrip": almc.DESCRIP or '',
-                    "tipo_disco": td.DESCRIP if td else '',
-                    "capacidad": cd.DESCRIP if cd else '',
-                    "id_disco": almc.ID_DISCO,
-                })
+        for almc in almc_map.get(eq.ID_EQUIPO, []):
+            disco_info = discos_map.get(almc.ID_DISCO)
+            almacenes.append({
+                "id_almc": almc.ID_ALMC,
+                "descrip": almc.DESCRIP or '',
+                "tipo_disco": tdiscos_map.get(disco_info[0], '') if disco_info else '',
+                "capacidad": capdiscos_map.get(disco_info[1], '') if disco_info else '',
+                "id_disco": almc.ID_DISCO,
+            })
         info["almacenamiento"] = almacenes
 
         resultado.append(info)
@@ -283,12 +345,19 @@ def crear_equipo(datos: dict, db: Session = Depends(get_db), _=Depends(verificar
 # ═══════════════════════════════════════════
 @router.post("/equipos/{id_equipo}/foto")
 async def subir_foto_equipo(id_equipo: int, foto: UploadFile = File(...), _=Depends(verificar_token)):
-    ext = os.path.splitext(foto.filename)[1] or ".jpg"
+    # Validar tipo de archivo
+    ext = os.path.splitext(foto.filename)[1].lower()
+    if ext not in ('.jpg', '.jpeg', '.png', '.webp'):
+        raise HTTPException(status_code=400, detail="Solo se permiten imágenes JPG, PNG o WEBP")
+    contenido = await foto.read()
+    if len(contenido) > 5 * 1024 * 1024:
+        raise HTTPException(status_code=400, detail="La imagen no debe superar 5 MB")
+
     nombre = f"equipo_{id_equipo}_{uuid.uuid4().hex[:8]}{ext}"
     ruta = os.path.join(UPLOAD_DIR, nombre)
 
     with open(ruta, "wb") as f:
-        shutil.copyfileobj(foto.file, f)
+        f.write(contenido)
 
     return {"url": f"assets/equipos/{nombre}"}
 
@@ -314,24 +383,41 @@ def eliminar_almacenamiento(id_almc: int, db: Session = Depends(get_db), _=Depen
 
 @router.get("/equipos/asignaciones")
 def listar_asignaciones(db: Session = Depends(get_db), _=Depends(verificar_token)):
-    """Lista todas las asignaciones activas (sin fecha devol) y también el historial."""
+    """Lista todas las asignaciones activas y el historial."""
     if not AsignacionEquipo:
         return []
 
     rows = db.query(AsignacionEquipo).order_by(AsignacionEquipo.FECH_ASIG.desc()).all()
+
+    # Precargar equipos y personal
+    eq_ids = list({a.ID_EQUIPO for a in rows})
+    per_ids = list({a.ID_PERSONAL for a in rows})
+
+    equipos_map = {}
+    if eq_ids and Equipo:
+        for eq in db.query(Equipo).filter(Equipo.ID_EQUIPO.in_(eq_ids)).all():
+            equipos_map[eq.ID_EQUIPO] = eq
+
+    personal_map = {}
+    if per_ids and Personal:
+        for p in db.query(Personal).filter(Personal.ID_PERSONAL.in_(per_ids)).all():
+            personal_map[p.ID_PERSONAL] = p
+
+    tipos_map = {}
+    if TipoEquipo:
+        for t in db.query(TipoEquipo).all():
+            tipos_map[t.ID_TEQUIPO] = t.DESCRIP
+
     resultado = []
     for a in rows:
-        eq = db.query(Equipo).filter(Equipo.ID_EQUIPO == a.ID_EQUIPO).first() if Equipo else None
-        pers = db.query(Personal).filter(Personal.ID_PERSONAL == a.ID_PERSONAL).first() if Personal else None
-        tipo = None
-        if eq and TipoEquipo:
-            tipo = db.query(TipoEquipo).filter(TipoEquipo.ID_TEQUIPO == eq.ID_TEQUIPO).first()
+        eq = equipos_map.get(a.ID_EQUIPO)
+        pers = personal_map.get(a.ID_PERSONAL)
 
         resultado.append({
             "id_asig": a.ID_ASIG,
             "id_equipo": a.ID_EQUIPO,
             "serie": eq.SERIE_EQUIPO if eq else '',
-            "tipo_equipo": tipo.DESCRIP if tipo else '',
+            "tipo_equipo": tipos_map.get(eq.ID_TEQUIPO, '') if eq else '',
             "id_personal": a.ID_PERSONAL,
             "empleado": f"{pers.APE_PATERNO} {pers.APE_MATERNO}, {pers.NOMBRES}" if pers else '',
             "fecha_asig": str(a.FECH_ASIG) if a.FECH_ASIG else None,

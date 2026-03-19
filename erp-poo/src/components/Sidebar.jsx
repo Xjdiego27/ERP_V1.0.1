@@ -1,7 +1,8 @@
-import React, { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import IconoFa from './IconoFa'; 
 import PermisoService from '../servicios/PermisoService';
+import { getSession } from '../utils/session';
 import { faBars, faHouse, faBoxArchive, faUsers, faRightFromBracket, faChevronDown, faChevronRight, faPeopleGroup, faUserTie, faCalendarCheck, faClock, faLaptop, faPlus, faArrowsRotate, faTicket, faListCheck, faShieldHalved, faSimCard, faUserCircle, faCakeCandles } from '@fortawesome/free-solid-svg-icons';
 import '../styles/Sidebar.css';
 
@@ -68,7 +69,7 @@ export default function Sidebar({ isOpen, onToggleMenu }) {
 
     // ── Permisos de módulos (POO) ──
     // Lógica SEPARADA del acceso a empresas (AsignacionEmp).
-    const sessionData = JSON.parse(localStorage.getItem('session'));
+    var sessionData = getSession();
     const permisos = new PermisoService(sessionData);
     const esRolTI = permisos.esRolTI;
 

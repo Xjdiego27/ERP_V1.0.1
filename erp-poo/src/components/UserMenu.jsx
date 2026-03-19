@@ -1,4 +1,3 @@
-import React from 'react';
 import { faRightFromBracket, faUserCircle } from '@fortawesome/free-solid-svg-icons';
 import { useNavigate } from 'react-router-dom';
 import IconoFa from './IconoFa';

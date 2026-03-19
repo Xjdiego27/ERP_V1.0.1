@@ -16,7 +16,7 @@ from typing import Dict
 from docx import Document as DocxDocument
 
 from database import (
-    get_db, Personal, Contrato, Distrito
+    get_db, Personal, Contrato, Distrito, Area, Cargo
 )
 from auth_token import verificar_token
 
@@ -113,16 +113,14 @@ def _obtener_datos_auto(id_personal: int, db: Session):
 
     # Distrito
     distrito_nombre = ''
-    depart_y_provinc = ''
     id_distr = getattr(persona, 'ID_DISTR', None)
     if id_distr and Distrito:
         dist = db.query(Distrito).filter(Distrito.ID_DISTR == id_distr).first()
         if dist:
             distrito_nombre = dist.DESCRIP if hasattr(dist, 'DESCRIP') else ''
 
-    # Departamento y Provincia (del área/departamento del contrato)
-    if contrato and hasattr(contrato, 'ID_AREA'):
-        area = db.query(Area).filter(Area.ID_AREA == contrato.ID_AREA).first() if contrato.ID_AREA else None
+    # Departamento y Provincia (campo directo en personal)
+    depart_y_provinc = getattr(persona, 'DEPART_Y_PROVINC', None) or ''
 
     # Dirección
     direccion = getattr(persona, 'DIRECCION', '') or ''
@@ -131,6 +129,23 @@ def _obtener_datos_auto(id_personal: int, db: Session):
     sueldo = ''
     if contrato and hasattr(contrato, 'SUELDO'):
         sueldo = str(contrato.SUELDO) if contrato.SUELDO else ''
+
+    # Cargo del contrato vigente
+    cargo_nombre = ''
+    if contrato and hasattr(contrato, 'ID_CARGO') and contrato.ID_CARGO and Cargo:
+        cargo_obj = db.query(Cargo).filter(Cargo.ID_CARGO == contrato.ID_CARGO).first()
+        if cargo_obj:
+            cargo_nombre = cargo_obj.DESCRIP if hasattr(cargo_obj, 'DESCRIP') else ''
+
+    # Fecha fin contrato
+    fecha_fin_contrato = ''
+    mes_fin_contrato = ''
+    anio_fin_contrato = ''
+    if contrato and hasattr(contrato, 'FECH_CESE') and contrato.FECH_CESE:
+        fc = contrato.FECH_CESE
+        fecha_fin_contrato = str(fc.day) if hasattr(fc, 'day') else str(fc)
+        mes_fin_contrato = MESES_ES.get(fc.month, '') if hasattr(fc, 'month') else ''
+        anio_fin_contrato = str(fc.year) if hasattr(fc, 'year') else ''
 
     hoy = datetime.now()
 
@@ -142,6 +157,7 @@ def _obtener_datos_auto(id_personal: int, db: Session):
         'direccion': direccion,
         'distrito': distrito_nombre,
         'depart_y_provinc': depart_y_provinc,
+        'cargo': cargo_nombre,
         # Fecha de generación
         'dia que se genera': str(hoy.day),
         'mes que se genera': MESES_ES.get(hoy.month, ''),
@@ -149,6 +165,10 @@ def _obtener_datos_auto(id_personal: int, db: Session):
         # Sueldo
         'sueldo (en numeros)': sueldo,
         'sueldo en texto': _sueldo_a_texto(sueldo) if sueldo else '',
+        # Fin de contrato
+        'fecha_fin_contrato': fecha_fin_contrato,
+        'mes_fin_contrato': mes_fin_contrato,
+        'año_fin_contrato': anio_fin_contrato,
     }
     return datos
 
@@ -176,9 +196,10 @@ def _extraer_placeholders(doc_path: str):
 # Campos que se llenan automáticamente desde la BD
 CAMPOS_AUTO = {
     'nombres', 'ape_paterno', 'ape_materno', 'num_doc',
-    'direccion', 'distrito', 'depart_y_provinc',
+    'direccion', 'distrito', 'depart_y_provinc', 'cargo',
     'dia que se genera', 'mes que se genera', 'año que se genera',
     'sueldo (en numeros)', 'sueldo en texto',
+    'fecha_fin_contrato', 'mes_fin_contrato', 'año_fin_contrato',
 }
 
 

@@ -2,11 +2,78 @@
 # Funciones utilitarias compartidas entre módulos.
 # Responsabilidad: lógica reutilizable (horarios, respuestas de usuario, etc.)
 
+from fastapi import HTTPException
 from database import (
     Personal, Acceso, RolAccs, Empresa, Contrato, Cargo,
     Horario, HorarioDetalle,
 )
 from servicios.permiso_service import PermisoService
+
+
+# ──────────────────────────────────────────
+# Consulta de empleados activos (reutilizable)
+# Evita duplicar el join Personal→Acceso→Contrato en 8+ archivos
+# ──────────────────────────────────────────
+def empleados_activos_query(db):
+    """Retorna query base de Personal con Acceso activo + Contrato vigente.
+    Uso: db empleados = empleados_activos_query(db).all()
+    Se puede encadenar .filter() adicional antes de .all()."""
+    return (
+        db.query(Personal)
+        .join(Acceso, Acceso.ID_ACCS == Personal.ID_ACCS)
+        .join(Contrato, Contrato.ID_PERSONAL == Personal.ID_PERSONAL)
+        .filter(
+            Acceso.ID_ESTADO == 1,
+            Contrato.ID_ESTADO_CONTRATO == 1,
+        )
+    )
+
+
+def empleados_activos_unicos(db):
+    """Retorna lista de Personal activos sin duplicados (por ID_PERSONAL)."""
+    rows = empleados_activos_query(db).all()
+    vistos = set()
+    unicos = []
+    for p in rows:
+        if p.ID_PERSONAL not in vistos:
+            vistos.add(p.ID_PERSONAL)
+            unicos.append(p)
+    return unicos
+
+
+# ──────────────────────────────────────────
+# Validación de archivos subidos
+# ──────────────────────────────────────────
+MAX_FILE_SIZE = 10 * 1024 * 1024  # 10 MB
+
+ALLOWED_IMAGE_TYPES = {'image/jpeg', 'image/png', 'image/webp', 'image/gif'}
+ALLOWED_FILE_TYPES = ALLOWED_IMAGE_TYPES | {
+    'application/pdf',
+    'application/msword',
+    'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+    'application/vnd.ms-excel',
+    'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    'text/plain', 'text/csv',
+}
+
+
+async def validar_archivo(archivo, solo_imagenes=False, max_size=MAX_FILE_SIZE):
+    """Valida tipo y tamaño de un archivo subido. Lanza HTTPException si es inválido."""
+    tipos_permitidos = ALLOWED_IMAGE_TYPES if solo_imagenes else ALLOWED_FILE_TYPES
+    content_type = archivo.content_type or ''
+    if content_type not in tipos_permitidos:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Tipo de archivo no permitido: {content_type}"
+        )
+    contenido = await archivo.read()
+    if len(contenido) > max_size:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Archivo demasiado grande (máx {max_size // 1024 // 1024} MB)"
+        )
+    await archivo.seek(0)  # Rebobinar para lectura posterior
+    return contenido
 
 # ──────────────────────────────────────────
 # Rango legible de un horario
@@ -106,5 +173,5 @@ def construir_respuesta_usuario(db, acceso, id_empresa):
         "cargo": cargo_nombre,
         "usuario": acceso.USUARIO,
         "modulos": modulos,
-        "genero": "M" if (personal and personal.GENERO_PERS == 1) else ("F" if personal else None),
+        "genero": ({1: "M", 2: "F"}.get(personal.GENERO_PERS)) if personal else None,
     }

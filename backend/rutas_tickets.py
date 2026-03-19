@@ -6,12 +6,14 @@
 # ============================================
 
 from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Form, Query
+from fastapi.responses import StreamingResponse
 from sqlalchemy.orm import Session
-from sqlalchemy import func, case
+from sqlalchemy import func, case, extract
 from pydantic import BaseModel
 from typing import Optional
 from datetime import datetime
 from pathlib import Path
+from io import BytesIO
 
 from database import (
     get_db, Ticket, CategoriaTicket, SubcategoriaTicket,
@@ -366,6 +368,337 @@ def estadisticas_tickets(db: Session = Depends(get_db), token: dict = Depends(ve
         "total": sum(mapa.values()),
         "por_mes": [{"mes": meses_nombre[m] if m else "?", "cantidad": c} for m, c in por_mes],
     }
+
+
+# ── Informe PDF de tickets ────────────────────────
+
+MESES_ES = [
+    "", "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
+    "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre",
+]
+
+
+def _generar_pdf_tickets(tickets_data: list, mes: int, anio: int, nombre_usuario: str = ""):
+    """Genera un PDF con métricas de tickets usando ReportLab."""
+    from reportlab.lib.pagesizes import A4
+    from reportlab.lib import colors
+    from reportlab.lib.units import mm
+    from reportlab.platypus import (
+        SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer, HRFlowable,
+    )
+    from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+    from reportlab.lib.enums import TA_CENTER, TA_LEFT, TA_RIGHT
+
+    buf = BytesIO()
+    doc = SimpleDocTemplate(buf, pagesize=A4, topMargin=20 * mm, bottomMargin=20 * mm,
+                            leftMargin=18 * mm, rightMargin=18 * mm)
+    styles = getSampleStyleSheet()
+    elementos = []
+
+    # ── Estilos personalizados ──
+    titulo_style = ParagraphStyle("TituloPDF", parent=styles["Title"],
+                                  fontSize=18, textColor=colors.HexColor("#1e293b"),
+                                  spaceAfter=4)
+    subtitulo_style = ParagraphStyle("SubtituloPDF", parent=styles["Normal"],
+                                     fontSize=11, textColor=colors.HexColor("#64748b"),
+                                     spaceAfter=14, alignment=TA_CENTER)
+    seccion_style = ParagraphStyle("SeccionPDF", parent=styles["Heading2"],
+                                   fontSize=13, textColor=colors.HexColor("#3b82f6"),
+                                   spaceBefore=16, spaceAfter=8)
+    normal_style = ParagraphStyle("NormalPDF", parent=styles["Normal"],
+                                  fontSize=9.5, textColor=colors.HexColor("#334155"))
+    kpi_label = ParagraphStyle("KPILabel", parent=styles["Normal"],
+                               fontSize=9, textColor=colors.HexColor("#64748b"),
+                               alignment=TA_CENTER)
+    kpi_valor = ParagraphStyle("KPIValor", parent=styles["Normal"],
+                               fontSize=20, textColor=colors.HexColor("#1e293b"),
+                               alignment=TA_CENTER, leading=24)
+
+    # ── Encabezado ──
+    nombre_mes = MESES_ES[mes] if 1 <= mes <= 12 else str(mes)
+    elementos.append(Paragraph("Informe de Tickets", titulo_style))
+    sub = f"{nombre_mes} {anio}"
+    if nombre_usuario:
+        sub += f"  —  {nombre_usuario}"
+    elementos.append(Paragraph(sub, subtitulo_style))
+    elementos.append(HRFlowable(width="100%", thickness=1, color=colors.HexColor("#e2e8f0")))
+    elementos.append(Spacer(1, 6))
+
+    # ── Cálculo de métricas ──
+    total = len(tickets_data)
+    por_estado = {}
+    por_prioridad = {}
+    por_categoria = {}
+    tiempos_resolucion = []
+
+    for t in tickets_data:
+        est = t.get("estado", "SIN ESTADO")
+        por_estado[est] = por_estado.get(est, 0) + 1
+
+        pri = t.get("prioridad", "SIN PRIORIDAD")
+        por_prioridad[pri] = por_prioridad.get(pri, 0) + 1
+
+        cat = t.get("categoria") or "Sin categoría"
+        por_categoria[cat] = por_categoria.get(cat, 0) + 1
+
+        # Tiempo de resolución (si tiene fecha de cierre)
+        if t.get("fech_creacion") and t.get("fech_cierre"):
+            try:
+                fc = datetime.fromisoformat(str(t["fech_creacion"]))
+                ff = datetime.fromisoformat(str(t["fech_cierre"]))
+                horas = (ff - fc).total_seconds() / 3600
+                if horas >= 0:
+                    tiempos_resolucion.append(horas)
+            except Exception:
+                pass
+
+    resueltos = por_estado.get("CERRADO", 0) + por_estado.get("RESUELTO", 0)
+    pct_resolucion = round((resueltos / total) * 100, 1) if total > 0 else 0
+    promedio_horas = round(sum(tiempos_resolucion) / len(tiempos_resolucion), 1) if tiempos_resolucion else 0
+
+    # ── KPIs principales (tabla visual) ──
+    elementos.append(Paragraph("Resumen General", seccion_style))
+
+    kpi_data = [
+        [Paragraph("Total Tickets", kpi_label),
+         Paragraph("Cerrados / Resueltos", kpi_label),
+         Paragraph("Tasa Resolución", kpi_label),
+         Paragraph("Tiempo Prom. (hrs)", kpi_label)],
+        [Paragraph(str(total), kpi_valor),
+         Paragraph(str(resueltos), kpi_valor),
+         Paragraph(f"{pct_resolucion}%", kpi_valor),
+         Paragraph(str(promedio_horas), kpi_valor)],
+    ]
+    kpi_table = Table(kpi_data, colWidths=[doc.width / 4] * 4)
+    kpi_table.setStyle(TableStyle([
+        ("BACKGROUND", (0, 0), (-1, -1), colors.HexColor("#f1f5f9")),
+        ("BOX", (0, 0), (-1, -1), 1, colors.HexColor("#e2e8f0")),
+        ("INNERGRID", (0, 0), (-1, -1), 0.5, colors.HexColor("#e2e8f0")),
+        ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
+        ("TOPPADDING", (0, 0), (-1, 0), 8),
+        ("BOTTOMPADDING", (0, 1), (-1, 1), 10),
+        ("ROUNDEDCORNERS", [6, 6, 6, 6]),
+    ]))
+    elementos.append(kpi_table)
+    elementos.append(Spacer(1, 6))
+
+    # ── Por Estado ──
+    elementos.append(Paragraph("Tickets por Estado", seccion_style))
+    estado_rows = [["Estado", "Cantidad", "%"]]
+    colores_estado = {"ABIERTO": "#f59e0b", "ASIGNADO": "#3b82f6",
+                      "RESUELTO": "#8b5cf6", "CERRADO": "#16a34a"}
+    for est in ["ABIERTO", "ASIGNADO", "RESUELTO", "CERRADO"]:
+        cant = por_estado.get(est, 0)
+        pct = round((cant / total) * 100, 1) if total > 0 else 0
+        estado_rows.append([est, str(cant), f"{pct}%"])
+    # Otros estados si existen
+    for est, cant in por_estado.items():
+        if est not in ("ABIERTO", "ASIGNADO", "RESUELTO", "CERRADO"):
+            pct = round((cant / total) * 100, 1) if total > 0 else 0
+            estado_rows.append([est, str(cant), f"{pct}%"])
+
+    tbl_estado = Table(estado_rows, colWidths=[doc.width * 0.45, doc.width * 0.25, doc.width * 0.30])
+    tbl_estado.setStyle(TableStyle([
+        ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor("#3b82f6")),
+        ("TEXTCOLOR", (0, 0), (-1, 0), colors.white),
+        ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
+        ("FONTSIZE", (0, 0), (-1, -1), 9),
+        ("ALIGN", (1, 0), (-1, -1), "CENTER"),
+        ("BOX", (0, 0), (-1, -1), 1, colors.HexColor("#e2e8f0")),
+        ("INNERGRID", (0, 0), (-1, -1), 0.5, colors.HexColor("#e2e8f0")),
+        ("ROWBACKGROUNDS", (0, 1), (-1, -1), [colors.white, colors.HexColor("#f8fafc")]),
+        ("TOPPADDING", (0, 0), (-1, -1), 5),
+        ("BOTTOMPADDING", (0, 0), (-1, -1), 5),
+    ]))
+    elementos.append(tbl_estado)
+    elementos.append(Spacer(1, 6))
+
+    # ── Por Prioridad ──
+    elementos.append(Paragraph("Tickets por Prioridad", seccion_style))
+    pri_rows = [["Prioridad", "Cantidad", "%"]]
+    for pri in ["BAJA", "MEDIA", "ALTA", "URGENTE"]:
+        cant = por_prioridad.get(pri, 0)
+        pct = round((cant / total) * 100, 1) if total > 0 else 0
+        pri_rows.append([pri, str(cant), f"{pct}%"])
+    for pri, cant in por_prioridad.items():
+        if pri not in ("BAJA", "MEDIA", "ALTA", "URGENTE"):
+            pct = round((cant / total) * 100, 1) if total > 0 else 0
+            pri_rows.append([pri, str(cant), f"{pct}%"])
+
+    colores_pri = {"BAJA": "#16a34a", "MEDIA": "#d97706", "ALTA": "#ea580c", "URGENTE": "#dc2626"}
+    tbl_pri = Table(pri_rows, colWidths=[doc.width * 0.45, doc.width * 0.25, doc.width * 0.30])
+    tbl_pri.setStyle(TableStyle([
+        ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor("#8b5cf6")),
+        ("TEXTCOLOR", (0, 0), (-1, 0), colors.white),
+        ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
+        ("FONTSIZE", (0, 0), (-1, -1), 9),
+        ("ALIGN", (1, 0), (-1, -1), "CENTER"),
+        ("BOX", (0, 0), (-1, -1), 1, colors.HexColor("#e2e8f0")),
+        ("INNERGRID", (0, 0), (-1, -1), 0.5, colors.HexColor("#e2e8f0")),
+        ("ROWBACKGROUNDS", (0, 1), (-1, -1), [colors.white, colors.HexColor("#f8fafc")]),
+        ("TOPPADDING", (0, 0), (-1, -1), 5),
+        ("BOTTOMPADDING", (0, 0), (-1, -1), 5),
+    ]))
+    elementos.append(tbl_pri)
+    elementos.append(Spacer(1, 6))
+
+    # ── Por Categoría ──
+    if por_categoria:
+        elementos.append(Paragraph("Tickets por Categoría", seccion_style))
+        cat_rows = [["Categoría", "Cantidad", "%"]]
+        for cat_name in sorted(por_categoria.keys()):
+            cant = por_categoria[cat_name]
+            pct = round((cant / total) * 100, 1) if total > 0 else 0
+            cat_rows.append([cat_name, str(cant), f"{pct}%"])
+        tbl_cat = Table(cat_rows, colWidths=[doc.width * 0.45, doc.width * 0.25, doc.width * 0.30])
+        tbl_cat.setStyle(TableStyle([
+            ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor("#0891b2")),
+            ("TEXTCOLOR", (0, 0), (-1, 0), colors.white),
+            ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
+            ("FONTSIZE", (0, 0), (-1, -1), 9),
+            ("ALIGN", (1, 0), (-1, -1), "CENTER"),
+            ("BOX", (0, 0), (-1, -1), 1, colors.HexColor("#e2e8f0")),
+            ("INNERGRID", (0, 0), (-1, -1), 0.5, colors.HexColor("#e2e8f0")),
+            ("ROWBACKGROUNDS", (0, 1), (-1, -1), [colors.white, colors.HexColor("#f8fafc")]),
+            ("TOPPADDING", (0, 0), (-1, -1), 5),
+            ("BOTTOMPADDING", (0, 0), (-1, -1), 5),
+        ]))
+        elementos.append(tbl_cat)
+        elementos.append(Spacer(1, 6))
+
+    # ── Detalle de tickets ──
+    if tickets_data:
+        elementos.append(Paragraph("Detalle de Tickets", seccion_style))
+        det_rows = [["#", "Asunto", "Estado", "Prioridad", "Categoría", "Creación"]]
+        for t in tickets_data:
+            fch = ""
+            if t.get("fech_creacion"):
+                try:
+                    dt = datetime.fromisoformat(str(t["fech_creacion"]))
+                    fch = dt.strftime("%d/%m/%Y")
+                except Exception:
+                    fch = str(t["fech_creacion"])[:10]
+
+            det_rows.append([
+                str(t.get("id_ticket", "")),
+                Paragraph(str(t.get("asunto", ""))[:50], normal_style),
+                t.get("estado", ""),
+                t.get("prioridad", ""),
+                str(t.get("categoria", "") or "")[:20],
+                fch,
+            ])
+
+        col_w = [doc.width * 0.07, doc.width * 0.30, doc.width * 0.14,
+                 doc.width * 0.14, doc.width * 0.18, doc.width * 0.17]
+        tbl_det = Table(det_rows, colWidths=col_w, repeatRows=1)
+        tbl_det.setStyle(TableStyle([
+            ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor("#1e293b")),
+            ("TEXTCOLOR", (0, 0), (-1, 0), colors.white),
+            ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
+            ("FONTSIZE", (0, 0), (-1, 0), 8),
+            ("FONTSIZE", (0, 1), (-1, -1), 8),
+            ("ALIGN", (0, 0), (0, -1), "CENTER"),
+            ("ALIGN", (2, 0), (-1, -1), "CENTER"),
+            ("BOX", (0, 0), (-1, -1), 1, colors.HexColor("#e2e8f0")),
+            ("INNERGRID", (0, 0), (-1, -1), 0.5, colors.HexColor("#e2e8f0")),
+            ("ROWBACKGROUNDS", (0, 1), (-1, -1), [colors.white, colors.HexColor("#f8fafc")]),
+            ("TOPPADDING", (0, 0), (-1, -1), 4),
+            ("BOTTOMPADDING", (0, 0), (-1, -1), 4),
+            ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
+        ]))
+        elementos.append(tbl_det)
+
+    # ── Pie de página ──
+    elementos.append(Spacer(1, 20))
+    elementos.append(HRFlowable(width="100%", thickness=0.5, color=colors.HexColor("#cbd5e1")))
+    pie_style = ParagraphStyle("Pie", parent=styles["Normal"],
+                               fontSize=7.5, textColor=colors.HexColor("#94a3b8"),
+                               alignment=TA_CENTER, spaceBefore=6)
+    elementos.append(Paragraph(
+        f"Generado el {datetime.now().strftime('%d/%m/%Y %H:%M')} — Sistema ERP",
+        pie_style,
+    ))
+
+    doc.build(elementos)
+    buf.seek(0)
+    return buf
+
+
+@router.get("/tickets/informe-pdf")
+def informe_tickets_pdf(
+    mes: int = Query(..., ge=1, le=12, description="Mes (1-12)"),
+    anio: int = Query(..., ge=2020, le=2099, description="Año"),
+    db: Session = Depends(get_db),
+    token: dict = Depends(verificar_token),
+):
+    """
+    Genera un informe PDF con métricas de tickets del mes/año indicados.
+    - ADMIN/SOPORTE: todos los tickets de todas las empresas.
+    - USUARIO: solo sus propios tickets.
+    """
+    if not Ticket:
+        raise HTTPException(status_code=500, detail="Módulo de tickets no disponible")
+
+    id_accs = token.get("id_accs")
+    id_empresa = token.get("id_emp")
+    es_ti = _es_ti(token)
+
+    # Base query filtrada por mes y año
+    query = (
+        db.query(Ticket)
+        .join(Personal, Personal.ID_PERSONAL == Ticket.ID_PERSONAL)
+        .join(Contrato, Contrato.ID_PERSONAL == Personal.ID_PERSONAL)
+        .filter(
+            Contrato.ID_ESTADO_CONTRATO == 1,
+            extract("month", Ticket.FECH_CREACION) == mes,
+            extract("year", Ticket.FECH_CREACION) == anio,
+        )
+    )
+
+    nombre_usuario = ""
+    if es_ti:
+        # Admin/Soporte ven todos
+        pass
+    else:
+        # Usuario solo sus tickets
+        persona = _personal_por_accs(db, id_accs)
+        if not persona:
+            raise HTTPException(status_code=404, detail="Personal no encontrado")
+        query = (
+            query
+            .join(Cargo, Cargo.ID_CARGO == Contrato.ID_CARGO)
+            .filter(Cargo.ID_EMP == id_empresa, Ticket.ID_PERSONAL == persona.ID_PERSONAL)
+        )
+        nombre_usuario = f"{persona.NOMBRES} {persona.APE_PATERNO} {persona.APE_MATERNO}"
+
+    tickets = query.order_by(Ticket.FECH_CREACION.asc()).all()
+
+    # Serializar para el generador de PDF
+    tickets_data = []
+    for t in tickets:
+        cat = db.query(CategoriaTicket).filter(
+            CategoriaTicket.ID_CATEGORIA == t.ID_CATEGORIA
+        ).first() if CategoriaTicket and t.ID_CATEGORIA else None
+
+        tickets_data.append({
+            "id_ticket": t.ID_TICKET,
+            "estado": t.ESTADO,
+            "prioridad": t.PRIORIDAD,
+            "asunto": t.ASUNTO,
+            "categoria": cat.DESCRIP if cat else None,
+            "fech_creacion": str(t.FECH_CREACION) if t.FECH_CREACION else None,
+            "fech_cierre": str(t.FECH_CIERRE) if t.FECH_CIERRE else None,
+        })
+
+    pdf_buf = _generar_pdf_tickets(tickets_data, mes, anio, nombre_usuario)
+    nombre_mes = MESES_ES[mes] if 1 <= mes <= 12 else str(mes)
+    filename = f"Informe_Tickets_{nombre_mes}_{anio}.pdf"
+
+    return StreamingResponse(
+        pdf_buf,
+        media_type="application/pdf",
+        headers={"Content-Disposition": f'attachment; filename="{filename}"'},
+    )
 
 
 # ── CRUD Tickets ─────────────────────────────────

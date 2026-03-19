@@ -1,10 +1,11 @@
-import React, { useReducer, useEffect, useCallback, useState } from 'react';
+import { useReducer, useEffect, useCallback, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import Img from '../components/Img';
 import IconoFa from '../components/IconoFa';
 import { faSun, faMoon, faEye, faEyeSlash, faBuilding, faUser, faLock, faArrowRightToBracket } from '@fortawesome/free-solid-svg-icons';
 import { API_URL } from '../auth';
+import { getSession } from '../utils/session';
 import logoERP from '../logo.svg';
 import '/src/styles/Login.css';
 
@@ -71,7 +72,7 @@ export default function Login() {
     }, [darkMode]);
 
     useEffect(() => {
-        const session = JSON.parse(localStorage.getItem('session'));
+        const session = getSession();
         if (session && session.usuario && session.access_token) {
             const idEmp = session.usuario.id_empresa;
             if (idEmp) {
@@ -152,7 +153,7 @@ export default function Login() {
         {/* Lado izquierdo — foto/banner */}
         <div className="login-imagen">
             <div className="login-imagen-contenido">
-                <Img ruta={'/public/banner.webp'} className="banner" />
+                <Img ruta={'/banner.webp'} className="banner" />
             </div>
         </div>
 

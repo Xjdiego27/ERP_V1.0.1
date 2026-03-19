@@ -1,8 +1,10 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import IconoFa from './IconoFa';
 import StickerPicker from './StickerPicker';
-import { faTimes, faPaperPlane, faCircle, faMinus, faExpand, faFaceSmile, faBolt, faPaperclip, faDownload } from '@fortawesome/free-solid-svg-icons';
+import { faTimes, faPaperPlane, faCircle, faMinus, faExpand, faFaceSmile, faBolt, faPaperclip } from '@fortawesome/free-solid-svg-icons';
 import { CHAT_URL, obtenerToken } from '../auth';
+import { getSession } from '../utils/session';
+import { formatHora as formatHoraUtil, subirArchivo as subirArchivoUtil, renderContenidoMensaje } from '../utils/chatUtils';
 import { buildStickerToken, parseStickerToken } from '../data/stickerCatalog';
 
 // ── Sonidos MSN ──
@@ -52,7 +54,7 @@ export default function ChatVentana({ contacto, socket, onCerrar, posicion, enLi
     const fileInputRef = useRef(null);
 
     // Mi ID_PERSONAL
-    const session = JSON.parse(localStorage.getItem('session'));
+    const session = getSession();
     const miIdPersonal = session?.usuario?.id_personal;
 
     // ── Cargar historial ──
@@ -196,18 +198,10 @@ export default function ChatVentana({ contacto, socket, onCerrar, posicion, enLi
     }
 
     // ── Subir archivo (reutilizable para input y drag & drop) ──
-    async function subirArchivo(file) {
+    async function handleSubirArchivo(file) {
         if (!file || !socket) return;
-        const token = obtenerToken();
-        const formData = new FormData();
-        formData.append('file', file);
         try {
-            const resp = await fetch(CHAT_URL + '/upload', {
-                method: 'POST',
-                headers: { 'Authorization': 'Bearer ' + token },
-                body: formData,
-            });
-            const data = await resp.json();
+            const data = await subirArchivoUtil(file);
             if (data.ok) {
                 const esImagen = file.type.startsWith('image/');
                 socket.emit('enviar_mensaje', {
@@ -230,7 +224,7 @@ export default function ChatVentana({ contacto, socket, onCerrar, posicion, enLi
     // ── Adjuntar archivo (input file) ──
     async function handleFileUpload(e) {
         const file = e.target.files?.[0];
-        await subirArchivo(file);
+        await handleSubirArchivo(file);
         e.target.value = '';
     }
 
@@ -250,7 +244,7 @@ export default function ChatVentana({ contacto, socket, onCerrar, posicion, enLi
         e.stopPropagation();
         setArrastrando(false);
         const file = e.dataTransfer?.files?.[0];
-        if (file) await subirArchivo(file);
+        if (file) await handleSubirArchivo(file);
     }
 
     // ── Notificar que estoy escribiendo ──
@@ -261,85 +255,14 @@ export default function ChatVentana({ contacto, socket, onCerrar, posicion, enLi
         }
     }
 
-    // ── Formato hora ──
-    function formatHora(fecha) {
-        if (!fecha) return '';
-        const d = new Date(fecha);
-        const hoy = new Date();
-        const esHoy = d.toDateString() === hoy.toDateString();
-        const hora = d.toLocaleTimeString('es-PE', { hour: '2-digit', minute: '2-digit' });
-        if (esHoy) return hora;
-        return d.toLocaleDateString('es-PE', { day: '2-digit', month: '2-digit' }) + ' ' + hora;
-    }
+    // ── Formato hora (usa util compartido) ──
+    const formatHora = formatHoraUtil;
 
     // Posición de la ventana
     const offsetRight = modeMobile ? 0 : (panelAbierto ? 400 : 80) + posicion * 330;
 
     // Clase mobile
     const clasesMobile = modeMobile ? ' chat-ventana-mobile' : '';
-
-    // ── Descargar archivo al equipo local ──
-    function descargarArchivo(url, nombreArchivo) {
-        fetch(url)
-            .then(function (resp) { return resp.blob(); })
-            .then(function (blob) {
-                var a = document.createElement('a');
-                a.href = URL.createObjectURL(blob);
-                a.download = nombreArchivo || 'archivo';
-                document.body.appendChild(a);
-                a.click();
-                document.body.removeChild(a);
-                URL.revokeObjectURL(a.href);
-            })
-            .catch(function (err) {
-                console.error('Error al descargar:', err);
-            });
-    }
-
-    function renderContenidoMensaje(mensaje) {
-        // Archivo adjunto
-        if (mensaje.tipo === 'archivo' && mensaje.archivo_url) {
-            const esImagen = /\.(jpg|jpeg|png|gif|webp|bmp|svg)$/i.test(mensaje.archivo_url);
-            if (esImagen) {
-                return (
-                    <div className="chat-msg-archivo">
-                        <a href={CHAT_URL + mensaje.archivo_url} target="_blank" rel="noopener noreferrer">
-                            <img src={CHAT_URL + mensaje.archivo_url} alt={mensaje.archivo_nombre} className="chat-msg-img-preview" />
-                        </a>
-                        <div className="chat-msg-archivo-footer">
-                            <span className="chat-msg-archivo-nombre">{mensaje.archivo_nombre}</span>
-                            <button
-                                className="chat-msg-descargar-btn"
-                                title="Guardar en tu equipo"
-                                onClick={function () { descargarArchivo(CHAT_URL + mensaje.archivo_url, mensaje.archivo_nombre); }}
-                            >
-                                <IconoFa icono={faDownload} /> Guardar
-                            </button>
-                        </div>
-                    </div>
-                );
-            }
-            return (
-                <div className="chat-msg-archivo">
-                    <a href={CHAT_URL + mensaje.archivo_url} target="_blank" rel="noopener noreferrer" className="chat-msg-file-link">
-                        📎 {mensaje.archivo_nombre}
-                    </a>
-                    <button
-                        className="chat-msg-descargar-btn"
-                        title="Guardar en tu equipo"
-                        onClick={function () { descargarArchivo(CHAT_URL + mensaje.archivo_url, mensaje.archivo_nombre); }}
-                    >
-                        <IconoFa icono={faDownload} /> Guardar
-                    </button>
-                </div>
-            );
-        }
-        const sticker = parseStickerToken(mensaje.contenido);
-        if (sticker) {
-            return <img src={sticker.img} alt={sticker.label} className="chat-msg-sticker" />;
-        }
-        return <span className="chat-msg-texto">{mensaje.contenido}</span>;
-    }
 
     return (
         <div
@@ -431,7 +354,7 @@ export default function ChatVentana({ contacto, socket, onCerrar, posicion, enLi
                                         <div className="chat-msg-contenido">
                                             {!esMio && <strong className="chat-msg-nombre">{contacto.nombre.split(' ')[0]}</strong>}
                                             <div className={'chat-msg-burbuja' + (esSticker ? ' chat-msg-burbuja-sticker' : '')}>
-                                                {renderContenidoMensaje(m)}
+                                                {renderContenidoMensaje(m, true)}
                                                 <span className="chat-msg-hora">{formatHora(m.fecha || m.fecha_creacion)}</span>
                                             </div>
                                         </div>

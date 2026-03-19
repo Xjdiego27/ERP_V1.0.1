@@ -29,4 +29,9 @@ async def registrar_accion(usuario, accion, modulo, id_afectado=None, nombre_afe
         "datos_anteriores": datos_anteriores or {},
         "fecha": datetime.now().isoformat(),
     }
-    await coleccion_auditoria.insert_one(doc)
+    try:
+        await coleccion_auditoria.insert_one(doc)
+    except Exception:
+        # Auditoría nunca debe romper la operación principal
+        import traceback
+        traceback.print_exc()

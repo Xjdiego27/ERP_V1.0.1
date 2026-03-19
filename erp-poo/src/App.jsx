@@ -2,6 +2,7 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import Login from './modules/Login';
 import Dashboard from './modules/Dashboard';
+import ErrorBoundary from './components/ErrorBoundary';
 import DashboardHome from './modules/DashboardHome';
 import RRHH from './modules/RRHH';
 import PersonalDetalle from './modules/PersonalDetalle';
@@ -25,6 +26,7 @@ const queryClient = new QueryClient();
 function App() {
     return (
         <QueryClientProvider client={queryClient}>
+        <ErrorBoundary>
         <div className='App'>
             <Router>
                 <Routes>
@@ -48,6 +50,7 @@ function App() {
                 </Routes>
             </Router>
         </div>
+        </ErrorBoundary>
         </QueryClientProvider>
     );
 }

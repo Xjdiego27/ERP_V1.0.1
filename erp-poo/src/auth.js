@@ -29,8 +29,13 @@ const CHAT_URL = getChatUrl();
 
 // Obtener el token del localStorage
 function obtenerToken() {
-  const session = JSON.parse(localStorage.getItem('session'));
-  return session?.access_token ?? null;
+  try {
+    const session = JSON.parse(localStorage.getItem('session'));
+    return session?.access_token ?? null;
+  } catch (_) {
+    localStorage.removeItem('session');
+    return null;
+  }
 }
 
 // Headers con el token para peticiones JSON

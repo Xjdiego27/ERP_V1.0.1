@@ -214,6 +214,8 @@ export default function DocumentosTab(props) {
       'año a selección1': 'Año',
       'mes seleccionado2': 'Mes (segundo)',
       'año seleccionado2': 'Año (segundo)',
+      'mes de NS': 'Mes de NS',
+      'año de NS': 'Año de NS',
     };
     return mapa[campo] || campo;
   }

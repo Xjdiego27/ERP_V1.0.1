@@ -1,6 +1,5 @@
 from sqlalchemy.orm import Session
-from database import Acceso, Personal, RolAccs, Contrato, Cargo, Empresa, AsignacionEmp
-from sqlalchemy import and_
+from database import Acceso, Personal, RolAccs, Empresa, AsignacionEmp
 from rutas_password import verificar_password, _es_texto_plano
 
 
@@ -79,40 +78,3 @@ def validar_usuario_br(db: Session, usuario_input: str, password_input: str):
             "mensaje": f"CLAVE INCORRECTA: {intentos}/3",
             "intentos": intentos
         }
-
-
-def obtener_datos_empresa(db: Session, id_accs: int, id_empresa: int):
-    """
-    Dado un usuario (id_accs) y la empresa seleccionada,
-    obtiene el cargo del contrato vigente (ID_ESTADO_CONTRATO=1) en esa empresa.
-    """
-    personal = db.query(Personal).filter(Personal.ID_ACCS == id_accs).first()
-    if not personal:
-        return None
-
-    contrato_obj = (
-        db.query(Contrato)
-        .join(Cargo, Cargo.ID_CARGO == Contrato.ID_CARGO)
-        .filter(
-            Contrato.ID_PERSONAL == personal.ID_PERSONAL,
-            Cargo.ID_EMP == id_empresa,
-            Contrato.ID_ESTADO_CONTRATO == 1,
-        )
-        .first()
-    )
-
-    cargo_nombre = None
-    if contrato_obj:
-        cargo_obj = db.query(Cargo).filter(Cargo.ID_CARGO == contrato_obj.ID_CARGO).first()
-        if cargo_obj:
-            cargo_nombre = cargo_obj.DESCRIP
-
-    acceso = db.query(Acceso).filter(Acceso.ID_ACCS == id_accs).first()
-    rol = db.query(RolAccs).filter(RolAccs.ID_ROL == acceso.ID_ROL).first() if acceso else None
-
-    return {
-        "id_personal": personal.ID_PERSONAL,
-        "cargo": cargo_nombre,
-        "rol": rol.DESCRIP if rol else None,
-        "id_rol": acceso.ID_ROL if acceso else None,
-    }

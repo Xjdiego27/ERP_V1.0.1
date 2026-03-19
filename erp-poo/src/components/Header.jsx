@@ -1,4 +1,4 @@
-import React, { useRef, useState, useEffect, useCallback } from 'react';
+import { useRef, useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useHeader } from '../hooks/useHeader';
 import { useClickAfuera } from '../hooks/useClickAfuera';
@@ -73,7 +73,7 @@ export default function Header({ onToggleMenu, onToggleEmpresa }) {
     useEffect(function () {
         cargarNotificaciones();
         // Refrescar cada 5 segundos para notificaciones en tiempo real
-        var intervalo = setInterval(cargarNotificaciones, 5 * 1000);
+        var intervalo = setInterval(cargarNotificaciones, 30 * 1000);
         return function () { clearInterval(intervalo); };
     }, [cargarNotificaciones]);
 

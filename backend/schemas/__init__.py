@@ -1,4 +1,3 @@
-# Importamos todo para exponerlo en un solo punto
-from .auth_schema import LoginRequest, LoginResponse
+# Re-exports centralizados
+from .auth_schema import LoginRequest, SeleccionEmpresaRequest
 from .empresa_schema import EmpresaBase, EmpresaResponse
-# gregando aquí tus nuevas tablas
