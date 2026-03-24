@@ -1,7 +1,16 @@
 __pycache__
 *.pyc
+*.pyo
 .env
+.env.*
 .git
+.gitignore
 .venv
 venv
 *.log
+*.md
+.vscode
+.idea
+Dockerfile
+.dockerignore
+tests/

@@ -17,6 +17,7 @@
 }
 
 .cumple-modal {
+    position: relative;
     background: var(--bg-card, #fff);
     border-radius: 16px;
     padding: 32px;
@@ -25,6 +26,26 @@
     text-align: center;
     box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
     animation: cumpleModalIn 0.35s ease-out;
+}
+
+/* Botón cerrar (X) — saludo voluntario */
+.cumple-modal-btn-cerrar {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: none;
+    border: none;
+    font-size: 1.2rem;
+    color: var(--text-secondary, #94a3b8);
+    cursor: pointer;
+    padding: 4px 8px;
+    border-radius: 50%;
+    transition: background 0.2s, color 0.2s;
+    z-index: 2;
+}
+.cumple-modal-btn-cerrar:hover {
+    background: rgba(0,0,0,0.08);
+    color: var(--text-primary, #2c3e50);
 }
 
 @keyframes cumpleModalIn {

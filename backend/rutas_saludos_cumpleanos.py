@@ -321,7 +321,7 @@ async def archivar_y_limpiar_saludos():
     y luego los elimina de la colección activa.
     """
     hoy = datetime.now().date()
-    # Buscar documentos donde la fecha del cumpleaños ya venció (+1 día)
+    # Buscar documentos donde la fecha del cumpleaños ya venció (+2 días)
     cursor = coleccion_saludos_cumple.find({})
     archivados = 0
     eliminados = 0
@@ -332,8 +332,8 @@ async def archivar_y_limpiar_saludos():
             if not fecha_cumple_str:
                 continue
             fecha_cumple = datetime.strptime(fecha_cumple_str, "%Y-%m-%d").date()
-            # Si ya pasó más de 1 día desde el cumpleaños → archivar y eliminar
-            if (hoy - fecha_cumple).days > 1:
+            # Si ya pasó más de 2 días desde el cumpleaños → archivar y eliminar
+            if (hoy - fecha_cumple).days > 2:
                 # Copiar a archivo (sin _id para evitar conflicto)
                 doc_archivo = {k: v for k, v in doc.items() if k != "_id"}
                 doc_archivo["fecha_archivado"] = datetime.now()

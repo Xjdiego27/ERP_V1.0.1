@@ -3,9 +3,9 @@
 -- https://www.phpmyadmin.net/
 --
 -- Servidor: 127.0.0.1
--- Tiempo de generación: 09-03-2026 a las 16:34:02
+-- Tiempo de generación: 24-03-2026 a las 17:47:01
 -- Versión del servidor: 10.4.32-MariaDB
--- Versión de PHP: 8.2.12
+-- Versión de PHP: 8.0.30
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 START TRANSACTION;
@@ -18,7 +18,7 @@ SET time_zone = "+00:00";
 /*!40101 SET NAMES utf8mb4 */;
 
 --
--- Base de datos: `nueva`
+-- Base de datos: `erp`
 --
 
 -- --------------------------------------------------------
@@ -38,6 +38,58 @@ CREATE TABLE `acceso` (
   `ID_ESTADO` int(11) NOT NULL,
   `ID_ROL` int(11) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Volcado de datos para la tabla `acceso`
+--
+
+INSERT INTO `acceso` (`ID_ACCS`, `FECH`, `ID_USERC`, `USUARIO`, `PASSWORD`, `RESET_PASS`, `INTENT_LOGIN`, `ID_ESTADO`, `ID_ROL`) VALUES
+(1, '2026-03-10 17:07:13', NULL, 'ABLONDET', '1234', 0, 0, 1, 3),
+(2, '2026-03-10 17:07:13', NULL, 'AHINOJOSA', '1234', 0, 0, 1, 3),
+(3, '2026-03-10 17:07:13', NULL, 'ASINCHE', '1234', 0, 0, 1, 3),
+(4, '2026-03-10 17:07:13', NULL, 'BBACA', '$argon2id$v=19$m=65536,t=3,p=4$zF6jKm4lm63MhE7PgdJYGg$5LKPynILcKxo8P2FXWswWGVLU+SC7KRGg0VJUT+mehU', 0, 0, 1, 3),
+(5, '2026-03-10 17:07:13', NULL, 'BCONDESO', '$argon2id$v=19$m=65536,t=3,p=4$0mvwpfJ1fm2/D+QtScQaOw$wdKNdzHwqxUhlGlQnYUDnUv6rCpggK4Q1BVcNp1hdqQ', 0, 0, 1, 3),
+(6, '2026-03-10 17:07:13', NULL, 'CILLESCA', '1234', 0, 0, 1, 5),
+(7, '2026-03-10 17:07:13', NULL, 'CVASQUEZ', '1234', 0, 0, 1, 3),
+(8, '2026-03-10 17:07:13', NULL, 'CVIDAURRE', '1234', 0, 0, 1, 3),
+(9, '2026-03-10 17:07:13', NULL, 'EDIAZ', '1234', 0, 0, 1, 5),
+(10, '2026-03-10 17:07:13', NULL, 'EGUTIERREZ', '1234', 0, 1, 1, 3),
+(11, '2026-03-10 17:07:13', NULL, 'EOCHOA', '1234', 0, 0, 1, 3),
+(12, '2026-03-10 17:07:13', NULL, 'FCHILON', '1234', 0, 0, 1, 3),
+(13, '2026-03-10 17:07:13', NULL, 'GRAMIREZ', '$argon2id$v=19$m=65536,t=3,p=4$K284cgJ/ckJG6kG3m8S7qA$xsCplZbFPXH275oyts4o8a7awYxPgwAGxj9MrvqZxLQ', 0, 0, 1, 2),
+(14, '2026-03-10 17:07:13', NULL, 'GZUNIGA', '$argon2id$v=19$m=65536,t=3,p=4$iNDICu2bjCe8wi38QecigA$uY0yWi9gVrBGRNyKUUBSyrvUI0AawudRZzwx/cWxvQk', 0, 0, 1, 3),
+(15, '2026-03-10 17:07:13', NULL, 'HMARIN', '1234', 0, 0, 1, 5),
+(16, '2026-03-10 17:07:13', NULL, 'KCALLA', '1234', 0, 0, 1, 3),
+(17, '2026-03-10 17:07:13', NULL, 'LVICENTE', '1234', 0, 0, 1, 3),
+(18, '2026-03-10 17:07:13', NULL, 'MALDAY', '$argon2id$v=19$m=65536,t=3,p=4$w2FKT8OYKGbIruSIZy0bEw$mragCcCF7TMGHyBYxBWTOy7MbEWyQS0GsNVE8unB3Io', 0, 0, 1, 3),
+(19, '2026-03-10 17:07:13', NULL, 'MJULCA', '$argon2id$v=19$m=65536,t=3,p=4$9tiP5HZitvf/+Fym4V9cKw$m8gIGPKJTBoMOjuKz3XtalT+liPgsb4BfeSp7vKCjdk', 0, 0, 1, 3),
+(20, '2026-03-10 17:07:13', NULL, 'MORTIZ', '$argon2id$v=19$m=65536,t=3,p=4$/KEpNpKru3vM5sojkTnoRg$e/1yXe4GxZrc2Urmpur8uZlROXD5HA2I0FYeunMzjlo', 0, 0, 1, 3),
+(21, '2026-03-10 17:07:13', NULL, 'MRUIZ', '1234', 0, 0, 1, 3),
+(22, '2026-03-10 17:07:13', NULL, 'NCHAUCA', '1234', 0, 0, 1, 5),
+(23, '2026-03-10 17:07:13', NULL, 'PROMERO', '1234', 0, 0, 1, 3),
+(24, '2026-03-10 17:07:13', NULL, 'RMANAYAY', '1234', 0, 0, 1, 3),
+(25, '2026-03-10 17:07:13', NULL, 'SJAUREGUI', '1234', 0, 0, 1, 3),
+(26, '2026-03-10 17:07:13', NULL, 'SVARGAS', '$argon2id$v=19$m=65536,t=3,p=4$VN3beBNzghkLJEV6Ho+37w$IktCDIdQbWQGRx2MEmdYMz6i3iAROJ+IDiFabFLrhbQ', 0, 0, 1, 3),
+(27, '2026-03-10 17:07:13', NULL, 'TTORRES', '$argon2id$v=19$m=65536,t=3,p=4$AF/GlKJbhTDb/2USMQwDJw$OpxdVuMBC9udH1iBmyGHEq4Hnjr3FurXF8HJYEFW95o', 0, 1, 1, 3),
+(28, '2026-03-10 17:07:13', NULL, 'AHUAMANI', '1234', 0, 0, 1, 3),
+(29, '2026-03-10 17:07:13', NULL, 'CSECLEN', '1234', 0, 0, 1, 3),
+(30, '2026-03-10 17:07:13', NULL, 'EALVINO', '$argon2id$v=19$m=65536,t=3,p=4$G4PP/zmnXR36yygRp7qHfA$qseijoIHJoyi1UdqDkKSqk92O6Ez1mPNtsjN797+Zng', 0, 0, 1, 3),
+(31, '2026-03-10 17:07:13', NULL, 'EMARINI', '1234', 0, 0, 1, 5),
+(32, '2026-03-10 17:07:13', NULL, 'FANDIA', '1234', 0, 0, 1, 3),
+(33, '2026-03-10 17:07:13', NULL, 'FDURAN', '1234', 0, 0, 1, 3),
+(34, '2026-03-10 17:07:13', NULL, 'HMARINI', '1234', 0, 0, 1, 5),
+(35, '2026-03-10 17:07:13', NULL, 'JMAYTA', '1234', 0, 0, 1, 3),
+(36, '2026-03-10 17:07:13', NULL, 'LMENA', '1234', 0, 0, 1, 3),
+(37, '2026-03-10 17:07:13', NULL, 'SBENITES', '1234', 0, 0, 1, 3),
+(38, '2026-03-10 17:07:13', NULL, 'VVILCA', '1234', 0, 0, 1, 3),
+(39, '2026-03-10 17:07:13', NULL, 'ZCAMARGO', '$argon2id$v=19$m=65536,t=3,p=4$78DHw6EMzEEa23mHtK8FGA$sYhtofRe8sjp6jV9o7lQm8ww5AVpwHJlpWu/ku7B6oA', 0, 0, 1, 3),
+(40, '2026-03-10 17:07:13', NULL, 'FDELGADO', '$argon2id$v=19$m=65536,t=3,p=4$44eq7vCUWaKFdxV/fU1slw$um0UYpTSVTe1PDG8CjqZpuAXALd6RI1ckVOm+BoYKz0', 0, 0, 1, 3),
+(41, '2026-03-10 17:07:13', NULL, 'HPEREZ', '1234', 0, 0, 1, 3),
+(42, '2026-03-10 17:07:13', NULL, 'JCARRASCO', '$argon2id$v=19$m=65536,t=3,p=4$dNP9GI5k3ziufFmuIJlZ/g$57EmqcvsirAdDeCRCkUKms7h39k+i4SelkqnDXDCnSs', 0, 0, 1, 3),
+(43, '2026-03-10 17:07:13', NULL, 'JFERNANDEZ', '$argon2id$v=19$m=65536,t=3,p=4$VFvcI9Hnn4wfHCrYfQfHIw$taPxNfCer4cNv8L5y/iUail37Txcn72rQNrPcF5vO2E', 0, 0, 1, 1),
+(44, '2026-03-10 17:07:13', NULL, 'LHUAMANI', '$argon2id$v=19$m=65536,t=3,p=4$nn8BUfpUAn1Qg6qx4uflfg$OdGzG+0QYNYQhguEpRGCOeA7yifSSqZDFUD0c8gR08o', 0, 0, 1, 4),
+(45, '2026-03-10 17:07:13', NULL, 'NBUTILER', '$argon2id$v=19$m=65536,t=3,p=4$ddI6J6W3VqB0ir0G/3AWXA$dGwvG46lOPPadbZuMz2W/541ujTdWaLNJFgclyaQLcY', 0, 0, 1, 4),
+(46, '2026-03-11 14:27:36', NULL, 'GRAMIREZ1', '$argon2id$v=19$m=65536,t=3,p=4$FM2QNGDlhDkqPAAs/NTwRw$1i5q07Rpb37SZu0i9uGL/PC5WueBz+fiXtr7VHoyLxk', 0, 0, 1, 3);
 
 -- --------------------------------------------------------
 
@@ -75,6 +127,13 @@ CREATE TABLE `almacenamiento` (
   `DESCRIP` varchar(255) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
+--
+-- Volcado de datos para la tabla `almacenamiento`
+--
+
+INSERT INTO `almacenamiento` (`ID_ALMC`, `ID_EQUIPO`, `ID_DISCO`, `DESCRIP`) VALUES
+(1, 1, 1, 'Windows');
+
 -- --------------------------------------------------------
 
 --
@@ -92,6 +151,13 @@ CREATE TABLE `anexos` (
   `ID_AREA` int(11) NOT NULL,
   `ID_CARGO` int(11) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Volcado de datos para la tabla `anexos`
+--
+
+INSERT INTO `anexos` (`ID_DOCUMENT`, `ID_CONTR`, `ID_TDOCUMENT`, `ID_TMOTIVO`, `FECHA_INICIO`, `FECHA_FIN`, `SUELDO`, `ID_AREA`, `ID_CARGO`) VALUES
+(1, 2, 2, NULL, '2026-03-19', '2026-06-19', '15000', 2, 13);
 
 -- --------------------------------------------------------
 
@@ -131,7 +197,46 @@ CREATE TABLE `asignacion_accs` (
 --
 
 INSERT INTO `asignacion_accs` (`ID_ROL`, `ID_PERM`) VALUES
-(1, 1);
+(1, 1),
+(1, 2),
+(1, 3),
+(1, 4),
+(1, 5),
+(1, 6),
+(1, 7),
+(1, 8),
+(1, 9),
+(1, 10),
+(1, 11),
+(1, 12),
+(2, 1),
+(2, 2),
+(2, 4),
+(2, 5),
+(2, 6),
+(2, 7),
+(2, 8),
+(2, 9),
+(2, 12),
+(3, 6),
+(3, 8),
+(4, 1),
+(4, 2),
+(4, 3),
+(4, 8),
+(4, 10),
+(5, 1),
+(5, 2),
+(5, 3),
+(5, 4),
+(5, 5),
+(5, 6),
+(5, 7),
+(5, 8),
+(5, 9),
+(5, 10),
+(5, 11),
+(5, 12);
 
 -- --------------------------------------------------------
 
@@ -147,6 +252,38 @@ CREATE TABLE `asignacion_chip` (
   `ID_CHIPS` int(11) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
+--
+-- Volcado de datos para la tabla `asignacion_chip`
+--
+
+INSERT INTO `asignacion_chip` (`ID_CHIP_ASIG`, `FECH_ASIG`, `FECHA_DEVOL`, `ID_PERSONAL`, `ID_CHIPS`) VALUES
+(1, '2026-03-05 00:00:00', NULL, 8, 1),
+(2, '2026-03-05 00:00:00', NULL, 23, 2),
+(3, '2026-03-05 00:00:00', NULL, 24, 3),
+(4, '2026-03-05 00:00:00', NULL, 44, 4),
+(5, '2026-03-05 00:00:00', NULL, 4, 5),
+(6, '2026-03-05 00:00:00', NULL, 11, 6),
+(7, '2026-03-05 00:00:00', NULL, 45, 7),
+(8, '2026-03-05 00:00:00', NULL, 10, 8),
+(9, '2026-03-05 00:00:00', NULL, 20, 9),
+(10, '2026-03-05 00:00:00', NULL, 14, 10),
+(11, '2026-03-05 00:00:00', NULL, 28, 11),
+(12, '2026-03-05 00:00:00', NULL, 16, 12),
+(13, '2026-03-05 00:00:00', NULL, 27, 13),
+(14, '2026-03-05 00:00:00', NULL, 5, 14),
+(15, '2026-03-05 00:00:00', NULL, 39, 15),
+(16, '2026-03-05 00:00:00', NULL, 18, 16),
+(17, '2026-03-05 00:00:00', NULL, 19, 17),
+(18, '2026-03-05 00:00:00', NULL, 17, 18),
+(19, '2026-03-05 00:00:00', NULL, 9, 19),
+(20, '2026-03-05 00:00:00', NULL, 22, 20),
+(21, '2026-03-05 00:00:00', NULL, 42, 21),
+(22, '2026-03-05 00:00:00', NULL, 7, 22),
+(23, '2026-03-05 00:00:00', NULL, 12, 23),
+(24, '2026-03-05 00:00:00', NULL, 30, 24),
+(25, '2026-03-05 00:00:00', NULL, 1, 26),
+(26, '2026-03-05 00:00:00', NULL, 37, 27);
+
 -- --------------------------------------------------------
 
 --
@@ -157,6 +294,71 @@ CREATE TABLE `asignacion_emp` (
   `ID_ACCS` int(11) NOT NULL,
   `ID_EMP` int(11) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Volcado de datos para la tabla `asignacion_emp`
+--
+
+INSERT INTO `asignacion_emp` (`ID_ACCS`, `ID_EMP`) VALUES
+(1, 1),
+(2, 1),
+(3, 1),
+(4, 1),
+(5, 1),
+(6, 1),
+(6, 2),
+(6, 3),
+(7, 1),
+(8, 1),
+(9, 1),
+(10, 1),
+(11, 1),
+(12, 1),
+(13, 1),
+(13, 2),
+(13, 3),
+(14, 1),
+(15, 1),
+(15, 2),
+(15, 3),
+(16, 1),
+(17, 1),
+(18, 1),
+(19, 1),
+(20, 1),
+(21, 1),
+(22, 1),
+(23, 1),
+(24, 1),
+(25, 1),
+(26, 1),
+(27, 1),
+(28, 2),
+(29, 2),
+(30, 2),
+(31, 1),
+(31, 2),
+(31, 3),
+(32, 2),
+(33, 2),
+(34, 2),
+(35, 2),
+(36, 2),
+(37, 2),
+(38, 2),
+(39, 2),
+(40, 2),
+(41, 2),
+(42, 2),
+(43, 1),
+(43, 2),
+(43, 3),
+(44, 1),
+(44, 2),
+(44, 3),
+(45, 1),
+(45, 2),
+(45, 3);
 
 -- --------------------------------------------------------
 
@@ -171,6 +373,14 @@ CREATE TABLE `asignacion_equipo` (
   `ID_PERSONAL` int(11) NOT NULL,
   `ID_EQUIPO` int(11) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Volcado de datos para la tabla `asignacion_equipo`
+--
+
+INSERT INTO `asignacion_equipo` (`ID_ASIG`, `FECH_ASIG`, `FECHA_DEVOL`, `ID_PERSONAL`, `ID_EQUIPO`) VALUES
+(1, '2026-03-11 00:00:00', '2026-03-11 00:00:00', 13, 1),
+(2, '2026-03-11 00:00:00', '2026-03-11 00:00:00', 13, 1);
 
 -- --------------------------------------------------------
 
@@ -253,47 +463,43 @@ CREATE TABLE `cargo` (
 --
 
 INSERT INTO `cargo` (`ID_CARGO`, `DESCRIP`, `ID_EMP`, `ID_DEPART`) VALUES
-(1, 'SID - Auxiliar de SAP', 1, 1),
-(2, 'SID - Auxiliar de Transporte', 1, 1),
-(3, 'SID - Auxiliar de Ventas', 1, 1),
-(4, 'SID - Auxiliar de Publicidad', 1, 1),
-(5, 'SID - Auxiliar Electricista', 1, 1),
-(6, 'SID - Auxiliar de Pintura', 1, 1),
-(7, 'SID - Auxiliar de Recursos Humanos', 1, 1),
-(8, 'SID - Auxiliar de Soldadura', 1, 1),
-(9, 'SID - Auxiliar de Marketing', 1, 1),
-(10, 'SID - Auxiliar de Contabilidad', 1, 1),
-(11, 'SID - Gerente General', 1, 1),
-(12, 'SID - Gerente de Administración', 1, 1),
-(13, 'EQ - Auxiliar de Contabilidad', 1, 1),
-(14, 'EQ - Auxiliar de Ventas', 1, 1),
-(15, 'EQ - Auxiliar de Almacén', 1, 1),
-(16, 'EQ - Auxiliar de Calidad', 1, 1),
-(17, 'EQ - Supervisor de SAP', 1, 1),
-(18, 'EQ - Gerente General', 1, 1),
-(19, 'Asistente de Facturación', 1, 1),
-(20, 'Jefe de Ingeniería', 1, 1),
-(21, 'Gestor de Ventas', 1, 1),
-(22, 'Gerente de Administración', 1, 1),
-(23, 'Coordinador de Calidad', 1, 1),
-(24, 'Gerente de Operaciones', 1, 1),
-(25, 'Asistente de Logística', 1, 1),
-(26, 'Asistente de Comercio Exterior', 1, 1),
-(27, 'Gerente Comercial', 1, 1),
-(28, 'Jefe de Finanzas', 1, 1),
-(29, 'Asistente de Tesorería', 1, 1),
-(30, 'Asistente de TI', 1, 1),
-(31, 'Asistente de Servicios', 1, 1),
-(32, 'Asistente de Almacén', 1, 1),
-(33, 'Operario de Soldadura', 1, 1),
-(34, 'Coordinador de Licitaciones', 1, 1),
-(35, 'Asesor de Ventas', 1, 1),
-(36, 'Operario de Ensamble', 1, 1),
-(37, 'Coordinador de Operaciones', 1, 1),
-(38, 'Jefe Comercial', 1, 1),
-(39, 'Asistente de Reglamento Interno', 1, 1),
-(40, 'Asistente de Contabilidad', 1, 1),
-(41, 'EQ - Auxiliar de Transporte y Despacho', 1, 1);
+(1, 'JEFE DE INGENIERIA', 1, 1),
+(2, 'GESTOR DE VENTAS', 1, 1),
+(3, 'OPERARIO DE ENSAMBLE', 1, 1),
+(4, 'ASISTENTE DE FACTURACIÓN', 1, 1),
+(5, 'GERENTE COMERCIAL', 1, 1),
+(6, 'ASISTENTE DE SERVICIOS', 1, 1),
+(7, 'COORDINADOR DE CONTABILIDAD', 1, 1),
+(8, 'GERENTE DE OPERACIONES', 1, 1),
+(9, 'ASISTENTE DE LOGISTICA', 1, 1),
+(10, 'ASISTENTE DE COMERCIO EXTERIOR', 1, 1),
+(11, 'COORDINADOR DE CALIDAD', 1, 1),
+(12, 'ASISTENTE DE TI', 1, 1),
+(13, 'JEFE COMERCIAL', 1, 1),
+(14, 'JEFE DE FINANZAS', 1, 1),
+(15, 'ASISTENTE DE VENTAS', 1, 1),
+(16, 'TESORERIA', 1, 1),
+(17, 'ASESOR DE VENTAS', 1, 1),
+(18, 'GERENTE DE ADMINISTRACIÓN', 1, 1),
+(19, 'COORDINADOR DE LICITACIONES', 1, 1),
+(20, 'ASISTENTE DE CONTABILIDAD', 1, 1),
+(21, 'COORDINADOR DE OPERACIONES', 1, 1),
+(22, 'AUXILIAR DE VENTAS', 2, 1),
+(23, 'AUXILIAR DE SOLDADURA', 2, 1),
+(24, 'ASISTENTE DE TRANSPORTE Y DESPACHO', 2, 1),
+(25, 'SUPERVISOR DE SAP', 2, 1),
+(26, 'AUXILIAR DE PLANTA', 2, 1),
+(27, 'AUXILIAR INSTRUMENTISTA', 2, 1),
+(28, 'GERENTE GENERAL', 2, 1),
+(29, 'AUXILIAR CONTABLE', 2, 1),
+(30, 'AUXILIAR DE PINTURA', 2, 1),
+(31, 'AUXILIAR DE DESPACHO', 2, 1),
+(32, 'ASISTENTE DE MARKETING', 2, 1),
+(33, 'AUXILIAR DE MARKETING', 3, 1),
+(34, 'AUXILIAR DE SOPORTE DE SERVICIOS', 3, 1),
+(35, 'AUXILIAR DE CALIDAD', 3, 1),
+(36, 'AUXILIAR DE TI', 3, 1),
+(37, 'AUXILIAR DE RRHH', 3, 1);
 
 -- --------------------------------------------------------
 
@@ -362,6 +568,41 @@ CREATE TABLE `chips` (
   `ID_DESCUENTO` int(11) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
+--
+-- Volcado de datos para la tabla `chips`
+--
+
+INSERT INTO `chips` (`ID_CHIPS`, `NUMERO`, `PRECIO`, `ID_OPERADOR`, `FECH_ASIGNACION`, `ID_PLAN`, `ID_DESCUENTO`) VALUES
+(1, '968622902', 42.90, 1, NULL, 1, 1),
+(2, '968255906', 42.90, 1, NULL, 1, 1),
+(3, '969601490', 42.90, 1, NULL, 1, 1),
+(4, '961001933', 42.90, 1, NULL, 1, 1),
+(5, '952991400', 42.90, 1, NULL, 1, 1),
+(6, '999088159', 42.90, 1, NULL, 1, 1),
+(7, '920718733', 42.90, 1, NULL, 1, 1),
+(8, '951858947', 42.90, 1, NULL, 1, 1),
+(9, '954929452', 42.90, 1, NULL, 1, 1),
+(10, '990158441', 42.90, 1, NULL, 1, 1),
+(11, '969601816', 42.90, 1, NULL, 1, 1),
+(12, '984673358', 69.90, 1, NULL, 2, 1),
+(13, '948681461', 42.90, 1, NULL, 1, 1),
+(14, '972993676', 69.90, 1, NULL, 2, 1),
+(15, '948010234', 42.90, 1, NULL, 1, 1),
+(16, '942604388', 69.90, 1, NULL, 2, 1),
+(17, '972858947', 69.90, 1, NULL, 2, 1),
+(18, '969336438', 42.90, 1, NULL, 1, 1),
+(19, '990203550', 159.90, 1, NULL, 4, 1),
+(20, '995957013', 69.90, 1, NULL, 2, 1),
+(21, '996283053', 42.90, 1, NULL, 1, 1),
+(22, '972628716', 42.90, 1, NULL, 1, 1),
+(23, '972626426', 42.90, 1, NULL, 1, 1),
+(24, '998023709', 42.90, 1, NULL, 1, 1),
+(25, '969601520', 69.90, 1, NULL, 2, 1),
+(26, '969336439', 42.90, 1, NULL, 1, 1),
+(27, '920187896', 42.90, 1, NULL, 1, 1),
+(28, '944636648', 42.90, 1, NULL, 1, 1),
+(29, '990158573', 42.90, 1, NULL, 1, 1);
+
 -- --------------------------------------------------------
 
 --
@@ -375,6 +616,13 @@ CREATE TABLE `contacto` (
   `NOMBRES` varchar(100) NOT NULL,
   `CELULAR` varchar(12) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Volcado de datos para la tabla `contacto`
+--
+
+INSERT INTO `contacto` (`ID_CONTAC`, `ID_PERSONAL`, `ID_TIPFAM`, `NOMBRES`, `CELULAR`) VALUES
+(1, 40, 1, 'Guillermo Delgado', '954762456');
 
 -- --------------------------------------------------------
 
@@ -394,8 +642,61 @@ CREATE TABLE `contrato` (
   `ID_AREA` int(11) NOT NULL,
   `ID_CARGO` int(11) NOT NULL,
   `ID_MODALID` int(11) DEFAULT NULL,
+  `ID_EMP` int(11) DEFAULT NULL,
   `ID_HORARIO` int(11) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Volcado de datos para la tabla `contrato`
+--
+
+INSERT INTO `contrato` (`ID_CONTR`, `ID_PERSONAL`, `ID_ESTADO_CONTRATO`, `ID_TIPOCONTR`, `SUELDO`, `ASIG_FAM`, `FECH_INGR`, `FECH_CESE`, `ID_AREA`, `ID_CARGO`, `ID_MODALID`, `ID_EMP`, `ID_HORARIO`) VALUES
+(1, 1, 1, 1, NULL, 0, '2016-02-01', NULL, 5, 1, 1, 1, 3),
+(2, 2, 1, 1, NULL, 0, '2023-05-05', NULL, 3, 2, 1, 1, 1),
+(3, 3, 1, 1, NULL, 0, '2013-02-01', NULL, 5, 3, 1, 1, 1),
+(4, 4, 1, 1, NULL, 0, '2021-09-01', NULL, 3, 4, 1, 1, 1),
+(5, 5, 1, 1, NULL, 0, '2025-08-20', NULL, 3, 2, 1, 1, 1),
+(6, 6, 1, 1, NULL, 0, '2007-09-01', NULL, 1, 5, 1, 1, 1),
+(7, 7, 1, 1, NULL, 0, '2021-10-15', NULL, 5, 6, 1, 1, 1),
+(8, 8, 1, 1, NULL, 0, '2025-03-26', NULL, 2, 7, 1, 1, 1),
+(9, 9, 1, 1, NULL, 0, '2017-10-02', NULL, 1, 8, 1, 1, 3),
+(10, 10, 1, 1, NULL, 0, '2022-10-06', NULL, 2, 9, 1, 1, 1),
+(11, 11, 1, 1, NULL, 0, '2023-05-23', NULL, 2, 10, 1, 1, 1),
+(12, 12, 1, 1, NULL, 0, '2020-01-25', NULL, 4, 11, 1, 1, 1),
+(13, 13, 1, 1, NULL, 0, '2022-11-22', NULL, 2, 12, 1, 1, 1),
+(14, 14, 1, 1, NULL, 0, '2016-07-11', NULL, 3, 13, 1, 1, 1),
+(15, 15, 1, 1, NULL, 0, '2019-11-01', NULL, 1, 14, 1, 1, 3),
+(16, 16, 1, 1, NULL, 0, '2023-02-01', NULL, 3, 2, 1, 1, 1),
+(17, 17, 1, 1, NULL, 0, '2022-02-01', NULL, 3, 2, 1, 1, 1),
+(18, 18, 1, 1, NULL, 0, '2026-02-03', NULL, 3, 15, 1, 1, 1),
+(19, 19, 1, 1, NULL, 0, '2026-02-05', NULL, 3, 2, 1, 1, 1),
+(20, 20, 1, 1, NULL, 0, '2010-11-01', NULL, 2, 16, 1, 1, 1),
+(21, 21, 1, 1, NULL, 0, '2026-01-01', NULL, 3, 17, 1, 1, 3),
+(22, 22, 1, 1, NULL, 0, '2005-01-01', NULL, 1, 18, 1, 1, 3),
+(23, 23, 1, 1, NULL, 0, '2024-07-10', NULL, 2, 19, 1, 1, 2),
+(24, 24, 1, 1, NULL, 0, '2025-03-01', NULL, 2, 20, 1, 1, 1),
+(25, 25, 1, 1, NULL, 0, '2023-12-31', NULL, 2, 10, 1, 1, 1),
+(26, 26, 1, 1, NULL, 0, '2020-02-05', NULL, 5, 21, 1, 1, 1),
+(27, 27, 1, 1, NULL, 0, '2019-02-18', NULL, 3, 17, 1, 1, 1),
+(28, 28, 1, 1, NULL, 0, '2026-01-01', NULL, 3, 22, 1, 2, 4),
+(29, 29, 1, 1, NULL, 0, '2025-08-11', NULL, 5, 23, 1, 2, 4),
+(30, 30, 1, 1, NULL, 0, '2026-02-28', NULL, 5, 24, 1, 2, 4),
+(31, 31, 1, 1, NULL, 0, '2019-11-01', NULL, 1, 25, 1, 2, 4),
+(32, 32, 1, 1, NULL, 0, '2026-01-01', NULL, 5, 26, 1, 2, 4),
+(33, 33, 1, 1, NULL, 0, '2026-01-01', NULL, 5, 27, 1, 2, 4),
+(34, 34, 1, 1, NULL, 0, '2019-11-01', NULL, 1, 28, 1, 2, 4),
+(35, 35, 1, 1, NULL, 0, '2026-01-01', NULL, 5, 29, 1, 2, 4),
+(36, 36, 1, 1, NULL, 0, '2025-03-14', NULL, 5, 30, 1, 2, 4),
+(37, 37, 1, 1, NULL, 0, '2025-09-01', NULL, 5, 31, 1, 2, 4),
+(38, 38, 1, 1, NULL, 0, '2026-01-01', NULL, 5, 27, 1, 2, 4),
+(39, 39, 1, 1, NULL, 0, '2026-01-01', NULL, 3, 32, 1, 2, 4),
+(40, 40, 1, 1, NULL, 0, '2025-08-07', NULL, 3, 33, 1, 3, 5),
+(41, 41, 1, 1, NULL, 0, '2025-09-01', NULL, 5, 34, 1, 3, 5),
+(42, 42, 1, 1, NULL, 0, '2026-01-01', NULL, 4, 35, 1, 3, 5),
+(43, 43, 1, 1, NULL, 0, '2026-01-01', NULL, 2, 36, 1, 3, 5),
+(44, 44, 1, 1, NULL, 0, '2026-01-01', NULL, 2, 37, 1, 3, 5),
+(45, 45, 1, 1, NULL, 0, '2026-01-01', NULL, 2, 37, 1, 3, 5),
+(46, 46, 1, 1, NULL, 0, '2026-03-11', NULL, 2, 12, 1, NULL, NULL);
 
 -- --------------------------------------------------------
 
@@ -445,6 +746,48 @@ INSERT INTO `departamento` (`ID_DEPART`, `DESCRIP`) VALUES
 -- --------------------------------------------------------
 
 --
+-- Estructura de tabla para la tabla `depart_y_provinc`
+--
+
+CREATE TABLE `depart_y_provinc` (
+  `ID_DEPARTAMENTO` int(11) NOT NULL,
+  `NOMBR_DEP` varchar(100) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Volcado de datos para la tabla `depart_y_provinc`
+--
+
+INSERT INTO `depart_y_provinc` (`ID_DEPARTAMENTO`, `NOMBR_DEP`) VALUES
+(1, 'Amazonas'),
+(2, 'Áncash'),
+(3, 'Apurímac'),
+(4, 'Arequipa'),
+(5, 'Ayacucho'),
+(6, 'Cajamarca'),
+(7, 'Callao'),
+(8, 'Cusco'),
+(9, 'Huancavelica'),
+(10, 'Huánuco'),
+(11, 'Ica'),
+(12, 'Junín'),
+(13, 'La Libertad'),
+(14, 'Lambayeque'),
+(15, 'Lima'),
+(16, 'Loreto'),
+(17, 'Madre de Dios'),
+(18, 'Moquegua'),
+(19, 'Pasco'),
+(20, 'Piura'),
+(21, 'Puno'),
+(22, 'San Martín'),
+(23, 'Tacna'),
+(24, 'Tumbes'),
+(25, 'Ucayali');
+
+-- --------------------------------------------------------
+
+--
 -- Estructura de tabla para la tabla `descuento_chips`
 --
 
@@ -453,6 +796,13 @@ CREATE TABLE `descuento_chips` (
   `DESCRIP` varchar(100) NOT NULL,
   `DESCUENTO` int(11) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Volcado de datos para la tabla `descuento_chips`
+--
+
+INSERT INTO `descuento_chips` (`ID_DESCUENTO`, `DESCRIP`, `DESCUENTO`) VALUES
+(1, '50% x 18 Meses Renovable', 50);
 
 -- --------------------------------------------------------
 
@@ -465,6 +815,13 @@ CREATE TABLE `disco` (
   `ID_TDISCO` int(11) NOT NULL,
   `ID_CAPDISCO` int(11) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Volcado de datos para la tabla `disco`
+--
+
+INSERT INTO `disco` (`ID_DISCO`, `ID_TDISCO`, `ID_CAPDISCO`) VALUES
+(1, 4, 7);
 
 -- --------------------------------------------------------
 
@@ -569,9 +926,9 @@ CREATE TABLE `empresa` (
 --
 
 INSERT INTO `empresa` (`ID_EMP`, `NOMBRE`, `RUC`, `DIREC`, `LOGO`, `LOGO_DARK`, `ESTADO`, `SELECCION`) VALUES
-(1, 'ENERQUIMICA', '20208473523', 'CAL.CARLOS PEDEMONTE NRO. 142 URB. EL MERCURIO (FRENTE AL MCDO DE FRUTAS- MAESTRO ARRIOL) LIMA - LIMA - SAN LUIS', NULL, NULL, 1, 1),
-(2, 'EQCORPORACION', '20517072495', 'CAL.LEONIDAS LA SERRE NRO. 322 URB. EL PINO (ALT CDRA 29 NICOLAS ARRIOLA) LIMA - LIMA - SAN LUIS', NULL, NULL, 1, 0),
-(3, 'SIDSYS', '20538461815', 'CAL.LEONIDAS LA SERRE NRO. 322 URB. EL PINO (ALT CDRA 29 NICOLAS ARRIOLA) LIMA - LIMA - SAN LUIS', NULL, NULL, 1, 0);
+(1, 'ENERQUIMICA', '20208473523', 'CAL.CARLOS PEDEMONTE NRO. 142 URB. EL MERCURIO (FRENTE AL MCDO DE FRUTAS- MAESTRO ARRIOL) LIMA - LIMA - SAN LUIS', 'Enerquimica_logo_blanco.webp', 'Enerquimica_logo_negro.webp', 1, 1),
+(2, 'EQCORPORACION', '20517072495', 'CAL.LEONIDAS LA SERRE NRO. 322 URB. EL PINO (ALT CDRA 29 NICOLAS ARRIOLA) LIMA - LIMA - SAN LUIS', 'eq.webp', 'eq_negro.webp', 1, 0),
+(3, 'SIDSYS', '20538461815', 'CAL.LEONIDAS LA SERRE NRO. 322 URB. EL PINO (ALT CDRA 29 NICOLAS ARRIOLA) LIMA - LIMA - SAN LUIS', 'sidsys.webp', 'sidsys_negro.webp', 1, 0);
 
 -- --------------------------------------------------------
 
@@ -586,6 +943,13 @@ CREATE TABLE `equipo` (
   `ID_EST_EQUIPO` int(11) NOT NULL,
   `ID_ESPEC` int(11) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Volcado de datos para la tabla `equipo`
+--
+
+INSERT INTO `equipo` (`ID_EQUIPO`, `SERIE_EQUIPO`, `ID_TEQUIPO`, `ID_EST_EQUIPO`, `ID_ESPEC`) VALUES
+(1, '23132132132', 2, 1, 1);
 
 -- --------------------------------------------------------
 
@@ -605,6 +969,13 @@ CREATE TABLE `especificaciones_tec` (
   `ID_TIPO_RAM` int(11) DEFAULT NULL,
   `ID_RAM` int(11) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Volcado de datos para la tabla `especificaciones_tec`
+--
+
+INSERT INTO `especificaciones_tec` (`ID_ESPEC`, `FECH_COMPRA`, `GARANTIA`, `CODIGOE`, `ID_GAMA`, `ID_MARCA`, `ID_MODELO`, `ID_PROCESADOR`, `ID_TIPO_RAM`, `ID_RAM`) VALUES
+(1, '2026-03-11', 1, 'ENERQ142024', 1, 1, 1, 3, 2, 5);
 
 -- --------------------------------------------------------
 
@@ -805,9 +1176,9 @@ CREATE TABLE `grupo_articulos` (
 
 INSERT INTO `grupo_articulos` (`ID_GRP_ART`, `COD_SERV_ART`, `DESCRIP`) VALUES
 (1, 1, 'ENERGIA - SUMINISTRO'),
-(2, 1, 'ENERGIA - SERVICIO'),
+(2, 0, 'ENERGIA - SERVICIO'),
 (3, 1, 'INSTRUMENTACION - SUMINISTRO NACIONAL'),
-(4, 1, 'INSTRUMENTACION - SERVICIO'),
+(4, 0, 'INSTRUMENTACION - SERVICIO'),
 (5, 1, 'MINERIA'),
 (6, 1, 'PROYECTOS ESTRATEGICOS Y LICITACIONES'),
 (7, 1, 'ENERGIA - PRODUCTOS TERMINADOS'),
@@ -860,41 +1231,41 @@ CREATE TABLE `horario_detalle` (
 --
 
 INSERT INTO `horario_detalle` (`ID_HDET`, `ID_HORARIO`, `DIA`, `HORA_E`, `HORA_S`, `DIA_DESC`) VALUES
-(1, 1, 1, '08:00:00', '17:30:00', 0),
-(2, 1, 2, '08:00:00', '17:30:00', 0),
-(3, 1, 3, '08:00:00', '17:30:00', 0),
-(4, 1, 4, '08:00:00', '17:30:00', 0),
-(5, 1, 5, '08:00:00', '17:30:00', 0),
-(6, 1, 6, '08:00:00', '12:15:00', 0),
-(7, 1, 7, NULL, NULL, 0),
-(8, 2, 1, '07:00:00', '17:30:00', 0),
-(9, 2, 2, '07:45:00', '17:30:00', 0),
-(10, 2, 3, '07:45:00', '17:30:00', 0),
-(11, 2, 4, '07:45:00', '17:30:00', 0),
-(12, 2, 5, '07:45:00', '17:30:00', 0),
-(13, 2, 6, NULL, NULL, 0),
-(14, 2, 7, NULL, NULL, 0),
-(15, 3, 1, NULL, NULL, 0),
-(16, 3, 2, NULL, NULL, 0),
-(17, 3, 3, NULL, NULL, 0),
-(18, 3, 4, NULL, NULL, 0),
-(19, 3, 5, NULL, NULL, 0),
-(20, 3, 6, NULL, NULL, 0),
-(21, 3, 7, NULL, NULL, 0),
-(22, 4, 1, '08:00:00', '17:30:00', 0),
-(23, 4, 2, '08:00:00', '17:30:00', 0),
-(24, 4, 3, '08:00:00', '17:30:00', 0),
-(25, 4, 4, '08:00:00', '17:30:00', 0),
-(26, 4, 5, '08:00:00', '17:30:00', 0),
-(27, 4, 6, '08:00:00', '12:15:00', 0),
-(28, 4, 7, NULL, NULL, 0),
-(29, 5, 1, '08:00:00', '17:30:00', 0),
-(30, 5, 2, '08:00:00', '17:30:00', 0),
-(31, 5, 3, '08:00:00', '17:30:00', 0),
-(32, 5, 4, '08:00:00', '17:30:00', 0),
-(33, 5, 5, '08:00:00', '17:30:00', 0),
-(34, 5, 6, '08:00:00', '12:15:00', 0),
-(35, 5, 7, NULL, NULL, 0);
+(50, 5, 1, '08:00:00', '17:30:00', 0),
+(51, 5, 2, '08:00:00', '17:30:00', 0),
+(52, 5, 3, '08:00:00', '17:30:00', 0),
+(53, 5, 4, '08:00:00', '17:30:00', 0),
+(54, 5, 5, '08:00:00', '17:30:00', 0),
+(55, 5, 6, '08:00:00', '12:15:00', 0),
+(56, 5, 7, NULL, NULL, 1),
+(57, 3, 1, NULL, NULL, 1),
+(58, 3, 2, NULL, NULL, 1),
+(59, 3, 3, NULL, NULL, 1),
+(60, 3, 4, NULL, NULL, 1),
+(61, 3, 5, NULL, NULL, 1),
+(62, 3, 6, NULL, NULL, 1),
+(63, 3, 7, NULL, NULL, 1),
+(64, 1, 1, '08:00:00', '17:30:00', 0),
+(65, 1, 2, '08:00:00', '17:30:00', 0),
+(66, 1, 3, '08:00:00', '17:30:00', 0),
+(67, 1, 4, '08:00:00', '17:30:00', 0),
+(68, 1, 5, '08:00:00', '17:30:00', 0),
+(69, 1, 6, '08:00:00', '12:15:00', 0),
+(70, 1, 7, NULL, NULL, 1),
+(71, 2, 1, '07:00:00', '17:30:00', 0),
+(72, 2, 2, '07:45:00', '17:30:00', 0),
+(73, 2, 3, '07:45:00', '17:30:00', 0),
+(74, 2, 4, '07:45:00', '17:30:00', 0),
+(75, 2, 5, '07:45:00', '17:30:00', 0),
+(76, 2, 6, NULL, NULL, 1),
+(77, 2, 7, NULL, NULL, 1),
+(78, 4, 1, '08:00:00', '17:30:00', 0),
+(79, 4, 2, '08:00:00', '17:30:00', 0),
+(80, 4, 3, '08:00:00', '17:30:00', 0),
+(81, 4, 4, '08:00:00', '17:30:00', 0),
+(82, 4, 5, '08:00:00', '17:30:00', 0),
+(83, 4, 6, '08:00:00', '12:15:00', 0),
+(84, 4, 7, NULL, NULL, 1);
 
 -- --------------------------------------------------------
 
@@ -1069,6 +1440,16 @@ CREATE TABLE `operador_chips` (
   `DESCRIP` varchar(100) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
+--
+-- Volcado de datos para la tabla `operador_chips`
+--
+
+INSERT INTO `operador_chips` (`ID_OPERADOR`, `DESCRIP`) VALUES
+(1, 'ENTEL'),
+(2, 'MOVISTAR'),
+(3, 'CLARO'),
+(4, 'BITEL');
+
 -- --------------------------------------------------------
 
 --
@@ -1085,7 +1466,18 @@ CREATE TABLE `permiso_accs` (
 --
 
 INSERT INTO `permiso_accs` (`ID_PERM`, `DESCRIP`) VALUES
-(1, 'CONFIGURACION');
+(1, 'ASISTENCIA'),
+(12, 'CHIPS'),
+(10, 'CLIENTES'),
+(5, 'EQUIPOS_ASIGNACION'),
+(4, 'EQUIPOS_CREAR'),
+(3, 'HORARIOS'),
+(8, 'INICIO'),
+(9, 'INVENTARIO'),
+(11, 'PERMISOS'),
+(2, 'PERSONAL'),
+(6, 'TICKETS_NUEVO'),
+(7, 'TICKETS_PANEL');
 
 -- --------------------------------------------------------
 
@@ -1109,8 +1501,61 @@ CREATE TABLE `personal` (
   `ID_ESTCIVIL` int(11) DEFAULT NULL,
   `ID_ACADM` int(11) DEFAULT NULL,
   `ID_DISTR` int(11) DEFAULT NULL,
-  `DIRECCION` varchar(255) DEFAULT NULL
+  `DIRECCION` varchar(255) DEFAULT NULL,
+  `ID_DEPARTAMENTO` int(15) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Volcado de datos para la tabla `personal`
+--
+
+INSERT INTO `personal` (`ID_PERSONAL`, `ID_ACCS`, `ID_DOC`, `NUM_DOC`, `APE_PATERNO`, `APE_MATERNO`, `NOMBRES`, `GENERO_PERS`, `FECH_NAC`, `EMAIL`, `CELULAR`, `FOTO`, `ID_ESTCIVIL`, `ID_ACADM`, `ID_DISTR`, `DIRECCION`, `ID_DEPARTAMENTO`) VALUES
+(1, 1, 1, '8698028', 'BLONDET', 'TABOADA', 'JUAN ARTURO', 1, '1965-03-31', NULL, NULL, NULL, NULL, NULL, NULL, NULL, 1),
+(2, 2, 1, '77422005', 'HINOJOSA', 'RIVAS', 'ANDREA', 0, '1999-05-25', NULL, NULL, NULL, NULL, NULL, NULL, NULL, 1),
+(3, 3, 1, '43251756', 'SINCHE', 'CCAHUANA', 'ANDRES', 1, '1985-02-07', NULL, NULL, NULL, NULL, NULL, NULL, NULL, 1),
+(4, 4, 1, '74884503', 'BACA', 'MENDOZA', 'BRIGITTE', 0, '1994-10-10', NULL, NULL, NULL, NULL, NULL, NULL, NULL, 1),
+(5, 5, 1, '74757342', 'CONDESO', 'CARRIZALES', 'BRYAM ALONSO', 1, '1996-06-03', NULL, NULL, NULL, NULL, NULL, NULL, NULL, 1),
+(6, 6, 1, '7613200', 'ILLESCA', 'DHAGA DEL CASTILLO', 'CARMEN', 0, '1967-11-23', NULL, NULL, NULL, NULL, NULL, NULL, NULL, 1),
+(7, 7, 1, '47369260', 'VASQUEZ', 'TAPIA', 'CLEVER', 1, '1992-10-26', NULL, NULL, NULL, NULL, NULL, NULL, NULL, 1),
+(8, 8, 1, '45419847', 'VIDAURRE', 'SANTAMARIA', 'CARMEN ELENA', 0, '1988-10-24', NULL, NULL, NULL, NULL, NULL, NULL, NULL, 1),
+(9, 9, 1, '47386836', 'DIAZ', 'LABAJOS', 'ESTEBAN', 1, '1991-10-15', NULL, NULL, NULL, NULL, NULL, NULL, NULL, 1),
+(10, 10, 1, '71979880', 'GUTIERREZ', 'MENDOZA', 'ROSARIO ESTEFANI', 0, '1996-05-18', NULL, NULL, NULL, NULL, NULL, NULL, NULL, 1),
+(11, 11, 1, '75602262', 'OCHOA', 'CHILCON', 'ERLITA', 0, '1997-08-19', NULL, NULL, NULL, NULL, NULL, NULL, NULL, 1),
+(12, 12, 1, '77203368', 'CHILON', 'HUAMAN', 'FANNY JHOANNA', 0, '1995-06-22', NULL, NULL, NULL, NULL, NULL, NULL, NULL, 1),
+(13, 13, 1, '46676998', 'RAMIREZ', 'HUAMALIES', 'GARY CARLOS', 1, '1990-12-30', NULL, NULL, 'GARY_RAMIREZ_13.webp', NULL, NULL, NULL, NULL, 1),
+(14, 14, 1, '43109783', 'ZUÑIGA', 'DE LA CRUZ', 'GISSELA SUSANA', 0, '1985-03-03', NULL, NULL, NULL, NULL, NULL, NULL, NULL, 1),
+(15, 15, 1, '70616281', 'MARIN', 'ILLESCA', 'HONIRA GIANELLA', 0, '1995-09-02', NULL, NULL, NULL, NULL, NULL, NULL, NULL, 1),
+(16, 16, 1, '48434107', 'CALLA', 'ACERO', 'KARELY ANABEL', 0, '1994-07-02', NULL, NULL, NULL, NULL, NULL, NULL, NULL, 1),
+(17, 17, 1, '46680880', 'VICENTE', 'MEZA', 'ROSA LIZET', 0, '1990-03-07', NULL, NULL, NULL, NULL, NULL, NULL, NULL, 1),
+(18, 18, 1, '60548584', 'ALDAY', 'CHIRE', 'MAYRA DANICKA FIORELLA', 0, '2002-04-26', NULL, NULL, NULL, NULL, NULL, NULL, NULL, 1),
+(19, 19, 1, '72163850', 'JULCA', 'LALUPU', 'MICHAEL ALONSO', 1, '2001-02-10', NULL, NULL, NULL, NULL, NULL, NULL, NULL, 1),
+(20, 20, 1, '8547322', 'ORTIZ', 'MEDINA', 'MANUELA', 0, '1960-08-24', NULL, NULL, NULL, NULL, NULL, NULL, NULL, 1),
+(21, 21, 1, '8639199', 'RUIZ', 'DIAZ', 'MANUEL ALBERTO', 1, '1948-12-25', NULL, NULL, NULL, NULL, NULL, NULL, NULL, 1),
+(22, 22, 1, '9067174', 'CHAUCA', 'PALOMINO', 'NELLY BEATRIZ', 0, '1967-10-13', NULL, NULL, NULL, NULL, NULL, NULL, NULL, 1),
+(23, 23, 1, '70123396', 'ROMERO', 'SANCHEZ', 'PHILL ARNOLD', 1, '1995-12-29', NULL, NULL, NULL, NULL, NULL, NULL, NULL, 1),
+(24, 24, 1, '75231010', 'MANAYAY', 'SANCHEZ', 'ROSALIA', 0, '1998-03-30', NULL, NULL, NULL, NULL, NULL, NULL, NULL, 1),
+(25, 25, 1, '74892568', 'JAUREGUI', 'VELASQUEZ', 'SANDRA ALLISON', 0, '2000-03-07', NULL, NULL, NULL, NULL, NULL, NULL, NULL, 1),
+(26, 26, 1, '42746880', 'VARGAS', 'SOTO', 'SUSSY KARINA', 0, '1984-09-30', NULL, NULL, NULL, NULL, NULL, NULL, NULL, 1),
+(27, 27, 1, '72953015', 'TORRES', 'MALDONADO', 'TATIANA', 0, '1992-06-10', NULL, NULL, NULL, NULL, NULL, NULL, NULL, 1),
+(28, 28, 1, '76936089', 'HUAMANI', 'VARGAS', 'ANA LUISA', 0, '2003-08-15', NULL, NULL, NULL, NULL, NULL, NULL, NULL, 1),
+(29, 29, 1, '47001860', 'SECLEN', 'CASTILLO', 'CRISTIAN ELOY', 1, '1991-02-06', NULL, NULL, NULL, NULL, NULL, NULL, NULL, 1),
+(30, 30, 1, '70029383', 'ALVINO', 'LLANOS', 'EMANUEL SEBASTIAN', 1, '1999-08-30', NULL, NULL, NULL, NULL, NULL, NULL, NULL, 1),
+(31, 31, 1, '70616279', 'MARIN', 'ILLESCA', 'EDGAR', 1, '2000-08-24', NULL, NULL, NULL, NULL, NULL, NULL, NULL, 1),
+(32, 32, 1, '72884168', 'ANDIA', 'CANTORIN', 'FORTUNATO', 1, '1991-10-04', NULL, NULL, NULL, NULL, NULL, NULL, NULL, 1),
+(33, 33, 1, '73098918', 'DURAN', 'ESQUIVEL', 'FRANK', 1, '2001-04-23', NULL, NULL, NULL, NULL, NULL, NULL, NULL, 1),
+(34, 34, 1, '70616280', 'MARIN', 'ILLESCA', 'HARIANNE', 0, '1999-05-14', NULL, NULL, NULL, NULL, NULL, NULL, NULL, 1),
+(35, 35, 1, '74455910', 'MAYTA', 'ORTEGA', 'JHORDAN', 1, '1999-09-03', NULL, NULL, NULL, NULL, NULL, NULL, NULL, 1),
+(36, 36, 1, '78847461', 'MENA', 'MONTAÑEZ', 'LUIS MANUEL', 1, '1999-10-13', NULL, NULL, NULL, NULL, NULL, NULL, NULL, 1),
+(37, 37, 1, '73769458', 'BENITES', 'PEIXOTO', 'SERGIO RODRIGUEZ', 1, '1995-04-20', NULL, NULL, NULL, NULL, NULL, NULL, NULL, 1),
+(38, 38, 1, '74705575', 'VILCA', 'QUISPE', 'VICTOR', 1, '2002-03-22', NULL, NULL, NULL, NULL, NULL, NULL, NULL, 1),
+(39, 39, 1, '70112905', 'CAMARGO', 'POÈMAPE', 'ZOILA ENCARNACION', 0, '1991-11-25', NULL, NULL, NULL, NULL, NULL, NULL, NULL, 1),
+(40, 40, 1, '71869165', 'DELGADO', 'ALCANTARA', 'FABIOLA YAMILE', 2, '2000-04-15', 'fabioladelgado1315@gmail.com', '904457708', 'FABIOLA_DELGADO_40.jpg', 1, 7, 25, NULL, 1),
+(41, 41, 1, '75926435', 'PEREZ', 'CHICHIPE', 'HERNAN', 1, '1999-06-20', NULL, NULL, NULL, NULL, NULL, NULL, NULL, 1),
+(42, 42, 1, '71723837', 'CARRASCO', 'CHAVEZ', 'JOSEPH', 1, '2003-09-17', NULL, NULL, NULL, NULL, NULL, NULL, NULL, 1),
+(43, 43, 1, '72353181', 'FERNANDEZ', 'VILLEGAS', 'JORGE DIEGO', 1, '1998-04-27', NULL, NULL, NULL, NULL, NULL, NULL, NULL, 1),
+(44, 44, 1, '75379416', 'HUAMANI', 'MOZOMBITE', 'LILIANA ISABEL', 0, '2000-02-16', NULL, NULL, NULL, NULL, NULL, NULL, NULL, 1),
+(45, 45, 1, '73238796', 'BUTILER', 'LEYVA', 'NAYDELIN LORENA', 0, '2002-12-30', NULL, NULL, NULL, NULL, NULL, NULL, NULL, 1),
+(46, 46, 1, '46676997', 'RAMIREZ', 'TORRES', 'GABRIEL', 1, '2000-01-01', NULL, NULL, NULL, 1, 7, 16, NULL, 1);
 
 -- --------------------------------------------------------
 
@@ -1122,6 +1567,16 @@ CREATE TABLE `plan_chips` (
   `ID_PLAN` int(11) NOT NULL,
   `DESCRIP` varchar(100) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Volcado de datos para la tabla `plan_chips`
+--
+
+INSERT INTO `plan_chips` (`ID_PLAN`, `DESCRIP`) VALUES
+(1, 'Empresa Corp 2.0 42.9'),
+(2, 'Empresa Corp 2.0 69.9'),
+(3, 'Empresa Corp 2.0 79.9'),
+(4, 'Empresa Corp 2.0 159.9');
 
 -- --------------------------------------------------------
 
@@ -1201,7 +1656,9 @@ CREATE TABLE `rol_accs` (
 INSERT INTO `rol_accs` (`ID_ROL`, `DESCRIP`, `ESTADO_ROL`) VALUES
 (1, 'ADMINISTRADOR', 1),
 (2, 'SOPORTE', 1),
-(3, 'USUARIO', 1);
+(3, 'USUARIO', 1),
+(4, 'RRHH', 1),
+(5, 'SUPERVISOR', 1);
 
 -- --------------------------------------------------------
 
@@ -1239,6 +1696,13 @@ CREATE TABLE `sap_servicio` (
   `ID_UNIDAD` int(11) NOT NULL,
   `CODIGO_SAP` varchar(100) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Volcado de datos para la tabla `sap_servicio`
+--
+
+INSERT INTO `sap_servicio` (`ID_SAP_SERVICIO`, `ID_TICKET`, `ID_GRP_ART`, `SERVICIO_SAP`, `ID_UNIDAD`, `CODIGO_SAP`) VALUES
+(1, 3, 2, ' prueba ', 24, 'pas6d54a3f5');
 
 -- --------------------------------------------------------
 
@@ -1450,7 +1914,7 @@ CREATE TABLE `ticket` (
   `ID_CATEGORIA` int(11) NOT NULL,
   `ID_SUBCATEGORIA` int(11) NOT NULL,
   `ASUNTO` varchar(255) NOT NULL,
-  `DESCRIP` varchar(255) NOT NULL,
+  `DESCRIP` varchar(255) DEFAULT NULL,
   `ID_TI` int(11) DEFAULT NULL,
   `FECH_CREACION` datetime DEFAULT NULL,
   `FECH_CIERRE` datetime DEFAULT NULL,
@@ -1458,6 +1922,18 @@ CREATE TABLE `ticket` (
   `VALORACION` int(11) DEFAULT NULL,
   `FOTO` varchar(255) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Volcado de datos para la tabla `ticket`
+--
+
+INSERT INTO `ticket` (`ID_TICKET`, `ESTADO`, `ID_PERSONAL`, `PRIORIDAD`, `ID_CATEGORIA`, `ID_SUBCATEGORIA`, `ASUNTO`, `DESCRIP`, `ID_TI`, `FECH_CREACION`, `FECH_CIERRE`, `MENSAJE_TI`, `VALORACION`, `FOTO`) VALUES
+(1, 'CERRADO', 13, 'URGENTE', 1, 1, 'Problemas con Correo ', 'no abre correo', 13, '2026-03-11 09:59:22', '2026-03-11 10:01:35', 'se realizo el seguimiento remoto se soluciono ', 3, 'ticket_13_20260311095922.png'),
+(2, 'CERRADO', 43, 'ALTA', 1, 1, 'problemas SAP', NULL, 43, '2026-03-11 10:43:10', '2026-03-11 10:45:04', 'correo arreglado ', 2, NULL),
+(3, 'CERRADO', 13, 'URGENTE', 4, 6, 'creacion de codigo', 'servicio de sap', 13, '2026-03-11 17:24:03', '2026-03-11 17:26:53', 'cerrado ticket', 3, NULL),
+(4, 'CERRADO', 43, 'BAJA', 1, 1, 'FALLA ERP', 'el erp no deja entrar al modulo de perfil ', 43, '2026-03-12 16:59:22', '2026-03-13 14:38:21', NULL, 2, NULL),
+(5, 'CERRADO', 43, 'MEDIA', 1, 1, 'faLLA SAP', 'no puedo abrir sap', 13, '2026-03-13 14:38:06', '2026-03-13 16:07:31', 'problema resuelto\n', 3, 'ticket_43_20260313143806.webp'),
+(6, 'CERRADO', 13, 'MEDIA', 1, 1, 'Correo Outlook', 'no abre mi correo nueva incidencia', 13, '2026-03-13 14:44:59', '2026-03-13 14:45:31', 'se reinicio el servidor', 3, NULL);
 
 -- --------------------------------------------------------
 
@@ -1803,6 +2279,7 @@ ALTER TABLE `contacto`
 --
 ALTER TABLE `contrato`
   ADD PRIMARY KEY (`ID_CONTR`),
+  ADD KEY `FK_CONTRATO_EMPRESA` (`ID_EMP`),
   ADD KEY `FK_CONTRATO_PERSONAL` (`ID_PERSONAL`),
   ADD KEY `FK_CONTRATO_ESTADO_CONTRATO` (`ID_ESTADO_CONTRATO`),
   ADD KEY `FK_CONTRATO_TIPO_CONTRATO` (`ID_TIPOCONTR`),
@@ -1827,6 +2304,12 @@ ALTER TABLE `cuenta_banca`
 ALTER TABLE `departamento`
   ADD PRIMARY KEY (`ID_DEPART`),
   ADD UNIQUE KEY `DESCRIP` (`DESCRIP`);
+
+--
+-- Indices de la tabla `depart_y_provinc`
+--
+ALTER TABLE `depart_y_provinc`
+  ADD PRIMARY KEY (`ID_DEPARTAMENTO`);
 
 --
 -- Indices de la tabla `descuento_chips`
@@ -2024,7 +2507,8 @@ ALTER TABLE `personal`
   ADD KEY `FK_PERSONAL_DOCUMENTO` (`ID_DOC`),
   ADD KEY `FK_PERSONAL_ESTADO_CIVIL` (`ID_ESTCIVIL`),
   ADD KEY `FK_PERSONAL_GRADO_ACADEMICO` (`ID_ACADM`),
-  ADD KEY `FK_PERSONAL_DISTRITO` (`ID_DISTR`);
+  ADD KEY `FK_PERSONAL_DISTRITO` (`ID_DISTR`),
+  ADD KEY `ID_DEPARTAMENTO` (`ID_DEPARTAMENTO`);
 
 --
 -- Indices de la tabla `plan_chips`
@@ -2182,7 +2666,7 @@ ALTER TABLE `tipo_unidad`
 -- AUTO_INCREMENT de la tabla `acceso`
 --
 ALTER TABLE `acceso`
-  MODIFY `ID_ACCS` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `ID_ACCS` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=47;
 
 --
 -- AUTO_INCREMENT de la tabla `afp`
@@ -2194,13 +2678,13 @@ ALTER TABLE `afp`
 -- AUTO_INCREMENT de la tabla `almacenamiento`
 --
 ALTER TABLE `almacenamiento`
-  MODIFY `ID_ALMC` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `ID_ALMC` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
 -- AUTO_INCREMENT de la tabla `anexos`
 --
 ALTER TABLE `anexos`
-  MODIFY `ID_DOCUMENT` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `ID_DOCUMENT` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
 -- AUTO_INCREMENT de la tabla `area`
@@ -2212,13 +2696,13 @@ ALTER TABLE `area`
 -- AUTO_INCREMENT de la tabla `asignacion_chip`
 --
 ALTER TABLE `asignacion_chip`
-  MODIFY `ID_CHIP_ASIG` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `ID_CHIP_ASIG` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=27;
 
 --
 -- AUTO_INCREMENT de la tabla `asignacion_equipo`
 --
 ALTER TABLE `asignacion_equipo`
-  MODIFY `ID_ASIG` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `ID_ASIG` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
 
 --
 -- AUTO_INCREMENT de la tabla `asignacion_licencia`
@@ -2242,7 +2726,7 @@ ALTER TABLE `capacidad_disco`
 -- AUTO_INCREMENT de la tabla `cargo`
 --
 ALTER TABLE `cargo`
-  MODIFY `ID_CARGO` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=42;
+  MODIFY `ID_CARGO` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=38;
 
 --
 -- AUTO_INCREMENT de la tabla `categoria_ticket`
@@ -2260,19 +2744,19 @@ ALTER TABLE `catg_asistencia`
 -- AUTO_INCREMENT de la tabla `chips`
 --
 ALTER TABLE `chips`
-  MODIFY `ID_CHIPS` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `ID_CHIPS` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=30;
 
 --
 -- AUTO_INCREMENT de la tabla `contacto`
 --
 ALTER TABLE `contacto`
-  MODIFY `ID_CONTAC` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `ID_CONTAC` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
 -- AUTO_INCREMENT de la tabla `contrato`
 --
 ALTER TABLE `contrato`
-  MODIFY `ID_CONTR` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `ID_CONTR` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=47;
 
 --
 -- AUTO_INCREMENT de la tabla `cuenta_banca`
@@ -2287,16 +2771,22 @@ ALTER TABLE `departamento`
   MODIFY `ID_DEPART` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=14;
 
 --
+-- AUTO_INCREMENT de la tabla `depart_y_provinc`
+--
+ALTER TABLE `depart_y_provinc`
+  MODIFY `ID_DEPARTAMENTO` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=26;
+
+--
 -- AUTO_INCREMENT de la tabla `descuento_chips`
 --
 ALTER TABLE `descuento_chips`
-  MODIFY `ID_DESCUENTO` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `ID_DESCUENTO` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
 -- AUTO_INCREMENT de la tabla `disco`
 --
 ALTER TABLE `disco`
-  MODIFY `ID_DISCO` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `ID_DISCO` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
 -- AUTO_INCREMENT de la tabla `distrito`
@@ -2320,13 +2810,13 @@ ALTER TABLE `empresa`
 -- AUTO_INCREMENT de la tabla `equipo`
 --
 ALTER TABLE `equipo`
-  MODIFY `ID_EQUIPO` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `ID_EQUIPO` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
 -- AUTO_INCREMENT de la tabla `especificaciones_tec`
 --
 ALTER TABLE `especificaciones_tec`
-  MODIFY `ID_ESPEC` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `ID_ESPEC` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
 -- AUTO_INCREMENT de la tabla `estado_accs`
@@ -2386,7 +2876,7 @@ ALTER TABLE `horario`
 -- AUTO_INCREMENT de la tabla `horario_detalle`
 --
 ALTER TABLE `horario_detalle`
-  MODIFY `ID_HDET` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=36;
+  MODIFY `ID_HDET` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=85;
 
 --
 -- AUTO_INCREMENT de la tabla `licencia`
@@ -2446,25 +2936,25 @@ ALTER TABLE `motivo`
 -- AUTO_INCREMENT de la tabla `operador_chips`
 --
 ALTER TABLE `operador_chips`
-  MODIFY `ID_OPERADOR` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `ID_OPERADOR` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
 
 --
 -- AUTO_INCREMENT de la tabla `permiso_accs`
 --
 ALTER TABLE `permiso_accs`
-  MODIFY `ID_PERM` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+  MODIFY `ID_PERM` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=13;
 
 --
 -- AUTO_INCREMENT de la tabla `personal`
 --
 ALTER TABLE `personal`
-  MODIFY `ID_PERSONAL` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `ID_PERSONAL` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=47;
 
 --
 -- AUTO_INCREMENT de la tabla `plan_chips`
 --
 ALTER TABLE `plan_chips`
-  MODIFY `ID_PLAN` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `ID_PLAN` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
 
 --
 -- AUTO_INCREMENT de la tabla `procesador`
@@ -2488,7 +2978,7 @@ ALTER TABLE `red`
 -- AUTO_INCREMENT de la tabla `rol_accs`
 --
 ALTER TABLE `rol_accs`
-  MODIFY `ID_ROL` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+  MODIFY `ID_ROL` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
 
 --
 -- AUTO_INCREMENT de la tabla `sap_articulo`
@@ -2500,7 +2990,7 @@ ALTER TABLE `sap_articulo`
 -- AUTO_INCREMENT de la tabla `sap_servicio`
 --
 ALTER TABLE `sap_servicio`
-  MODIFY `ID_SAP_SERVICIO` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `ID_SAP_SERVICIO` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
 -- AUTO_INCREMENT de la tabla `sap_socio_negocio`
@@ -2530,7 +3020,7 @@ ALTER TABLE `subfamilia_sap`
 -- AUTO_INCREMENT de la tabla `ticket`
 --
 ALTER TABLE `ticket`
-  MODIFY `ID_TICKET` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `ID_TICKET` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
 
 --
 -- AUTO_INCREMENT de la tabla `tipo_contrato`
@@ -2675,6 +3165,7 @@ ALTER TABLE `contacto`
 ALTER TABLE `contrato`
   ADD CONSTRAINT `FK_CONTRATO_AREA` FOREIGN KEY (`ID_AREA`) REFERENCES `area` (`ID_AREA`),
   ADD CONSTRAINT `FK_CONTRATO_CARGO` FOREIGN KEY (`ID_CARGO`) REFERENCES `cargo` (`ID_CARGO`),
+  ADD CONSTRAINT `FK_CONTRATO_EMPRESA` FOREIGN KEY (`ID_EMP`) REFERENCES `empresa` (`ID_EMP`),
   ADD CONSTRAINT `FK_CONTRATO_ESTADO_CONTRATO` FOREIGN KEY (`ID_ESTADO_CONTRATO`) REFERENCES `estado_contrato` (`ID_ESTADO_CONTRATO`),
   ADD CONSTRAINT `FK_CONTRATO_HORARIO` FOREIGN KEY (`ID_HORARIO`) REFERENCES `horario` (`ID_HORARIO`),
   ADD CONSTRAINT `FK_CONTRATO_MODALIDAD` FOREIGN KEY (`ID_MODALID`) REFERENCES `modalidad` (`ID_MODALID`),
@@ -2755,7 +3246,8 @@ ALTER TABLE `personal`
   ADD CONSTRAINT `FK_PERSONAL_DISTRITO` FOREIGN KEY (`ID_DISTR`) REFERENCES `distrito` (`ID_DISTR`),
   ADD CONSTRAINT `FK_PERSONAL_DOCUMENTO` FOREIGN KEY (`ID_DOC`) REFERENCES `documento` (`ID_DOC`),
   ADD CONSTRAINT `FK_PERSONAL_ESTADO_CIVIL` FOREIGN KEY (`ID_ESTCIVIL`) REFERENCES `estado_civil` (`ID_ESTCIVIL`),
-  ADD CONSTRAINT `FK_PERSONAL_GRADO_ACADEMICO` FOREIGN KEY (`ID_ACADM`) REFERENCES `grado_academico` (`ID_ACADM`);
+  ADD CONSTRAINT `FK_PERSONAL_GRADO_ACADEMICO` FOREIGN KEY (`ID_ACADM`) REFERENCES `grado_academico` (`ID_ACADM`),
+  ADD CONSTRAINT `personal_ibfk_1` FOREIGN KEY (`ID_DEPARTAMENTO`) REFERENCES `depart_y_provinc` (`ID_DEPARTAMENTO`);
 
 --
 -- Filtros para la tabla `red`

@@ -8,7 +8,9 @@ from zk import ZK
 
 # --- CONFIGURACIÓN ---
 DIRECTORIO_SCRIPT = os.path.dirname(os.path.abspath(__file__))
-load_dotenv(os.path.join(DIRECTORIO_SCRIPT, '.env'))
+env_path = os.path.join(DIRECTORIO_SCRIPT, '.env')
+if os.path.exists(env_path):
+    load_dotenv(env_path)
 
 HUELLERO_IP = os.getenv("HUELLERO_IP", "192.168.1.254") 
 HUELLERO_PORT = int(os.getenv("HUELLERO_PORT", 4370)) # Puerto estándar es 4370

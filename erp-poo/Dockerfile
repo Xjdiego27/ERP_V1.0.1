@@ -1,32 +1,45 @@
-# ═══════════════════════════════════════════════
+# ═══════════════════════════════════════════════════════════
 # Dockerfile — Frontend ERP (Vite + React)
-# Build multistage: Node → Nginx
-# ═══════════════════════════════════════════════
+# Multi-stage: Node 20 (build) → Nginx (serve)
+# Puerto: 80
+# Nginx también actúa como reverse proxy para
+# el Chat Backend (/chat/, /socket.io/)
+# ═══════════════════════════════════════════════════════════
 
-# ── Etapa 1: Build ──
+# ── Etapa 1: Build con Node ──
 FROM node:20-alpine AS build
 
 WORKDIR /app
 
+# Copiar solo package files primero (cache de npm ci)
 COPY package.json package-lock.json* ./
-RUN npm ci
+RUN npm ci --ignore-scripts
 
+# Copiar el resto del código fuente
 COPY . .
 
-# Variables de entorno para el build (se inyectan desde docker-compose)
+# Variables de entorno para el build de Vite
 ARG VITE_API_URL=http://localhost:8000
-ARG VITE_CHAT_URL=http://localhost:8001
+ARG VITE_CHAT_URL=
 
+# Build de producción
 RUN npm run build
 
 # ── Etapa 2: Servir con Nginx ──
-FROM nginx:alpine
+FROM nginx:1.27-alpine
 
-# Copiar build a la carpeta de Nginx
+# Eliminar config default de Nginx
+RUN rm -rf /usr/share/nginx/html/* /etc/nginx/conf.d/default.conf
+
+# Copiar build estático
 COPY --from=build /app/dist /usr/share/nginx/html
 
-# Configuración de Nginx para SPA (React Router)
+# Copiar configuración de Nginx personalizada
 COPY nginx.conf /etc/nginx/conf.d/default.conf
+
+# Crear directorio para assets compartidos (volumen)
+RUN mkdir -p /usr/share/nginx/html/assets \
+    && chown -R nginx:nginx /usr/share/nginx/html
 
 EXPOSE 80
 

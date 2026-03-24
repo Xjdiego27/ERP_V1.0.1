@@ -98,6 +98,22 @@ export default function CumpleanosModal() {
     return (
         <div className="cumple-modal-overlay">
             <div className="cumple-modal">
+                {/* Botón cerrar — el saludo es voluntario */}
+                {!enviado && (
+                    <button
+                        className="cumple-modal-btn-cerrar"
+                        onClick={function () {
+                            setModalVisible(false);
+                            setCumpleanero(null);
+                            setMensaje('');
+                            setStickerSeleccionado(null);
+                            setMostrarStickers(false);
+                        }}
+                        title="Cerrar"
+                    >
+                        <IconoFa icono={faTimes} />
+                    </button>
+                )}
                 {!enviado ? (
                     <>
                         <div className="cumple-modal-confeti">{cumpleanero.dias_para === 0 ? <IconoFa icono={faCakeCandles} /> : <IconoFa icono={faCalendarDay} />}</div>

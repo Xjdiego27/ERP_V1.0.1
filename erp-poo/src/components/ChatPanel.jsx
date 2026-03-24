@@ -6,7 +6,7 @@ import ChatSala from './ChatSala';
 import CrearGrupoModal from './CrearGrupoModal';
 import MiEspacio from './MiEspacio';
 import { faComments, faSearch, faTimes, faCircle, faMinus, faGlobe, faUsers, faPlus, faStickyNote, faTrash } from '@fortawesome/free-solid-svg-icons';
-import { CHAT_URL, obtenerToken } from '../auth';
+import { CHAT_URL, CHAT_SOCKET_URL, obtenerToken } from '../auth';
 import { getSession } from '../utils/session';
 import '../styles/Chat.css';
 
@@ -53,7 +53,7 @@ export default function ChatPanel() {
         const token = obtenerToken();
         if (!token) return;
 
-        const socket = io(CHAT_URL, {
+        const socket = io(CHAT_SOCKET_URL, {
             auth: { token },
             transports: ['polling', 'websocket'],
             reconnection: true,

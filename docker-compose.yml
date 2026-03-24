@@ -1,63 +1,103 @@
 # ═══════════════════════════════════════════════════════════════
 # Docker Compose — ERP Sistema Login V1.0.1
+# Infraestructura blindada para Windows Server (Docker Engine)
 #
-# Servicios:
-#   mysql      → Base de datos principal (MySQL 8)
-#   mongo      → Base de datos NoSQL (MongoDB 7)
-#   backend    → API Principal FastAPI (puerto 8000)
-#   chat       → Chat Backend FastAPI + Socket.IO (puerto 8001)
-#   frontend   → Vite React → Nginx (puerto 80)
+# Arquitectura de red (erp-net bridge aislada):
+#
+#   ┌───────────── erp-net (172.28.0.0/16) ─────────────┐
+#   │                                                     │
+#   │   mysql ◄──── backend ────► mongo                   │
+#   │   (sin ports)  :8000        (sin ports)             │
+#   │                  ▲            ▲                     │
+#   │                  │            │                     │
+#   │   mysql ◄──── chat ──────► mongo ◄── huellero       │
+#   │              (sin ports)         (sin ports/LAN)    │
+#   │                  ▲                                  │
+#   │                  │ proxy interno                    │
+#   │            ┌─────┴─────┐                            │
+#   │            │ frontend  │                            │
+#   │            │ Nginx :80 │                            │
+#   │            └───────────┘                            │
+#   └─────────────────────────────────────────────────────┘
+#
+# Puertos expuestos al host:
+#   80   → Frontend Nginx + reverse proxy chat (/chat/, /socket.io/)
+#   8000 → Backend API (FastAPI)
+#
+# Puertos BLOQUEADOS (solo red interna):
+#   3306  → MySQL
+#   27017 → MongoDB
+#   8001  → Chat Backend
 #
 # Uso:
-#   docker-compose up -d --build     → Levantar todo
-#   docker-compose logs -f backend   → Ver logs del backend
-#   docker-compose down              → Detener todo
+#   1. Copiar .env.example → .env y configurar
+#   2. docker compose up -d --build
+#   3. docker compose logs -f backend
+#   4. docker compose down
 # ═══════════════════════════════════════════════════════════════
 
-version: '3.8'
-
 services:
-  # ── MySQL 8 ──
+
+  # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  # MySQL 8 — Base de datos principal
+  # ⛔ SIN puertos expuestos al host
+  # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
   mysql:
     image: mysql:8.0
-    restart: always
+    container_name: erp-mysql
+    restart: unless-stopped
     environment:
-      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD:-root_password_seguro}
-      MYSQL_DATABASE: ${DB_NAME:-erp}
-    ports:
-      - "3306:3306"
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${DB_NAME}
+      MYSQL_USER: ${DB_USER}
+      MYSQL_PASSWORD: ${DB_PASSWORD}
+    # ⛔ Sin 'ports' — aislado en erp-net
     volumes:
       - mysql_data:/var/lib/mysql
     healthcheck:
       test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
-      interval: 10s
+      interval: 15s
       timeout: 5s
       retries: 5
+      start_period: 30s
     networks:
       - erp-net
 
-  # ── MongoDB 7 ──
+  # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  # MongoDB 7 — Base de datos NoSQL
+  # ⛔ SIN puertos expuestos al host
+  # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
   mongo:
     image: mongo:7
-    restart: always
-    ports:
-      - "27017:27017"
+    container_name: erp-mongo
+    restart: unless-stopped
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_USER}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_PASSWORD}
+    # ⛔ Sin 'ports' — aislado en erp-net
     volumes:
       - mongo_data:/data/db
     healthcheck:
-      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
-      interval: 10s
+      test: ["CMD", "mongosh", "--quiet", "--eval", "db.adminCommand('ping')"]
+      interval: 15s
       timeout: 5s
       retries: 5
+      start_period: 30s
     networks:
       - erp-net
 
-  # ── Backend API Principal (FastAPI) ──
+  # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  # Backend API — FastAPI
+  # ✅ Puerto 8000 expuesto al host
+  # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
   backend:
-    build: ./backend
-    restart: always
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: erp-backend
+    restart: unless-stopped
     ports:
-      - "8000:8000"
+      - "${API_PORT:-8000}:8000"
     depends_on:
       mysql:
         condition: service_healthy
@@ -65,30 +105,34 @@ services:
         condition: service_healthy
     environment:
       DB_HOST: mysql
-      DB_USER: ${DB_USER:-root}
-      DB_PASSWORD: ${DB_PASSWORD:-root_password_seguro}
-      DB_NAME: ${DB_NAME:-erp}
+      DB_USER: ${DB_USER}
+      DB_PASSWORD: ${DB_PASSWORD}
+      DB_NAME: ${DB_NAME}
       DB_PORT: "3306"
-      SECRET_KEY: ${SECRET_KEY:-mi_llave_secreta_para_el_erp_2024}
-      ALGORITHM: HS256
-      ACCESS_TOKEN_EXPIRE_MINUTES: "480"
-      MONGO_URL: mongodb://mongo:27017
+      SECRET_KEY: ${SECRET_KEY}
+      ALGORITHM: ${ALGORITHM:-HS256}
+      ACCESS_TOKEN_EXPIRE_MINUTES: ${TOKEN_EXPIRE:-480}
+      MONGO_URL: "mongodb://${MONGO_USER}:${MONGO_PASSWORD}@mongo:27017/?authSource=admin"
       MONGO_DB_NAME: ${MONGO_DB_NAME:-erp_nosql}
       API_HOST: "0.0.0.0"
       API_PORT: "8000"
-      CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost,http://localhost:80,http://localhost:5173}
+      CORS_ORIGINS: ${CORS_ORIGINS}
     volumes:
-      # Assets compartidos con frontend (menus, eventos, perfiles)
-      - shared_assets:/app/../erp-poo/public/assets
+      - shared_assets:/app/public/assets
     networks:
       - erp-net
 
-  # ── Chat Backend (FastAPI + Socket.IO) ──
+  # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  # Chat Backend — FastAPI + Socket.IO
+  # ⛔ SIN puertos expuestos (acceso via Nginx)
+  # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
   chat:
-    build: ./chat_backend
-    restart: always
-    ports:
-      - "8001:8001"
+    build:
+      context: ./chat_backend
+      dockerfile: Dockerfile
+    container_name: erp-chat
+    restart: unless-stopped
+    # ⛔ Sin 'ports' — solo accesible via Nginx reverse proxy
     depends_on:
       mysql:
         condition: service_healthy
@@ -96,45 +140,94 @@ services:
         condition: service_healthy
     environment:
       DB_HOST: mysql
-      DB_USER: ${DB_USER:-root}
-      DB_PASSWORD: ${DB_PASSWORD:-root_password_seguro}
-      DB_NAME: ${DB_NAME:-erp}
+      DB_USER: ${DB_USER}
+      DB_PASSWORD: ${DB_PASSWORD}
+      DB_NAME: ${DB_NAME}
       DB_PORT: "3306"
-      SECRET_KEY: ${SECRET_KEY:-mi_llave_secreta_para_el_erp_2024}
-      ALGORITHM: HS256
-      MONGO_URL: mongodb://mongo:27017
+      SECRET_KEY: ${SECRET_KEY}
+      ALGORITHM: ${ALGORITHM:-HS256}
+      MONGO_URL: "mongodb://${MONGO_USER}:${MONGO_PASSWORD}@mongo:27017/?authSource=admin"
       MONGO_DB_NAME: ${MONGO_DB_NAME:-erp_nosql}
       CHAT_PORT: "8001"
-      CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost,http://localhost:80,http://localhost:5173}
+      CORS_ORIGINS: ${CORS_ORIGINS}
     volumes:
       - chat_uploads:/app/uploads
     networks:
       - erp-net
 
-  # ── Frontend (Vite React → Nginx) ──
+  # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  # Frontend — Vite React → Nginx
+  # ✅ Puerto 80 expuesto al host
+  # Nginx también actúa como reverse proxy
+  # para el chat backend (/chat/, /socket.io/)
+  # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
   frontend:
     build:
       context: ./erp-poo
+      dockerfile: Dockerfile
       args:
         VITE_API_URL: ${VITE_API_URL:-http://localhost:8000}
-        VITE_CHAT_URL: ${VITE_CHAT_URL:-http://localhost:8001}
-    restart: always
+        VITE_CHAT_URL: ${VITE_CHAT_URL:-}
+    container_name: erp-frontend
+    restart: unless-stopped
     ports:
-      - "80:80"
+      - "${FRONTEND_PORT:-80}:80"
     depends_on:
       - backend
       - chat
+    volumes:
+      - shared_assets:/usr/share/nginx/html/assets
     networks:
       - erp-net
 
-# ── Volúmenes persistentes ──
+  # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  # Huellero — Sincronización ZK (reloj biométrico)
+  # ⛔ SIN puertos expuestos — solo accede a MongoDB
+  # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  huellero:
+    build:
+      context: ./HUELLERO
+      dockerfile: Dockerfile
+    container_name: erp-huellero
+    restart: unless-stopped
+    depends_on:
+      mongo:
+        condition: service_healthy
+    environment:
+      HUELLERO_IP: ${HUELLERO_IP:-192.168.1.254}
+      HUELLERO_PORT: ${HUELLERO_PORT:-4370}
+      MONGO_URI: "mongodb://${MONGO_USER}:${MONGO_PASSWORD}@mongo:27017/?authSource=admin"
+      MONGO_DB_NAME: ${MONGO_DB_NAME:-erp_nosql}
+      MONGO_COLECCION: ${MONGO_COLECCION:-asistencia}
+    # ⛔ Sin 'ports' — no expone nada, solo conecta al huellero y escribe en MongoDB
+    networks:
+      - erp-net
+    # El contenedor necesita acceso a la red local del huellero
+    # Si el huellero está en la LAN del host, usar network_mode o extra_hosts
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+# Volúmenes persistentes (datos sobreviven
+# a docker compose down / reinicio)
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 volumes:
   mysql_data:
+    driver: local
   mongo_data:
+    driver: local
   chat_uploads:
+    driver: local
   shared_assets:
+    driver: local
 
-# ── Red interna ──
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+# Red bridge aislada — comunicación interna
+# Subnet configurable vía .env
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 networks:
   erp-net:
     driver: bridge
+    ipam:
+      config:
+        - subnet: ${NETWORK_SUBNET:-172.28.0.0/16}
