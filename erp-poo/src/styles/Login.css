@@ -243,6 +243,18 @@
     font-size: 15px;
 }
 
+/* Botón secundario (Volver) */
+.login-btn-secondary {
+    background: transparent;
+    color: var(--color-primario, #D71D27);
+    border: 2px solid var(--color-primario, #D71D27);
+    margin-top: 8px;
+}
+.login-btn-secondary:hover {
+    background: var(--color-primario, #D71D27);
+    color: #fff;
+}
+
 /* Spinner */
 .login-spinner {
     width: 20px;

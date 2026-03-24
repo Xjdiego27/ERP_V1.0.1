@@ -18,8 +18,12 @@ export default function CompanyPanel({ isOpen, onClose, idRol, idAccs }) {
 
   const esAdmin = idRol === 1;
 
-  // Obtener género del usuario actual
+  // Obtener rol y género del usuario actual
   var sessionData = getSession();
+  var rolUsuario = sessionData && sessionData.usuario ? (sessionData.usuario.rol || '').toUpperCase() : '';
+  var esRRHH = rolUsuario === 'RRHH' || rolUsuario.indexOf('RRHH') >= 0;
+  var puedeSubir = esAdmin || esRRHH;
+
   var generoUsuario = sessionData && sessionData.usuario ? sessionData.usuario.genero : null;
   var esMujer = generoUsuario === 'F';
 
@@ -43,7 +47,7 @@ export default function CompanyPanel({ isOpen, onClose, idRol, idAccs }) {
       .catch(() => setEvento2Url(null));
 
     // Evento mujeres: solo traer si es admin o es mujer
-    if (esAdmin || esMujer) {
+    if (puedeSubir || esMujer) {
       fetch(API_URL + '/evento-mujeres', { headers: headersAuth() })
         .then(res => res.json())
         .then(data => setEventoMujeresUrl(data.url ? data.url + '?t=' + Date.now() : null))
@@ -66,11 +70,11 @@ export default function CompanyPanel({ isOpen, onClose, idRol, idAccs }) {
         <h3 style={{ marginBottom: '15px' }}>Panel de Empresa</h3>
 
         {/* Menú Semanal */}
-        {(menuUrl || esAdmin) && (
+        {(menuUrl || puedeSubir) && (
           <SeccionImagen
             label="Menú Semanal"
             url={menuUrl}
-            esAdmin={esAdmin}
+            esAdmin={puedeSubir}
             tipo="menu"
             idAccs={idAccs}
             onCambio={setMenuUrl}
@@ -79,11 +83,11 @@ export default function CompanyPanel({ isOpen, onClose, idRol, idAccs }) {
         )}
 
         {/* Eventos */}
-        {(eventoUrl || esAdmin) && (
+        {(eventoUrl || puedeSubir) && (
           <SeccionImagen
             label="Eventos"
             url={eventoUrl}
-            esAdmin={esAdmin}
+            esAdmin={puedeSubir}
             tipo="evento"
             idAccs={idAccs}
             onCambio={setEventoUrl}
@@ -92,11 +96,11 @@ export default function CompanyPanel({ isOpen, onClose, idRol, idAccs }) {
         )}
 
         {/* Evento 2 */}
-        {(evento2Url || esAdmin) && (
+        {(evento2Url || puedeSubir) && (
           <SeccionImagen
             label="Eventos 2"
             url={evento2Url}
-            esAdmin={esAdmin}
+            esAdmin={puedeSubir}
             tipo="evento2"
             idAccs={idAccs}
             onCambio={setEvento2Url}
@@ -104,12 +108,12 @@ export default function CompanyPanel({ isOpen, onClose, idRol, idAccs }) {
           />
         )}
 
-        {/* Evento exclusivo Mujeres — solo visible para mujeres y admins */}
-        {(esMujer || esAdmin) && (eventoMujeresUrl || esAdmin) && (
+        {/* Evento exclusivo Mujeres — solo visible para mujeres y admins/RRHH */}
+        {(esMujer || puedeSubir) && (eventoMujeresUrl || puedeSubir) && (
           <SeccionImagen
             label="Evento Mujeres"
             url={eventoMujeresUrl}
-            esAdmin={esAdmin}
+            esAdmin={puedeSubir}
             tipo="evento-mujeres"
             idAccs={idAccs}
             onCambio={setEventoMujeresUrl}

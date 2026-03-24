@@ -1,44 +1,140 @@
+# ═══════════════════════════════════════════════════════════════
+# Docker Compose — ERP Sistema Login V1.0.1
+#
+# Servicios:
+#   mysql      → Base de datos principal (MySQL 8)
+#   mongo      → Base de datos NoSQL (MongoDB 7)
+#   backend    → API Principal FastAPI (puerto 8000)
+#   chat       → Chat Backend FastAPI + Socket.IO (puerto 8001)
+#   frontend   → Vite React → Nginx (puerto 80)
+#
+# Uso:
+#   docker-compose up -d --build     → Levantar todo
+#   docker-compose logs -f backend   → Ver logs del backend
+#   docker-compose down              → Detener todo
+# ═══════════════════════════════════════════════════════════════
+
 version: '3.8'
 
 services:
-  # 1. Base de Datos SQL (PostgreSQL como ejemplo)
-  db_sql:
-    image: postgres:15
+  # ── MySQL 8 ──
+  mysql:
+    image: mysql:8.0
     restart: always
     environment:
-      POSTGRES_USER: usuario_erp
-      POSTGRES_PASSWORD: password_seguro
-      POSTGRES_DB: erp_sql
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD:-root_password_seguro}
+      MYSQL_DATABASE: ${DB_NAME:-erp}
     ports:
-      - "5432:5432"
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - erp-net
 
-  # 2. Base de Datos NoSQL (MongoDB)
-  db_nosql:
-    image: mongo:latest
+  # ── MongoDB 7 ──
+  mongo:
+    image: mongo:7
     restart: always
     ports:
       - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - erp-net
 
-  # 3. Tu Backend (Python/FastAPI)
+  # ── Backend API Principal (FastAPI) ──
   backend:
     build: ./backend
     restart: always
     ports:
       - "8000:8000"
     depends_on:
-      - db_sql
-      - db_nosql
+      mysql:
+        condition: service_healthy
+      mongo:
+        condition: service_healthy
     environment:
-      - SQL_URL=postgresql://usuario_erp:password_seguro@db_sql:5432/erp_sql
-      - MONGO_URL=mongodb://db_nosql:27017
-      - CORS_ORIGINS=http://localhost:5173,http://192.168.1.192:5173
+      DB_HOST: mysql
+      DB_USER: ${DB_USER:-root}
+      DB_PASSWORD: ${DB_PASSWORD:-root_password_seguro}
+      DB_NAME: ${DB_NAME:-erp}
+      DB_PORT: "3306"
+      SECRET_KEY: ${SECRET_KEY:-mi_llave_secreta_para_el_erp_2024}
+      ALGORITHM: HS256
+      ACCESS_TOKEN_EXPIRE_MINUTES: "480"
+      MONGO_URL: mongodb://mongo:27017
+      MONGO_DB_NAME: ${MONGO_DB_NAME:-erp_nosql}
+      API_HOST: "0.0.0.0"
+      API_PORT: "8000"
+      CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost,http://localhost:80,http://localhost:5173}
+    volumes:
+      # Assets compartidos con frontend (menus, eventos, perfiles)
+      - shared_assets:/app/../erp-poo/public/assets
+    networks:
+      - erp-net
 
-  # 4. Tu Frontend (Vite)
-  frontend:
-    build: ./frontend
+  # ── Chat Backend (FastAPI + Socket.IO) ──
+  chat:
+    build: ./chat_backend
+    restart: always
     ports:
-      - "5173:5173"
+      - "8001:8001"
+    depends_on:
+      mysql:
+        condition: service_healthy
+      mongo:
+        condition: service_healthy
     environment:
-      - VITE_API_URL=http://192.168.1.192:8000
-    stdin_open: true
-    tty: true
+      DB_HOST: mysql
+      DB_USER: ${DB_USER:-root}
+      DB_PASSWORD: ${DB_PASSWORD:-root_password_seguro}
+      DB_NAME: ${DB_NAME:-erp}
+      DB_PORT: "3306"
+      SECRET_KEY: ${SECRET_KEY:-mi_llave_secreta_para_el_erp_2024}
+      ALGORITHM: HS256
+      MONGO_URL: mongodb://mongo:27017
+      MONGO_DB_NAME: ${MONGO_DB_NAME:-erp_nosql}
+      CHAT_PORT: "8001"
+      CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost,http://localhost:80,http://localhost:5173}
+    volumes:
+      - chat_uploads:/app/uploads
+    networks:
+      - erp-net
+
+  # ── Frontend (Vite React → Nginx) ──
+  frontend:
+    build:
+      context: ./erp-poo
+      args:
+        VITE_API_URL: ${VITE_API_URL:-http://localhost:8000}
+        VITE_CHAT_URL: ${VITE_CHAT_URL:-http://localhost:8001}
+    restart: always
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+      - chat
+    networks:
+      - erp-net
+
+# ── Volúmenes persistentes ──
+volumes:
+  mysql_data:
+  mongo_data:
+  chat_uploads:
+  shared_assets:
+
+# ── Red interna ──
+networks:
+  erp-net:
+    driver: bridge

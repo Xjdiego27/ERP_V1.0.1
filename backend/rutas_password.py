@@ -1,5 +1,6 @@
 # rutas_password.py
 # Endpoints para cambio de contraseña con Argon2
+import hmac
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from argon2 import PasswordHasher
@@ -21,7 +22,11 @@ def _es_texto_plano(password_hash: str) -> bool:
 def verificar_password(password_input: str, password_almacenado: str) -> bool:
     """Verifica un password contra el almacenado (soporta plano y Argon2)."""
     if _es_texto_plano(password_almacenado):
-        return password_input == password_almacenado
+        # Comparación en tiempo constante para evitar timing attacks
+        return hmac.compare_digest(
+            password_input.encode('utf-8'),
+            password_almacenado.encode('utf-8')
+        )
     try:
         return ph.verify(password_almacenado, password_input)
     except VerifyMismatchError:

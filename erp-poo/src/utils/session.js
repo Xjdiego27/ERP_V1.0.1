@@ -1,5 +1,5 @@
 // session.js — Acceso seguro al localStorage de sesión.
-// Reemplaza JSON.parse(localStorage.getItem('session')) en todo el proyecto.
+// Centraliza lectura, escritura y limpieza del estado de sesión.
 
 /**
  * Lee la sesión del localStorage con protección contra JSON corrupto.
@@ -12,6 +12,21 @@ export function getSession() {
     localStorage.removeItem('session');
     return null;
   }
+}
+
+/**
+ * Guarda la sesión en localStorage.
+ * @param {object} data — Datos de sesión completos.
+ */
+export function setSession(data) {
+  localStorage.setItem('session', JSON.stringify(data));
+}
+
+/**
+ * Elimina la sesión del localStorage.
+ */
+export function clearSession() {
+  localStorage.removeItem('session');
 }
 
 /**

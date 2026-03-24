@@ -16,7 +16,7 @@ const COLORES = [
  * MiEspacio — Ventana flotante de notas personales.
  * Permite al usuario guardar notas/recordatorios para sí mismo.
  */
-export default function MiEspacio({ onCerrar, panelAbierto }) {
+export default function MiEspacio({ onCerrar, panelAbierto, posicion }) {
     const [notas, setNotas] = useState([]);
     const [cargando, setCargando] = useState(true);
     const [minimizada, setMinimizada] = useState(false);
@@ -29,7 +29,7 @@ export default function MiEspacio({ onCerrar, panelAbierto }) {
     const ventanaRef = useRef(null);
 
     // Posición: a la derecha del panel
-    const offsetRight = panelAbierto ? 340 : 16;
+    const offsetRight = (panelAbierto ? 400 : 80) + (posicion || 0) * 330;
 
     // ── Cargar notas ──
     const cargarNotas = useCallback(async () => {

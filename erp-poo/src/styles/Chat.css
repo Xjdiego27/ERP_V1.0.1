@@ -990,7 +990,7 @@ body.dark-mode .chat-ventana {
 body.dark-mode .chat-ventana-body {
     background: #0f172a;
 }
-body.dark-mode .chat-msg-otro .chat-msg-burbuja {
+body.dark-mode .chat-msg.suyo .chat-msg-burbuja {
     background: #334155;
     color: #e2e8f0;
 }
@@ -1983,6 +1983,23 @@ body.dark-mode .chat-head-letra {
     overflow: hidden;
     text-overflow: ellipsis;
     max-width: 200px;
+}
+/* Archivo nombre dentro de mi burbuja (fondo oscuro) */
+.chat-msg.mio .chat-msg-archivo-nombre {
+    color: rgba(255,255,255,.75);
+}
+.chat-msg.mio .chat-msg-file-link {
+    color: #fff;
+}
+.chat-msg.mio .chat-msg-descargar-btn {
+    border-color: rgba(255,255,255,.35);
+    background: rgba(255,255,255,.15);
+    color: #fff;
+}
+.chat-msg.mio .chat-msg-descargar-btn:hover {
+    background: rgba(255,255,255,.25);
+    border-color: rgba(255,255,255,.5);
+    color: #fff;
 }
 .chat-msg-file-link {
     color: var(--color-primario, #3b82f6);

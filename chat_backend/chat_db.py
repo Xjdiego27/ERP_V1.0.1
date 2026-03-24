@@ -21,6 +21,7 @@ Personal  = Base.classes.personal
 Acceso    = Base.classes.acceso
 Contrato  = Base.classes.contrato
 Cargo     = Base.classes.cargo
+Empresa   = Base.classes.empresa if hasattr(Base.classes, 'empresa') else None
 
 
 def get_db():

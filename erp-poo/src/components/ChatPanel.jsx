@@ -34,6 +34,7 @@ export default function ChatPanel() {
     const [tabActiva, setTabActiva] = useState('contactos');   // 'contactos' | 'grupos'
     const [chatActivoMobile, setChatActivoMobile] = useState(null); // id_personal del chat expandido en mobile
     const [esMobile, setEsMobile] = useState(window.innerWidth <= 1024);
+    const [ultimoMsg, setUltimoMsg] = useState({});            // {id_personal: timestamp} para ordenar contactos
     const socketRef = useRef(null);
     const panelRef = useRef(null);
     const totalNoLeidos = Object.values(noLeidos).reduce((s, v) => s + v, 0);
@@ -88,6 +89,9 @@ export default function ChatPanel() {
         });
 
         socket.on('mensaje_nuevo', (msg) => {
+            // Registrar timestamp del último mensaje recibido para ordenar contactos
+            setUltimoMsg(prev => ({ ...prev, [msg.remitente_id]: Date.now() }));
+
             // Si la ventana de ese contacto NO está abierta, incrementar no leídos y sonar
             setChatsAbiertos(prev => {
                 const estaAbierto = prev.some(c => c.id_personal === msg.remitente_id);
@@ -299,9 +303,24 @@ export default function ChatPanel() {
                (c.cargo || '').toLowerCase().includes(busqueda.toLowerCase());
     });
 
-    // Separar en línea / desconectados
-    const enLinea = contactosFiltrados.filter(c => conectados.has(c.id_personal));
-    const desconectados = contactosFiltrados.filter(c => !conectados.has(c.id_personal));
+    // Ordenar: contactos con mensajes no leídos o recientes van primero
+    function ordenarPorActividad(lista) {
+        return [...lista].sort((a, b) => {
+            const noLeidoA = noLeidos[a.id_personal] || 0;
+            const noLeidoB = noLeidos[b.id_personal] || 0;
+            // Primero: los que tienen mensajes no leídos
+            if (noLeidoA > 0 && noLeidoB === 0) return -1;
+            if (noLeidoB > 0 && noLeidoA === 0) return 1;
+            // Luego: por timestamp del último mensaje recibido
+            const tsA = ultimoMsg[a.id_personal] || 0;
+            const tsB = ultimoMsg[b.id_personal] || 0;
+            return tsB - tsA;
+        });
+    }
+
+    // Separar en línea / desconectados y ordenar por actividad
+    const enLinea = ordenarPorActividad(contactosFiltrados.filter(c => conectados.has(c.id_personal)));
+    const desconectados = ordenarPorActividad(contactosFiltrados.filter(c => !conectados.has(c.id_personal)));
 
     return (
         <>
@@ -510,6 +529,7 @@ export default function ChatPanel() {
                     socket={socketRef.current}
                     onCerrar={() => setChatGeneralAbierto(false)}
                     panelAbierto={abierto}
+                    posicion={0}
                 />
             )}
 
@@ -518,6 +538,7 @@ export default function ChatPanel() {
                 <MiEspacio
                     onCerrar={() => setMiEspacioAbierto(false)}
                     panelAbierto={abierto}
+                    posicion={(chatGeneralAbierto ? 1 : 0)}
                 />
             )}
 
@@ -579,31 +600,37 @@ export default function ChatPanel() {
                     )}
                 </>
             ) : (
-                chatsAbiertos.map((chat, idx) => (
+                chatsAbiertos.map((chat, idx) => {
+                    const baseOffset = (chatGeneralAbierto ? 1 : 0) + (miEspacioAbierto ? 1 : 0);
+                    return (
                     <ChatVentana
                         key={chat.id_personal}
                         contacto={chat}
                         socket={socketRef.current}
                         onCerrar={() => cerrarChat(chat.id_personal)}
-                        posicion={idx}
+                        posicion={baseOffset + idx}
                         enLinea={conectados.has(chat.id_personal)}
                         panelAbierto={abierto}
                     />
-                ))
+                    );
+                })
             )}
 
             {/* ── Ventanas de chat de grupo flotantes ── */}
-            {gruposAbiertos.map((grupo, idx) => (
+            {gruposAbiertos.map((grupo, idx) => {
+                const baseOffset = (chatGeneralAbierto ? 1 : 0) + (miEspacioAbierto ? 1 : 0) + chatsAbiertos.length;
+                return (
                 <ChatSala
                     key={grupo.id}
                     tipo="grupo"
                     grupo={grupo}
                     socket={socketRef.current}
                     onCerrar={() => cerrarGrupo(grupo.id)}
-                    posicion={chatsAbiertos.length + idx}
+                    posicion={baseOffset + idx}
                     panelAbierto={abierto}
                 />
-            ))}
+                );
+            })}
 
             {/* ── Modal crear grupo ── */}
             {modalGrupo && (

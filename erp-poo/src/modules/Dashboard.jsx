@@ -16,7 +16,7 @@ export default function Dashboard() {
     const isMobile = () => window.innerWidth <= 768;
     const [usuario, setUsuario] = useState(null);
     const [sidebarOpen, setSidebarOpen] = useState(!isMobile());
-    const [empresaOpen, setEmpresaOpen] = useState(false);
+    const [empresaOpen, setEmpresaOpen] = useState(true);
     const [mostrarCambioPassword, setMostrarCambioPassword] = useState(false);
     const navigate = useNavigate();
 

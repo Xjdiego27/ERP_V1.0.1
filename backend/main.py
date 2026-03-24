@@ -45,8 +45,9 @@ async def unified_middleware(request: Request, call_next):
         response = await call_next(request)
         ms = (time.time() - start) * 1000
         response.headers["X-Process-Time-Ms"] = f"{ms:.2f}"
-        if ms > 200:
-            print(f"⚠️  LENTO {request.method} {request.url.path} — {ms:.2f} ms")
+        status = response.status_code
+        emoji = "🟢" if ms < 100 else "🟡" if ms < 200 else "🔴"
+        print(f"{emoji} {request.method} {request.url.path} — {ms:.1f} ms [{status}]")
         return response
     except Exception as e:
         ms = (time.time() - start) * 1000

@@ -26,6 +26,20 @@ from chat_socket_events import usuarios_conectados
 # ── FastAPI app ──
 fastapi_app = FastAPI(title="ERP Chat Server", docs_url="/docs")
 
+
+# Middleware: mide tiempo de cada request + log en consola
+@fastapi_app.middleware("http")
+async def timing_middleware(request, call_next):
+    start = time.time()
+    response = await call_next(request)
+    ms = (time.time() - start) * 1000
+    response.headers["X-Process-Time-Ms"] = f"{ms:.2f}"
+    print(f"⏱️  [Chat] {request.method} {request.url.path} — {ms:.1f} ms")
+    if ms > 200:
+        print(f"⚠️  [Chat] LENTO {request.method} {request.url.path} — {ms:.1f} ms")
+    return response
+
+
 fastapi_app.add_middleware(
     CORSMiddleware,
     allow_origins=CORS_ORIGINS,

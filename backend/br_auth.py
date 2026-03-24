@@ -1,6 +1,6 @@
 from sqlalchemy.orm import Session
 from database import Acceso, Personal, RolAccs, Empresa, AsignacionEmp
-from rutas_password import verificar_password, _es_texto_plano
+from rutas_password import verificar_password, _es_texto_plano, hashear_password
 
 
 def validar_usuario_br(db: Session, usuario_input: str, password_input: str):
@@ -18,6 +18,11 @@ def validar_usuario_br(db: Session, usuario_input: str, password_input: str):
 
     if verificar_password(password_input, usuario_db.PASSWORD):
         usuario_db.INTENT_LOGIN = 0
+
+        # Auto-rehash: migrar contraseña plana a Argon2 de forma transparente
+        if _es_texto_plano(usuario_db.PASSWORD):
+            usuario_db.PASSWORD = hashear_password(password_input)
+
         db.commit()
 
         # Detectar si debe forzar cambio de contraseña

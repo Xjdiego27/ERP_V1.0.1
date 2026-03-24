@@ -2,7 +2,7 @@
 # Helper para registrar acciones en la colección 'auditoria' de MongoDB.
 # Cada registro guarda: quién hizo el cambio, qué acción, a quién afectó, y los datos.
 
-from datetime import datetime
+from datetime import datetime, timezone
 from mongodb import coleccion_auditoria
 
 
@@ -27,7 +27,7 @@ async def registrar_accion(usuario, accion, modulo, id_afectado=None, nombre_afe
         "nombre_afectado": nombre_afectado,
         "datos_nuevos": datos_nuevos or {},
         "datos_anteriores": datos_anteriores or {},
-        "fecha": datetime.now().isoformat(),
+        "fecha": datetime.now(timezone.utc).isoformat(),
     }
     try:
         await coleccion_auditoria.insert_one(doc)
