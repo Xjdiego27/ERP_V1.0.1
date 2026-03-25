@@ -4,9 +4,16 @@
 import os
 from dotenv import load_dotenv
 
-# Cargar el .env del backend principal
-env_path = os.path.join(os.path.dirname(__file__), '..', 'backend', '.env')
-load_dotenv(env_path)
+# En Docker las variables vienen del environment del compose.
+# En desarrollo local, intentar cargar .env como fallback.
+env_path = os.path.join(os.path.dirname(__file__), '.env')
+if os.path.exists(env_path):
+    load_dotenv(env_path)
+else:
+    # Fallback: intentar el .env del backend (solo en desarrollo local)
+    env_backend = os.path.join(os.path.dirname(__file__), '..', 'backend', '.env')
+    if os.path.exists(env_backend):
+        load_dotenv(env_backend)
 
 # ── MySQL ──
 DB_HOST     = os.getenv('DB_HOST', 'localhost')

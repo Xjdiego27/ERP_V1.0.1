@@ -20,7 +20,11 @@ class Settings(BaseSettings):
         env_file_encoding = 'utf-8'
         extra = 'ignore'
 
-settings = Settings()
+try:
+    settings = Settings()
+except Exception:
+    # En Docker no hay .env, las variables vienen del environment
+    settings = Settings(_env_file=None)
 
 
 # ──────────────────────────────────────────

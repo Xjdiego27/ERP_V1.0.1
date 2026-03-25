@@ -8,7 +8,10 @@ import os
 from motor.motor_asyncio import AsyncIOMotorClient
 from dotenv import load_dotenv
 
-load_dotenv()
+# En Docker las variables vienen del environment; en local del .env
+env_path = os.path.join(os.path.dirname(__file__), '.env')
+if os.path.exists(env_path):
+    load_dotenv(env_path)
 
 MONGO_URL = os.getenv("MONGO_URL", "mongodb://localhost:27017")
 

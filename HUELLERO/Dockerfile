@@ -5,10 +5,6 @@
 
 FROM python:3.12-slim AS base
 
-# Dependencias del sistema
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    && rm -rf /var/lib/apt/lists/*
-
 # Usuario no-root
 RUN groupadd -r appuser && useradd -r -g appuser -d /app -s /sbin/nologin appuser
 
