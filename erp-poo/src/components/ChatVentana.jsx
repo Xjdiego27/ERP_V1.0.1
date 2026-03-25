@@ -92,6 +92,14 @@ export default function ChatVentana({ contacto, socket, onCerrar, posicion, enLi
                     if (document.hidden) {
                         parpadearTitulo(`💬 ${contacto.nombre.split(' ')[0]} te envió un mensaje`);
                     }
+                    // Marcar como leído en el servidor (la ventana está abierta)
+                    const token = obtenerToken();
+                    if (token) {
+                        fetch(CHAT_URL + '/marcar-leidos/' + contacto.id_personal, {
+                            method: 'POST',
+                            headers: { 'Authorization': 'Bearer ' + token },
+                        }).catch(() => {});
+                    }
                 }
             }
         }

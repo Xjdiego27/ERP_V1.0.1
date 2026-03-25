@@ -163,7 +163,20 @@ export default function ChatPanel() {
         })
             .then(r => r.ok ? r.json() : { por_contacto: {} })
             .then(data => {
-                setNoLeidos(data.por_contacto || {});
+                const serverData = data.por_contacto || {};
+                // Filtrar contactos cuya ventana está abierta (ya los leyó)
+                setChatsAbiertos(prev => {
+                    const idsAbiertos = new Set(prev.map(c => c.id_personal));
+                    const filtrado = {};
+                    for (const [id, count] of Object.entries(serverData)) {
+                        const idNum = Number(id);
+                        if (!idsAbiertos.has(idNum)) {
+                            filtrado[idNum] = count;
+                        }
+                    }
+                    setNoLeidos(filtrado);
+                    return prev;
+                });
             })
             .catch(() => {});
     }, []);

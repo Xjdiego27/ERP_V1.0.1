@@ -175,6 +175,20 @@ async def mensajes_no_leidos(token: dict = Depends(verificar_token)):
     return {"total": total, "por_contacto": por_contacto}
 
 
+@fastapi_app.post("/marcar-leidos/{id_otro}")
+async def marcar_leidos(id_otro: int, token: dict = Depends(verificar_token)):
+    """Marcar como leídos todos los mensajes de id_otro hacia el usuario actual."""
+    id_personal, _ = resolver_id_personal(token)
+    if not id_personal:
+        raise HTTPException(status_code=404, detail="Personal no encontrado")
+
+    resultado = await coleccion_mensajes.update_many(
+        {"remitente_id": id_otro, "destinatario_id": id_personal, "leido": False},
+        {"$set": {"leido": True}},
+    )
+    return {"ok": True, "marcados": resultado.modified_count}
+
+
 # ══════════════════════════════════════════════════════════
 # CHAT GENERAL — REST
 # ══════════════════════════════════════════════════════════
