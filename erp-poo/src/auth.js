@@ -13,25 +13,23 @@ function getApiUrl() {
   return import.meta.env.VITE_API_URL || 'http://localhost:8000';
 }
 
-// URL del chat para REST — en producción va por Nginx /chat/
+// URL del chat para REST — dinámica para acceso LAN
 function getChatUrl() {
   if (typeof window !== 'undefined') {
     const host = window.location.hostname;
     if (host !== 'localhost' && host !== '127.0.0.1') {
-      // Producción: REST via Nginx reverse proxy (/chat/ → chat:8001)
-      return `${window.location.protocol}//${host}/chat`;
+      return `${window.location.protocol}//${host}:8001`;
     }
   }
   return import.meta.env.VITE_CHAT_URL || 'http://localhost:8001';
 }
 
-// URL del chat para Socket.IO — en producción va por Nginx /socket.io/
+// URL del chat para Socket.IO
 function getChatSocketUrl() {
   if (typeof window !== 'undefined') {
     const host = window.location.hostname;
     if (host !== 'localhost' && host !== '127.0.0.1') {
-      // Producción: Socket.IO via Nginx (puerto 80, /socket.io/ proxied)
-      return `${window.location.protocol}//${host}`;
+      return `${window.location.protocol}//${host}:8001`;
     }
   }
   return import.meta.env.VITE_CHAT_URL || 'http://localhost:8001';
