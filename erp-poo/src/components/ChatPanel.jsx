@@ -55,14 +55,17 @@ export default function ChatPanel() {
 
         const socket = io(CHAT_SOCKET_URL, {
             auth: { token },
-            transports: ['polling', 'websocket'],
+            transports: ['websocket', 'polling'],
             reconnection: true,
-            reconnectionDelay: 3000,
-            reconnectionAttempts: 10,
+            reconnectionDelay: 2000,
+            reconnectionAttempts: Infinity,
         });
 
         socket.on('connect', () => {
+            console.log('[Chat] Socket conectado/reconectado');
             cargarContactos();
+            cargarNoLeidos();
+            cargarGrupos();
         });
 
         socket.on('connect_error', (err) => {

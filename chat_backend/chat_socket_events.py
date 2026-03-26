@@ -9,7 +9,7 @@ import socketio
 
 from chat_config import SECRET_KEY, ALGORITHM, CORS_ORIGINS
 from chat_auth import resolver_id_personal
-from chat_db import coleccion_mensajes, coleccion_msg_general, coleccion_msg_grupo
+from chat_db import coleccion_mensajes, coleccion_msg_general, coleccion_msg_grupo, coleccion_grupos
 
 logger = logging.getLogger("chat")
 
@@ -71,6 +71,20 @@ async def connect(sid, environ, auth):
         if id_personal not in usuarios_conectados:
             usuarios_conectados[id_personal] = set()
         usuarios_conectados[id_personal].add(sid)
+
+    # ── Auto-join sala general (TODOS reciben mensajes sin abrir ventana) ──
+    sio.enter_room(sid, SALA_GENERAL)
+
+    # ── Auto-join todos los grupos del usuario ──
+    try:
+        cursor = coleccion_grupos.find(
+            {'miembros': id_personal},
+            {'_id': 1}
+        )
+        async for grupo in cursor:
+            sio.enter_room(sid, f'grupo_{str(grupo["_id"])}')
+    except Exception as e:
+        logger.warning(f"[Chat] Error al unir a grupos: {e}")
 
     logger.info(f"[Chat] + Conectado: {nombre} (id={id_personal}, sid={sid}) | Total: {len(usuarios_conectados)}")
     await sio.emit('usuario_conectado', {'id_personal': id_personal})
