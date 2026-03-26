@@ -14,8 +14,8 @@ Write-Host ""
 Write-Host "[0/3] Limpiando procesos previos..."     -ForegroundColor DarkGray
 $prevErr = $ErrorActionPreference
 $ErrorActionPreference = 'SilentlyContinue'
-# Matar cualquier python/node que use los puertos 8000/8001/5173
-foreach ($port in @(8000, 8001, 5173)) {
+# Matar cualquier python/node que use los puertos 4000/4001/3000
+foreach ($port in @(4000, 4001, 3000)) {
     $conns = Get-NetTCPConnection -LocalPort $port -ErrorAction SilentlyContinue
     foreach ($c in $conns) {
         Stop-Process -Id $c.OwningProcess -Force -ErrorAction SilentlyContinue
@@ -32,8 +32,8 @@ if (-not (Test-Path $VENV)) {
     exit 1
 }
 
-Write-Host "[1/3] Backend ERP (FastAPI) puerto 8000..." -ForegroundColor Yellow
-$backCmd = "`"$VENV`" -u -m uvicorn main:app --host 0.0.0.0 --port 8000 --reload 2>&1"
+Write-Host "[1/3] Backend ERP (FastAPI) puerto 4000..." -ForegroundColor Yellow
+$backCmd = "`"$VENV`" -u -m uvicorn main:app --host 0.0.0.0 --port 4000 --reload 2>&1"
 $back = Start-Process -FilePath "cmd.exe" `
     -ArgumentList "/c","cd /d `"$BACKEND`" && $backCmd" `
     -PassThru -NoNewWindow
@@ -46,14 +46,14 @@ if ($back.HasExited) {
     exit 1
 }
 
-Write-Host "[2/3] Backend Chat (FastAPI) puerto 8001..." -ForegroundColor Yellow
-$chatCmd = "`"$VENV`" -u -m uvicorn chat_server:app --host 0.0.0.0 --port 8001 --reload 2>&1"
+Write-Host "[2/3] Backend Chat (FastAPI) puerto 4001..." -ForegroundColor Yellow
+$chatCmd = "`"$VENV`" -u -m uvicorn chat_server:app --host 0.0.0.0 --port 4001 --reload 2>&1"
 $chat = Start-Process -FilePath "cmd.exe" `
     -ArgumentList "/c","cd /d `"$CHAT_BACKEND`" && $chatCmd" `
     -PassThru -NoNewWindow
 Start-Sleep -Seconds 2
 
-Write-Host "[3/3] Frontend (Vite) puerto 5173..."   -ForegroundColor Yellow
+Write-Host "[3/3] Frontend (Vite) puerto 3000..."   -ForegroundColor Yellow
 $front = Start-Process -FilePath "cmd.exe" `
     -ArgumentList "/c","cd /d `"$FRONTEND`" && npm run dev 2>&1" `
     -PassThru -NoNewWindow
@@ -61,9 +61,9 @@ Start-Sleep -Seconds 4
 
 Write-Host ""
 Write-Host "======================================"  -ForegroundColor Green
-Write-Host "  Backend ERP:  http://localhost:8000"   -ForegroundColor Green
-Write-Host "  Backend Chat: http://localhost:8001"   -ForegroundColor Green
-Write-Host "  Frontend:     http://localhost:5173"   -ForegroundColor Green
+Write-Host "  Backend ERP:  http://localhost:4000"   -ForegroundColor Green
+Write-Host "  Backend Chat: http://localhost:4001"   -ForegroundColor Green
+Write-Host "  Frontend:     http://localhost:3000"   -ForegroundColor Green
 Write-Host "======================================"  -ForegroundColor Green
 Write-Host ""
 Write-Host "Ctrl+C para detener ambos servicios."   -ForegroundColor Gray

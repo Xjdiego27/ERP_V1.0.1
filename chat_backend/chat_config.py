@@ -24,10 +24,10 @@ MONGO_URL     = os.getenv('MONGO_URL', 'mongodb://localhost:27017')
 MONGO_DB_NAME = os.getenv('MONGO_DB_NAME', 'erp_nosql')
 
 # ── Server ──
-CHAT_PORT = int(os.getenv('CHAT_PORT', '8001'))
+CHAT_PORT = int(os.getenv('CHAT_PORT', '4001'))
 
 # ── CORS ──
-_cors_env = os.getenv('CORS_ORIGINS', 'http://localhost:5173').split(',')
+_cors_env = os.getenv('CORS_ORIGINS', 'http://localhost:3000').split(',')
 CORS_ORIGINS = [o.strip() for o in _cors_env if o.strip()]
 CORS_ORIGIN_REGEX = r'https?://(192\.168\.\d+\.\d+|10\.\d+\.\d+\.\d+|172\.(1[6-9]|2\d|3[01])\.\d+\.\d+)(:\d+)?'
 

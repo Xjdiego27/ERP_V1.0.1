@@ -300,7 +300,7 @@ app = FastAPI()
 # 2. Configurar CORS (permite que el frontend hable con el backend)
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173"],  # Solo este origen puede llamar
+    allow_origins=["http://localhost:3000"],  # Solo este origen puede llamar
     allow_credentials=True,
     allow_methods=["*"],      # Permite GET, POST, PUT, DELETE
     allow_headers=["*"],      # Permite todos los headers
@@ -366,15 +366,15 @@ async def login(datos: LoginRequest, db: Session = Depends(get_db)):
 
 # 7. Arrancar el servidor
 if __name__ == "__main__":
-    uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True)
+    uvicorn.run("main:app", host="0.0.0.0", port=4000, reload=True)
 ```
 
 ### ¿Qué es CORS?
 El navegador bloquea llamadas entre diferentes orígenes por seguridad:
-- Frontend vive en `http://localhost:5173`
-- Backend vive en `http://localhost:8000`
+- Frontend vive en `http://localhost:3000`
+- Backend vive en `http://localhost:4000`
 - Son orígenes DIFERENTES → el navegador bloquea la llamada
-- CORS dice: "hey navegador, deja pasar las llamadas de localhost:5173"
+- CORS dice: "hey navegador, deja pasar las llamadas de localhost:3000"
 
 ### ¿Qué es JWT?
 JWT = JSON Web Token. Es un "pase" que el servidor crea cuando haces login:
@@ -677,8 +677,8 @@ cd backend
 python main.py
 ```
 
-Esto arranca el servidor en `http://localhost:8000`.
-Puedes ver la documentación automática en `http://localhost:8000/docs`.
+Esto arranca el servidor en `http://localhost:4000`.
+Puedes ver la documentación automática en `http://localhost:4000/docs`.
 
 ### Tabla de todos los endpoints:
 
@@ -1161,7 +1161,7 @@ export default function CompanyPanel({ isOpen, onClose, idRol, idAccs }) {
     // Cada vez que se abre, traer los datos del backend
     useEffect(function () {
         if (!isOpen) return;
-        fetch('http://localhost:8000/menu', { headers: headersAuth() })
+        fetch('http://localhost:4000/menu', { headers: headersAuth() })
             .then(function (res) { return res.json(); })
             .then(function (data) { setMenuUrl(data.url + '?t=' + Date.now()); });
         // ... lo mismo para /evento y /cumpleanos
@@ -1199,7 +1199,7 @@ export default function SeccionImagen(props) {
         var formData = new FormData();
         formData.append('archivo', archivo);
 
-        var respuesta = await fetch('http://localhost:8000/' + props.tipo + '?id_accs=' + props.idAccs, {
+        var respuesta = await fetch('http://localhost:4000/' + props.tipo + '?id_accs=' + props.idAccs, {
             method: 'POST',
             headers: headersAuth(),    // Solo Authorization, SIN Content-Type
             body: formData,
@@ -1213,7 +1213,7 @@ export default function SeccionImagen(props) {
 
     // --- ELIMINAR IMAGEN ---
     async function eliminar() {
-        await fetch('http://localhost:8000/' + props.tipo, {
+        await fetch('http://localhost:4000/' + props.tipo, {
             method: 'DELETE',
             headers: headersAuth(),
         });
@@ -1325,8 +1325,8 @@ function guardarDatos() {
 
     // Determinar URL y método
     var url = eraCreando
-        ? 'http://localhost:8000/personal'
-        : 'http://localhost:8000/personal/' + idActual;
+        ? 'http://localhost:4000/personal'
+        : 'http://localhost:4000/personal/' + idActual;
     var metodo = eraCreando ? 'POST' : 'PUT';
 
     // Limpiar datos: convertir campos vacíos a null o defaults
@@ -1346,7 +1346,7 @@ function guardarDatos() {
         setEditando(false);
         setCreando(false);
         // Recargar la lista y seleccionar el correcto
-        fetch('http://localhost:8000/personal', { headers: headersAuth() })
+        fetch('http://localhost:4000/personal', { headers: headersAuth() })
             .then(function (res) { return res.json(); })
             .then(function (data) {
                 setPersonal(data);
@@ -1442,7 +1442,7 @@ cd erp-poo
 npm run dev
 ```
 
-Esto arranca Vite en `http://localhost:5173`.
+Esto arranca Vite en `http://localhost:3000`.
 
 ---
 
@@ -1460,7 +1460,7 @@ Esto arranca Vite en `http://localhost:5173`.
 ┌──────────────────────┐         ┌──────────────────────┐         ┌────────────┐
 │     NAVEGADOR        │         │     SERVIDOR         │         │   BASE DE  │
 │    (React/Vite)      │         │    (FastAPI)          │         │   DATOS    │
-│  localhost:5173      │         │  localhost:8000       │         │  (MariaDB) │
+│  localhost:3000      │         │  localhost:4000       │         │  (MariaDB) │
 │                      │         │                      │         │            │
 │  1. Usuario hace     │         │                      │         │            │
 │     clic en "RRHH"   │         │                      │         │            │
@@ -1514,7 +1514,7 @@ Esto arranca Vite en `http://localhost:5173`.
 | Capa | Mecanismo | ¿Dónde está? |
 |------|-----------|--------------|
 | **Variables secretas** | Archivo `.env` (nunca en el código) | backend/.env |
-| **CORS** | Solo `localhost:5173` puede llamar al backend | main.py |
+| **CORS** | Solo `localhost:3000` puede llamar al backend | main.py |
 | **Bloqueo de cuenta** | 3 intentos fallidos → cuenta bloqueada | br_auth.py |
 | **JWT** | Token de 60 min que se envía en cada petición | auth_token.py + auth.js |
 | **Validación** | Pydantic rechaza datos con formato incorrecto | schemas/ |

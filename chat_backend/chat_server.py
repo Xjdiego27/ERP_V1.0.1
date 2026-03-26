@@ -1,5 +1,5 @@
 # ============================================
-# CHAT BACKEND — Servidor independiente (puerto 8001)
+# CHAT BACKEND — Servidor independiente (puerto 4001)
 #
 # Arquitectura modular:
 #   chat_config.py          → Variables de entorno y configuración

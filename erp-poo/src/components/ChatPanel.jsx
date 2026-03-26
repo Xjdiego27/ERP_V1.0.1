@@ -17,7 +17,7 @@ sonidoNotificacion.volume = 0.5;
 /**
  * ChatPanel — Panel lateral de contactos + ventanas de chat flotantes.
  * Se monta en Dashboard.jsx de forma global.
- * Conecta al backend de chat (puerto 8001) vía Socket.IO.
+ * Conecta al backend de chat (puerto 4001) vía Socket.IO.
  */
 export default function ChatPanel() {
     const [abierto, setAbierto] = useState(false);

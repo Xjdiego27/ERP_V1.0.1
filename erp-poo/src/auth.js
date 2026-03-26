@@ -7,10 +7,10 @@ function getApiUrl() {
   if (typeof window !== 'undefined') {
     const host = window.location.hostname;
     if (host !== 'localhost' && host !== '127.0.0.1') {
-      return `${window.location.protocol}//${host}:8000`;
+      return `${window.location.protocol}//${host}:4000`;
     }
   }
-  return import.meta.env.VITE_API_URL || 'http://localhost:8000';
+  return import.meta.env.VITE_API_URL || 'http://localhost:4000';
 }
 
 // URL del chat para REST — dinámica para acceso LAN
@@ -18,10 +18,10 @@ function getChatUrl() {
   if (typeof window !== 'undefined') {
     const host = window.location.hostname;
     if (host !== 'localhost' && host !== '127.0.0.1') {
-      return `${window.location.protocol}//${host}:8001`;
+      return `${window.location.protocol}//${host}:4001`;
     }
   }
-  return import.meta.env.VITE_CHAT_URL || 'http://localhost:8001';
+  return import.meta.env.VITE_CHAT_URL || 'http://localhost:4001';
 }
 
 // URL del chat para Socket.IO
@@ -29,10 +29,10 @@ function getChatSocketUrl() {
   if (typeof window !== 'undefined') {
     const host = window.location.hostname;
     if (host !== 'localhost' && host !== '127.0.0.1') {
-      return `${window.location.protocol}//${host}:8001`;
+      return `${window.location.protocol}//${host}:4001`;
     }
   }
-  return import.meta.env.VITE_CHAT_URL || 'http://localhost:8001';
+  return import.meta.env.VITE_CHAT_URL || 'http://localhost:4001';
 }
 
 const API_URL = getApiUrl();

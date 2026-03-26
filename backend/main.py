@@ -56,7 +56,7 @@ async def unified_middleware(request: Request, call_next):
         return JSONResponse(status_code=500, content={"detail": "Error interno del servidor"})
 
 # CORS — origenes permitidos desde .env + acceso LAN automatico
-cors_env = os.getenv("CORS_ORIGINS", "http://localhost:5173").split(",")
+cors_env = os.getenv("CORS_ORIGINS", "http://localhost:3000").split(",")
 cors_origins = [o.strip() for o in cors_env]
 
 app.add_middleware(
@@ -221,5 +221,5 @@ def verificar_sesion(token: dict = Depends(verificar_token), db: Session = Depen
 
 if __name__ == "__main__":
     api_host = os.getenv("API_HOST", "0.0.0.0")
-    api_port = int(os.getenv("API_PORT", "8000"))
+    api_port = int(os.getenv("API_PORT", "4000"))
     uvicorn.run("main:app", host=api_host, port=api_port, reload=True)
