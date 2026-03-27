@@ -113,13 +113,15 @@ export default function ChatPanel() {
             });
         });
 
-        // ── Mensajes del chat general: notificar si ventana no está abierta ──
+        // ── Mensajes del chat general: PRIORIDAD ALTA — abrir automáticamente ──
         socket.on('msg_general', (msg) => {
             setChatGeneralAbierto(prev => {
                 if (!prev) {
-                    setNoLeidosGeneral(old => old + 1);
+                    // Auto-abrir panel + chat general
+                    setAbierto(true);
                     sonidoNotificacion.currentTime = 0;
                     sonidoNotificacion.play().catch(() => {});
+                    return true; // abre chatGeneralAbierto
                 }
                 return prev;
             });

@@ -27,6 +27,7 @@ export default function ChatSala({ tipo = 'general', grupo, socket, onCerrar, po
     const [cargando, setCargando] = useState(true);
     const [minimizada, setMinimizada] = useState(false);
     const [pickerAbierto, setPickerAbierto] = useState(false);
+    const [arrastrando, setArrastrando] = useState(false);
     const chatBodyRef = useRef(null);
     const inputRef = useRef(null);
     const fileInputRef = useRef(null);
@@ -132,9 +133,8 @@ export default function ChatSala({ tipo = 'general', grupo, socket, onCerrar, po
     }
 
     // ── Adjuntar archivo ──
-    async function handleFileUpload(e) {
-        const file = e.target.files?.[0];
-        if (!file) return;
+    async function handleSubirArchivo(file) {
+        if (!file || !socket) return;
         try {
             const data = await subirArchivo(file);
             if (data.ok) {
@@ -161,8 +161,34 @@ export default function ChatSala({ tipo = 'general', grupo, socket, onCerrar, po
             }
         } catch (err) {
             console.error('Error al subir archivo:', err);
+            alert('No se pudo subir el archivo. Verifica el tipo y tamaño (máx 10 MB).');
         }
+    }
+
+    async function handleFileUpload(e) {
+        const file = e.target.files?.[0];
+        if (!file) return;
+        await handleSubirArchivo(file);
         e.target.value = '';
+    }
+
+    // ── Drag & Drop ──
+    function handleDragOver(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        setArrastrando(true);
+    }
+    function handleDragLeave(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        setArrastrando(false);
+    }
+    async function handleDrop(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        setArrastrando(false);
+        const file = e.dataTransfer?.files?.[0];
+        if (file) await handleSubirArchivo(file);
     }
 
     const offsetRight = (panelAbierto ? 354 : 80) + posicion * 320;
@@ -196,7 +222,18 @@ export default function ChatSala({ tipo = 'general', grupo, socket, onCerrar, po
             {/* ── Cuerpo ── */}
             {!minimizada && (
                 <>
-                    <div className="chat-ventana-body" ref={chatBodyRef}>
+                    <div
+                        className={'chat-ventana-body' + (arrastrando ? ' chat-drop-active' : '')}
+                        ref={chatBodyRef}
+                        onDragOver={handleDragOver}
+                        onDragLeave={handleDragLeave}
+                        onDrop={handleDrop}
+                    >
+                        {arrastrando && (
+                            <div className="chat-drop-overlay">
+                                <span>Suelta el archivo aqui</span>
+                            </div>
+                        )}
                         {cargando ? (
                             <p className="chat-cargando">Cargando mensajes...</p>
                         ) : mensajes.length === 0 ? (

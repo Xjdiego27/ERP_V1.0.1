@@ -226,6 +226,7 @@ export default function ChatVentana({ contacto, socket, onCerrar, posicion, enLi
             }
         } catch (err) {
             console.error('Error al subir archivo:', err);
+            alert('No se pudo subir el archivo. Verifica el tipo y tamaño (máx 10 MB).');
         }
     }
 

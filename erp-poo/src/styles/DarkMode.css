@@ -69,6 +69,7 @@ body.dark-mode {
 body.dark-mode {
   background-color: #1a1d23;
   color: #e0e4ea;
+  color-scheme: dark;
 }
 
 body.dark-mode ::-webkit-scrollbar {
@@ -122,6 +123,36 @@ body.dark-mode .detalle-estado-badge.estado-activo {
 body.dark-mode .detalle-estado-badge.estado-inactivo {
   background: #3a1b1b;
   color: #e88;
+}
+
+/* ── PersonalDetalle: inputs y selects en dark mode ── */
+body.dark-mode .det-input,
+body.dark-mode .det-select,
+body.dark-mode .det-contacto-fila .det-input,
+body.dark-mode .det-contacto-fila .det-select {
+  background: var(--bg-input);
+  border-color: var(--border-color);
+  color: var(--text-primary);
+  color-scheme: dark;
+}
+
+body.dark-mode .det-input:focus,
+body.dark-mode .det-select:focus {
+  border-color: var(--active-color);
+  background: var(--bg-card);
+}
+
+body.dark-mode .det-input::placeholder {
+  color: var(--text-muted);
+}
+
+body.dark-mode .det-label {
+  color: var(--text-muted);
+}
+
+body.dark-mode .det-valor {
+  color: var(--text-primary);
+  border-bottom-color: var(--border-color);
 }
 
 body.dark-mode .det-btn-editar {
