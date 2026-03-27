@@ -28,8 +28,8 @@ export default function MiEspacio({ onCerrar, panelAbierto, posicion }) {
     const inputRef = useRef(null);
     const ventanaRef = useRef(null);
 
-    // Posición: a la derecha del panel
-    const offsetRight = (panelAbierto ? 400 : 80) + (posicion || 0) * 330;
+    // Posición: a la derecha del panel (320px panel + 24px margen + 10px gap)
+    const offsetRight = (panelAbierto ? 354 : 80) + (posicion || 0) * 320;
 
     // ── Cargar notas ──
     const cargarNotas = useCallback(async () => {

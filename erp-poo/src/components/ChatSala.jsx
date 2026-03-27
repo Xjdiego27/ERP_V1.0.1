@@ -165,7 +165,7 @@ export default function ChatSala({ tipo = 'general', grupo, socket, onCerrar, po
         e.target.value = '';
     }
 
-    const offsetRight = (panelAbierto ? 400 : 80) + posicion * 330;
+    const offsetRight = (panelAbierto ? 354 : 80) + posicion * 320;
 
     return (
         <div className={'chat-ventana ' + claseVentana + (minimizada ? ' chat-ventana-minimizada' : '')} style={{ right: offsetRight + 'px' }}>

@@ -25,6 +25,8 @@ export default function ChatPanel() {
     const [busqueda, setBusqueda] = useState('');
     const [chatsAbiertos, setChatsAbiertos] = useState([]);  // [{id_personal, nombre, foto, cargo}]
     const [noLeidos, setNoLeidos] = useState({});             // {id_personal: count}
+    const [noLeidosGeneral, setNoLeidosGeneral] = useState(0); // count msgs general sin ver
+    const [noLeidosGrupos, setNoLeidosGrupos] = useState({}); // {grupo_id: count}
     const [conectados, setConectados] = useState(new Set());
     const [chatGeneralAbierto, setChatGeneralAbierto] = useState(false);
     const [miEspacioAbierto, setMiEspacioAbierto] = useState(false);
@@ -37,7 +39,8 @@ export default function ChatPanel() {
     const [ultimoMsg, setUltimoMsg] = useState({});            // {id_personal: timestamp} para ordenar contactos
     const socketRef = useRef(null);
     const panelRef = useRef(null);
-    const totalNoLeidos = Object.values(noLeidos).reduce((s, v) => s + v, 0);
+    const totalNoLeidosGrupos = Object.values(noLeidosGrupos).reduce((s, v) => s + v, 0);
+    const totalNoLeidos = Object.values(noLeidos).reduce((s, v) => s + v, 0) + noLeidosGeneral + totalNoLeidosGrupos;
 
     // ── Detectar mobile/tablet ──
     useEffect(() => {
@@ -102,6 +105,34 @@ export default function ChatPanel() {
                     setNoLeidos(old => ({
                         ...old,
                         [msg.remitente_id]: (old[msg.remitente_id] || 0) + 1,
+                    }));
+                    sonidoNotificacion.currentTime = 0;
+                    sonidoNotificacion.play().catch(() => {});
+                }
+                return prev;
+            });
+        });
+
+        // ── Mensajes del chat general: notificar si ventana no está abierta ──
+        socket.on('msg_general', (msg) => {
+            setChatGeneralAbierto(prev => {
+                if (!prev) {
+                    setNoLeidosGeneral(old => old + 1);
+                    sonidoNotificacion.currentTime = 0;
+                    sonidoNotificacion.play().catch(() => {});
+                }
+                return prev;
+            });
+        });
+
+        // ── Mensajes de grupo: notificar si ventana de ese grupo no está abierta ──
+        socket.on('msg_grupo', (msg) => {
+            setGruposAbiertos(prev => {
+                const estaAbierto = prev.some(g => g.id === msg.grupo_id);
+                if (!estaAbierto) {
+                    setNoLeidosGrupos(old => ({
+                        ...old,
+                        [msg.grupo_id]: (old[msg.grupo_id] || 0) + 1,
                     }));
                     sonidoNotificacion.currentTime = 0;
                     sonidoNotificacion.play().catch(() => {});
@@ -258,6 +289,12 @@ export default function ChatPanel() {
             if (prev.some(g => g.id === grupo.id)) return prev;
             return [...prev, grupo];
         });
+        // Limpiar no leidos de este grupo
+        setNoLeidosGrupos(old => {
+            const copia = { ...old };
+            delete copia[grupo.id];
+            return copia;
+        });
     }
 
     function cerrarGrupo(grupoId) {
@@ -367,7 +404,7 @@ export default function ChatPanel() {
                     {/* ── Botón Chat General ── */}
                     <div
                         className="chat-general-boton"
-                        onClick={() => setChatGeneralAbierto(true)}
+                        onClick={() => { setChatGeneralAbierto(true); setNoLeidosGeneral(0); }}
                     >
                         <div className="chat-contacto-avatar">
                             <div className="chat-avatar-placeholder chat-general-avatar">
@@ -378,6 +415,9 @@ export default function ChatPanel() {
                             <span className="chat-contacto-nombre">Chat General</span>
                             <span className="chat-contacto-cargo">Todos los contactos</span>
                         </div>
+                        {noLeidosGeneral > 0 && (
+                            <span className="chat-badge-noleido">{noLeidosGeneral}</span>
+                        )}
                     </div>
 
                     {/* ── Botón Mi Espacio ── */}
@@ -521,6 +561,9 @@ export default function ChatPanel() {
                                             <span className="chat-contacto-nombre">{g.nombre}</span>
                                             <span className="chat-contacto-cargo">{g.miembros.length} miembros</span>
                                         </div>
+                                        {noLeidosGrupos[g.id] > 0 && (
+                                            <span className="chat-badge-noleido">{noLeidosGrupos[g.id]}</span>
+                                        )}
                                         {g.creador_id === miIdPersonal && (
                                             <button
                                                 className="chat-grupo-eliminar-btn"

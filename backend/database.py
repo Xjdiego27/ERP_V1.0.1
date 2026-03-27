@@ -52,6 +52,7 @@ Documento = Base.classes.documento
 EstadoAccs = Base.classes.estado_accs
 EstadoContrato = Base.classes.estado_contrato if hasattr(Base.classes, 'estado_contrato') else None
 Departamento = Base.classes.departamento
+DepartYProvinc = Base.classes.depart_y_provinc if hasattr(Base.classes, 'depart_y_provinc') else None
 TipoContrato = Base.classes.tipo_contrato
 EstadoCivil = Base.classes.estado_civil
 GradoAcademico = Base.classes.grado_academico

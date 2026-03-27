@@ -108,6 +108,32 @@ def obtener_conectados(token: dict = Depends(verificar_token)):
 
 
 # ══════════════════════════════════════════════════════════
+# CHAT GENERAL — REST (DEBE ir ANTES de /mensajes/{id_otro})
+# ══════════════════════════════════════════════════════════
+@fastapi_app.get("/mensajes/general")
+async def historial_general(
+    limite: int = 80,
+    token: dict = Depends(verificar_token),
+):
+    """Historial del chat general."""
+    cursor = coleccion_msg_general.find().sort("fecha", -1).limit(limite)
+    docs = await cursor.to_list(length=limite)
+    resultado = []
+    for m in reversed(docs):
+        resultado.append({
+            'id': str(m['_id']),
+            'remitente_id': m['remitente_id'],
+            'nombre_remitente': m.get('nombre_remitente', ''),
+            'contenido': m['contenido'],
+            'fecha': m['fecha'].isoformat() if m.get('fecha') else '',
+            'tipo': m.get('tipo', 'texto'),
+            'archivo_url': m.get('archivo_url', ''),
+            'archivo_nombre': m.get('archivo_nombre', ''),
+        })
+    return resultado
+
+
+# ══════════════════════════════════════════════════════════
 # MENSAJES INDIVIDUALES — REST
 # ══════════════════════════════════════════════════════════
 @fastapi_app.get("/mensajes/{id_otro}")
@@ -187,32 +213,6 @@ async def marcar_leidos(id_otro: int, token: dict = Depends(verificar_token)):
         {"$set": {"leido": True}},
     )
     return {"ok": True, "marcados": resultado.modified_count}
-
-
-# ══════════════════════════════════════════════════════════
-# CHAT GENERAL — REST
-# ══════════════════════════════════════════════════════════
-@fastapi_app.get("/mensajes/general")
-async def historial_general(
-    limite: int = 80,
-    token: dict = Depends(verificar_token),
-):
-    """Historial del chat general."""
-    cursor = coleccion_msg_general.find().sort("fecha", -1).limit(limite)
-    docs = await cursor.to_list(length=limite)
-    resultado = []
-    for m in reversed(docs):
-        resultado.append({
-            'id': str(m['_id']),
-            'remitente_id': m['remitente_id'],
-            'nombre_remitente': m.get('nombre_remitente', ''),
-            'contenido': m['contenido'],
-            'fecha': m['fecha'].isoformat() if m.get('fecha') else '',
-            'tipo': m.get('tipo', 'texto'),
-            'archivo_url': m.get('archivo_url', ''),
-            'archivo_nombre': m.get('archivo_nombre', ''),
-        })
-    return resultado
 
 
 # ══════════════════════════════════════════════════════════

@@ -267,7 +267,7 @@ export default function ChatVentana({ contacto, socket, onCerrar, posicion, enLi
     const formatHora = formatHoraUtil;
 
     // Posición de la ventana
-    const offsetRight = modeMobile ? 0 : (panelAbierto ? 400 : 80) + posicion * 330;
+    const offsetRight = modeMobile ? 0 : (panelAbierto ? 354 : 80) + posicion * 320;
 
     // Clase mobile
     const clasesMobile = modeMobile ? ' chat-ventana-mobile' : '';

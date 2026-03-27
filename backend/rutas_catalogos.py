@@ -10,6 +10,7 @@ from database import (
     Area, Departamento, Cargo, TipoContrato,
     EstadoCivil, GradoAcademico, Distrito, Documento,
     TipoFamiliar, AFP, Banco, Moneda, TipoCuenta, Modalidad,
+    DepartYProvinc,
 )
 from auth_token import verificar_token
 
@@ -177,4 +178,17 @@ async def listar_modalidades(
     return [
         {"id": m.ID_MODALID, "nombre": m.DESCRIP}
         for m in db.query(Modalidad).order_by(Modalidad.DESCRIP).all()
+    ]
+
+
+@router.get("/depart-provincias")
+async def listar_depart_provincias(
+    db: Session = Depends(get_db),
+    token: dict = Depends(verificar_token),
+):
+    if not DepartYProvinc:
+        return []
+    return [
+        {"id": d.ID_DEPARTAMENTO, "nombre": d.NOMBR_DEP}
+        for d in db.query(DepartYProvinc).order_by(DepartYProvinc.NOMBR_DEP).all()
     ]

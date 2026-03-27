@@ -717,6 +717,12 @@ body.dark-mode .chat-msg-zumbido span {
     background: linear-gradient(180deg, #fff 0%, #edf2f7 100%) !important;
     color: #64748b !important;
     border: 1px solid #d6dee7 !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    padding: 0 !important;
+    cursor: pointer;
+    flex-shrink: 0;
 }
 
 .sticker-picker-retro-search {

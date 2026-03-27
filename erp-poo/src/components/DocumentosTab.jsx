@@ -157,10 +157,10 @@ export default function DocumentosTab(props) {
       .then(function (data) {
         var campos = data.campos || [];
         setCamposPlantilla(campos);
-        // Inicializar campos manuales vacíos
+        // Inicializar campos manuales con valor sugerido de BD o vacío
         var manuales = {};
         campos.forEach(function (c) {
-          if (c.tipo === 'manual') manuales[c.campo] = '';
+          if (c.tipo === 'manual') manuales[c.campo] = c.valor_sugerido || '';
         });
         setCamposManuales(manuales);
       })
@@ -189,7 +189,11 @@ export default function DocumentosTab(props) {
       body: JSON.stringify({ campos_manuales: camposManuales })
     })
       .then(function (r) {
-        if (!r.ok) throw new Error('Error al generar');
+        if (!r.ok) {
+          return r.json().then(function (err) {
+            throw new Error(err.detail || 'Error al generar');
+          }).catch(function () { throw new Error('Error al generar (código ' + r.status + ')'); });
+        }
         return r.blob();
       })
       .then(function (blob) {
@@ -207,6 +211,8 @@ export default function DocumentosTab(props) {
   }
 
   // Etiqueta legible para campos manuales
+  var MESES = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
+
   function etiquetaCampo(campo) {
     var mapa = {
       'fecha a eleccion1': 'Fecha (día)',
@@ -216,8 +222,76 @@ export default function DocumentosTab(props) {
       'año seleccionado2': 'Año (segundo)',
       'mes de NS': 'Mes de NS',
       'año de NS': 'Año de NS',
+      'fecha_fin_contrato': 'Día Fin Contrato',
+      'mes_fin_contrato': 'Mes Fin Contrato',
+      'año_fin_contrato': 'Año Fin Contrato',
     };
-    return mapa[campo] || campo;
+    return mapa[campo] || mapa[campo.toLowerCase()] || campo;
+  }
+
+  // Detecta el tipo de selector a usar según el nombre del campo
+  function tipoCampoManual(campo) {
+    var cl = campo.toLowerCase();
+    if (cl.indexOf('mes') !== -1) return 'mes';
+    if (cl.indexOf('año') !== -1) return 'anio';
+    if (cl.indexOf('fecha') !== -1 || cl.indexOf('dia') !== -1 || cl.indexOf('día') !== -1) return 'dia';
+    return 'texto';
+  }
+
+  // Renderiza el input adecuado para cada campo manual
+  function renderCampoManual(c) {
+    var tipo = tipoCampoManual(c.campo);
+    var valor = camposManuales[c.campo] || '';
+
+    if (tipo === 'mes') {
+      return (
+        <select className="det-select" value={valor}
+          onChange={function (e) { cambiarCampoManual(c.campo, e.target.value); }}
+          disabled={esMiPerfil}>
+          <option value="">-- Seleccionar mes --</option>
+          {MESES.map(function (m) {
+            return <option key={m} value={m}>{m.charAt(0).toUpperCase() + m.slice(1)}</option>;
+          })}
+        </select>
+      );
+    }
+
+    if (tipo === 'anio') {
+      var anioActual = new Date().getFullYear();
+      var anios = [];
+      for (var i = anioActual - 2; i <= anioActual + 5; i++) anios.push(i);
+      return (
+        <select className="det-select" value={valor}
+          onChange={function (e) { cambiarCampoManual(c.campo, e.target.value); }}
+          disabled={esMiPerfil}>
+          <option value="">-- Seleccionar año --</option>
+          {anios.map(function (a) { return <option key={a} value={String(a)}>{a}</option>; })}
+        </select>
+      );
+    }
+
+    if (tipo === 'dia') {
+      var dias = [];
+      for (var d = 1; d <= 31; d++) dias.push(d);
+      return (
+        <select className="det-select" value={valor}
+          onChange={function (e) { cambiarCampoManual(c.campo, e.target.value); }}
+          disabled={esMiPerfil}>
+          <option value="">-- Seleccionar día --</option>
+          {dias.map(function (d) { return <option key={d} value={String(d)}>{d}</option>; })}
+        </select>
+      );
+    }
+
+    // Texto libre por defecto
+    return (
+      <input className="det-input" type="text"
+        placeholder={'Ingrese ' + etiquetaCampo(c.campo).toLowerCase()}
+        value={valor}
+        onChange={function (e) { cambiarCampoManual(c.campo, e.target.value); }}
+        readOnly={esMiPerfil}
+      />
+    );
   }
 
   function formatFecha(f) {
@@ -394,15 +468,27 @@ export default function DocumentosTab(props) {
 
             {camposPlantilla.length > 0 && !cargandoCampos && (
               <>
-                {/* Campos automáticos (solo lectura) */}
-                {camposPlantilla.filter(function (c) { return c.tipo === 'auto'; }).length > 0 && (
+                {/* Campos automáticos visibles (solo los que NO son de fecha generación ni sueldo en texto) */}
+                {camposPlantilla.filter(function (c) {
+                  if (c.tipo !== 'auto') return false;
+                  var cl = c.campo.toLowerCase();
+                  if (cl.indexOf('genera') !== -1) return false;
+                  if (cl === 'sueldo en texto') return false;
+                  return true;
+                }).length > 0 && (
                   <div className="doc-campos-auto">
-                    <h4 className="doc-campos-titulo">Campos Automáticos (desde BD)</h4>
+                    <h4 className="doc-campos-titulo">Datos del Empleado</h4>
                     <div className="doc-form-grid">
-                      {camposPlantilla.filter(function (c) { return c.tipo === 'auto'; }).map(function (c) {
+                      {camposPlantilla.filter(function (c) {
+                        if (c.tipo !== 'auto') return false;
+                        var cl = c.campo.toLowerCase();
+                        if (cl.indexOf('genera') !== -1) return false;
+                        if (cl === 'sueldo en texto') return false;
+                        return true;
+                      }).map(function (c) {
                         return (
                           <div className="det-campo" key={c.campo}>
-                            <label className="det-label">{c.campo}</label>
+                            <label className="det-label">{etiquetaCampo(c.campo)}</label>
                             <input className="det-input" type="text" value={c.valor || '—'} readOnly
                               style={{ background: '#f1f5f9', cursor: 'default' }} />
                           </div>
@@ -412,7 +498,7 @@ export default function DocumentosTab(props) {
                   </div>
                 )}
 
-                {/* Campos manuales (editables) */}
+                {/* Campos manuales (editables con selectores inteligentes) */}
                 {camposPlantilla.filter(function (c) { return c.tipo === 'manual'; }).length > 0 && (
                   <div className="doc-campos-manual">
                     <h4 className="doc-campos-titulo">Campos a Completar</h4>
@@ -421,12 +507,7 @@ export default function DocumentosTab(props) {
                         return (
                           <div className="det-campo" key={c.campo}>
                             <label className="det-label">{etiquetaCampo(c.campo)}</label>
-                            <input className="det-input" type="text"
-                              placeholder={'Ingrese ' + etiquetaCampo(c.campo).toLowerCase()}
-                              value={camposManuales[c.campo] || ''}
-                              onChange={function (e) { cambiarCampoManual(c.campo, e.target.value); }}
-                              readOnly={esMiPerfil}
-                            />
+                            {renderCampoManual(c)}
                           </div>
                         );
                       })}

@@ -33,6 +33,7 @@ export default function PersonalDetalle() {
   var [bancos, setBancos] = useState([]);
   var [monedas, setMonedas] = useState([]);
   var [tiposCuenta, setTiposCuenta] = useState([]);
+  var [departProvincias, setDepartProvincias] = useState([]);
   var [cargando, setCargando] = useState(true);
   var [contactos, setContactos] = useState([]);
   var [seguros, setSeguros] = useState(null);
@@ -62,7 +63,7 @@ export default function PersonalDetalle() {
     id_tipocontr: '1', id_modalidad: '', sueldo: '', asig_fam: 0,
     fech_ingr: '', fech_cese: '',
     id_estcivil: '', id_acadm: '', id_distr: '',
-    depart_y_provinc: '',
+    id_departamento: '',
   });
 
   // Cargar catálogos + empleado (Promise.all para llamadas independientes)
@@ -87,6 +88,7 @@ export default function PersonalDetalle() {
       fetch(API_URL + '/bancos', { headers: h, signal: signal }).then(function (r) { return r.json(); }),
       fetch(API_URL + '/monedas', { headers: h, signal: signal }).then(function (r) { return r.json(); }),
       fetch(API_URL + '/tipos-cuenta', { headers: h, signal: signal }).then(function (r) { return r.json(); }),
+      fetch(API_URL + '/depart-provincias', { headers: h, signal: signal }).then(function (r) { return r.json(); }),
     ]).then(function (res) {
       if (signal.aborted) return;
       setAreas(res[0]);
@@ -103,6 +105,7 @@ export default function PersonalDetalle() {
       setBancos(res[11]);
       setMonedas(res[12]);
       setTiposCuenta(res[13]);
+      setDepartProvincias(res[14]);
     }).catch(function () {});
 
     if (esNuevo) { setCargando(false); return function () { abortCtrl.abort(); }; }
@@ -179,7 +182,7 @@ export default function PersonalDetalle() {
       fech_ingr: empleado.fech_ingreso || '', fech_cese: empleado.fech_cese || '',
       id_estcivil: empleado.id_estcivil || '', id_acadm: empleado.id_acadm || '',
       id_distr: empleado.id_distr || '',
-      depart_y_provinc: empleado.depart_y_provinc || '',
+      id_departamento: empleado.id_departamento || '',
     });
     // Cargar contactos al estado editable
     var ctsList = empleado.contactos ? empleado.contactos.map(function (c) {
@@ -218,7 +221,7 @@ export default function PersonalDetalle() {
     if (!datosLimpios.email) datosLimpios.email = null;
     if (!datosLimpios.celular) datosLimpios.celular = null;
     if (!datosLimpios.direccion) datosLimpios.direccion = null;
-    if (!datosLimpios.depart_y_provinc) datosLimpios.depart_y_provinc = null;
+    datosLimpios.id_departamento = datosLimpios.id_departamento ? Number(datosLimpios.id_departamento) : null;
     if (!datosLimpios.sueldo) datosLimpios.sueldo = null;
     if (!datosLimpios.fech_ingr) datosLimpios.fech_ingr = null;
     if (!datosLimpios.fech_cese) datosLimpios.fech_cese = null;
@@ -797,9 +800,13 @@ export default function PersonalDetalle() {
                   <div className="det-fila">
                     <div className="det-campo">
                       <label className="det-label">Departamento y Provincia</label>
-                      <input className="det-input" value={datos.depart_y_provinc}
-                        placeholder="Ej: Lima - Lima"
-                        onChange={function (e) { cambiarCampo('depart_y_provinc', e.target.value); }} />
+                      <select className="det-select" value={datos.id_departamento}
+                        onChange={function (e) { cambiarCampo('id_departamento', e.target.value); }}>
+                        <option value="">-- Seleccionar --</option>
+                        {departProvincias.map(function (dp) {
+                          return <option key={dp.id} value={dp.id}>{dp.nombre}</option>;
+                        })}
+                      </select>
                     </div>
                   </div>
 

@@ -16,7 +16,7 @@ from typing import Dict
 from docx import Document as DocxDocument
 
 from database import (
-    get_db, Personal, Contrato, Distrito, Area, Cargo
+    get_db, Personal, Contrato, Distrito, Area, Cargo, DepartYProvinc
 )
 from auth_token import verificar_token
 
@@ -119,8 +119,13 @@ def _obtener_datos_auto(id_personal: int, db: Session):
         if dist:
             distrito_nombre = dist.DESCRIP if hasattr(dist, 'DESCRIP') else ''
 
-    # Departamento y Provincia (campo directo en personal)
-    depart_y_provinc = getattr(persona, 'DEPART_Y_PROVINC', None) or ''
+    # Departamento y Provincia (resuelto via FK ID_DEPARTAMENTO)
+    depart_y_provinc = ''
+    id_dep = getattr(persona, 'ID_DEPARTAMENTO', None)
+    if id_dep and DepartYProvinc:
+        dep = db.query(DepartYProvinc).filter(DepartYProvinc.ID_DEPARTAMENTO == id_dep).first()
+        if dep:
+            depart_y_provinc = dep.NOMBR_DEP if hasattr(dep, 'NOMBR_DEP') else ''
 
     # Dirección
     direccion = getattr(persona, 'DIRECCION', '') or ''
@@ -199,36 +204,37 @@ CAMPOS_AUTO = {
     'direccion', 'distrito', 'depart_y_provinc', 'cargo',
     'dia que se genera', 'mes que se genera', 'año que se genera',
     'sueldo (en numeros)', 'sueldo en texto',
-    'fecha_fin_contrato', 'mes_fin_contrato', 'año_fin_contrato',
 }
 
 
+# Versión en minúsculas para comparación insensible a mayúsculas
+CAMPOS_AUTO_LOWER = {c.lower() for c in CAMPOS_AUTO}
+
+
 def _clasificar_campos(placeholders):
-    """Clasifica cada placeholder como 'auto' o 'manual'."""
+    """Clasifica cada placeholder como 'auto' o 'manual' (insensible a mayúsculas)."""
     resultado = []
     for campo in sorted(placeholders):
-        tipo = 'auto' if campo in CAMPOS_AUTO else 'manual'
+        tipo = 'auto' if campo.lower() in CAMPOS_AUTO_LOWER else 'manual'
         resultado.append({'campo': campo, 'tipo': tipo})
     return resultado
 
 
 def _reemplazar_en_parrafo(para, datos):
-    """Reemplaza placeholders en un párrafo preservando formato."""
+    """Reemplaza placeholders en un párrafo preservando formato (insensible a mayúsculas)."""
     texto_completo = para.text
     if '{' not in texto_completo:
         return
 
-    # Intentar reemplazo run por run primero
-    # Si el placeholder está dividido entre runs, reconstruir
-    runs_text = ''.join(run.text for run in para.runs)
-    if runs_text != texto_completo:
-        # Paragraph text comes from XML, runs may not match
-        pass
+    # Construir mapa insensible a mayúsculas
+    datos_lower = {k.lower(): v for k, v in datos.items()}
 
-    for key, val in datos.items():
-        placeholder = '{' + key + '}'
-        if placeholder in texto_completo:
-            texto_completo = texto_completo.replace(placeholder, str(val))
+    # Buscar todos los placeholders en el texto y reemplazar
+    matches = re.findall(r'\{([^}]+)\}', texto_completo)
+    for match in matches:
+        val = datos_lower.get(match.lower())
+        if val is not None:
+            texto_completo = texto_completo.replace('{' + match + '}', str(val))
 
     # Reconstruir runs preservando formato del primer run
     if para.runs:
@@ -300,10 +306,16 @@ def obtener_campos_plantilla(
     campos = _clasificar_campos(placeholders)
     datos_auto = _obtener_datos_auto(id_personal, db)
 
-    # Agregar el valor auto si está disponible
+    # Agregar valores (búsqueda insensible a mayúsculas)
+    datos_auto_lower = {k.lower(): v for k, v in datos_auto.items()}
     for c in campos:
         if c['tipo'] == 'auto':
-            c['valor'] = datos_auto.get(c['campo'], '')
+            c['valor'] = datos_auto_lower.get(c['campo'].lower(), '')
+        else:
+            # Para campos manuales, sugerir valor desde BD si existe
+            sugerido = datos_auto_lower.get(c['campo'].lower(), '')
+            if sugerido:
+                c['valor_sugerido'] = sugerido
 
     return {
         'archivo': nombre_archivo,
@@ -344,51 +356,30 @@ def generar_documento(
     nombre_descarga = os.path.splitext(nombre_archivo)[0]
 
     if formato == 'pdf':
-        # Para PDF necesitamos convertir — intenta usar docx2pdf o libreoffice
         try:
-            import subprocess
             import tempfile
+            from docx2pdf import convert
+
+            tmp_dir = tempfile.gettempdir()
+            tmp_docx = os.path.join(tmp_dir, f"temp_{nombre_descarga}.docx")
+            tmp_pdf = os.path.join(tmp_dir, f"temp_{nombre_descarga}.pdf")
 
             # Guardar DOCX temporal
-            tmp_docx = os.path.join(tempfile.gettempdir(), f"temp_{nombre_descarga}.docx")
-            tmp_pdf = os.path.join(tempfile.gettempdir(), f"temp_{nombre_descarga}.pdf")
-
             with open(tmp_docx, 'wb') as f:
                 f.write(buffer.getvalue())
 
-            # Intentar con LibreOffice
-            try:
-                subprocess.run([
-                    'soffice', '--headless', '--convert-to', 'pdf',
-                    '--outdir', tempfile.gettempdir(), tmp_docx
-                ], check=True, timeout=30, capture_output=True)
-            except FileNotFoundError:
-                # Intentar con libreoffice en path completo (Windows)
-                lo_paths = [
-                    r'C:\Program Files\LibreOffice\program\soffice.exe',
-                    r'C:\Program Files (x86)\LibreOffice\program\soffice.exe',
-                ]
-                converted = False
-                for lo_path in lo_paths:
-                    if os.path.isfile(lo_path):
-                        subprocess.run([
-                            lo_path, '--headless', '--convert-to', 'pdf',
-                            '--outdir', tempfile.gettempdir(), tmp_docx
-                        ], check=True, timeout=30, capture_output=True)
-                        converted = True
-                        break
-                if not converted:
-                    raise HTTPException(
-                        status_code=500,
-                        detail="LibreOffice no encontrado. Instale LibreOffice para generar PDF."
-                    )
+            # Convertir usando MS Word vía docx2pdf
+            convert(tmp_docx, tmp_pdf)
 
             if os.path.isfile(tmp_pdf):
                 with open(tmp_pdf, 'rb') as f:
                     pdf_bytes = f.read()
                 # Limpiar temporales
-                os.remove(tmp_docx)
-                os.remove(tmp_pdf)
+                try:
+                    os.remove(tmp_docx)
+                    os.remove(tmp_pdf)
+                except OSError:
+                    pass
 
                 return StreamingResponse(
                     BytesIO(pdf_bytes),
