@@ -46,13 +46,13 @@ async def unified_middleware(request: Request, call_next):
         ms = (time.time() - start) * 1000
         response.headers["X-Process-Time-Ms"] = f"{ms:.2f}"
         status = response.status_code
-        emoji = "🟢" if ms < 100 else "🟡" if ms < 200 else "🔴"
-        print(f"{emoji} {request.method} {request.url.path} — {ms:.1f} ms [{status}]")
+        nivel = "[OK]" if ms < 100 else "[LENTO]" if ms < 200 else "[CRITICO]"
+        print(f"{nivel} {request.method} {request.url.path} -- {ms:.1f} ms [{status}]")
         return response
     except Exception as e:
         ms = (time.time() - start) * 1000
         traceback.print_exc()
-        print(f"💥 ERROR {request.method} {request.url.path} — {ms:.2f} ms")
+        print(f"[ERROR] {request.method} {request.url.path} -- {ms:.2f} ms")
         return JSONResponse(status_code=500, content={"detail": "Error interno del servidor"})
 
 # CORS — origenes permitidos desde .env + acceso LAN automatico
@@ -213,8 +213,12 @@ def verificar_sesion(token: dict = Depends(verificar_token), db: Session = Depen
     if not acceso:
         raise HTTPException(status_code=401, detail="Usuario no encontrado")
 
+    # Verificar si debe forzar cambio de password (detecta resets en caliente)
+    requiere_cambio = bool(getattr(acceso, 'RESET_PASS', 0))
+
     return {
         "valido": True,
+        "requiere_cambio_password": requiere_cambio,
         "usuario": construir_respuesta_usuario(db, acceso, id_emp),
     }
 

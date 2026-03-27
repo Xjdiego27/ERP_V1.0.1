@@ -123,7 +123,7 @@ def personal_disponible(db: Session = Depends(get_db), token: dict = Depends(ver
     id_emp = token.get("id_emp", 1)
     contratos = db.query(Contrato).filter(
         Contrato.ID_EMP == id_emp,
-        Contrato.ID_EST_CONTR == 1
+        Contrato.ID_ESTADO_CONTRATO == 1
     ).all()
     ids = [ct.ID_PERSONAL for ct in contratos]
     if not ids:

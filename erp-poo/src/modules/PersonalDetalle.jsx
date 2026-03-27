@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { faPerson, faPersonDress, faPen, faFloppyDisk, faXmark, faBan, faArrowLeft, faCheck, faPlus, faTrash, faCamera, faCalendarCheck, faCalendarDays, faExclamationTriangle, faClock, faFileContract, faFileLines, faFileSignature, faHandshake, faFileInvoiceDollar, faFolder, faEllipsisVertical } from '@fortawesome/free-solid-svg-icons';
+import { faPerson, faPersonDress, faPen, faFloppyDisk, faXmark, faBan, faArrowLeft, faCheck, faPlus, faTrash, faCamera, faCalendarCheck, faCalendarDays, faExclamationTriangle, faClock, faFileContract, faFileLines, faFileSignature, faHandshake, faFileInvoiceDollar, faFolder, faEllipsisVertical, faKey } from '@fortawesome/free-solid-svg-icons';
 import IconoFa from '../components/IconoFa';
 import AsistenciaTab from '../components/AsistenciaTab';
 import DocumentosTab from '../components/DocumentosTab';
@@ -297,6 +297,19 @@ export default function PersonalDetalle() {
       .catch(function () { alert('Error al desactivar'); });
   }
 
+  function reiniciarClave() {
+    if (!confirm('Se reiniciara la clave de ' + empleado.nombres + ' a su numero de documento. El usuario debera cambiarla al iniciar sesion.')) return;
+    fetch(API_URL + '/personal/' + id + '/reiniciar-clave', { method: 'POST', headers: headersAuth() })
+      .then(function (res) {
+        if (!res.ok) return res.json().then(function (err) { throw new Error(err.detail || 'Error'); });
+        return res.json();
+      })
+      .then(function (resp) {
+        alert(resp.mensaje);
+      })
+      .catch(function (err) { alert('Error: ' + err.message); });
+  }
+
   // Subir foto de perfil
   function subirFoto(e) {
     var archivo = e.target.files[0];
@@ -391,6 +404,9 @@ export default function PersonalDetalle() {
                       <IconoFa icono={faCheck} /> Reactivar
                     </button>
                   )}
+                  <button className="det-btn det-btn-editar" onClick={reiniciarClave}>
+                    <IconoFa icono={faKey} /> Reiniciar clave
+                  </button>
                 </>
               ) : (
                 <>

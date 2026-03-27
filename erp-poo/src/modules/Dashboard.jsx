@@ -80,6 +80,11 @@ export default function Dashboard() {
                 var sessionActual = getSession();
                 if (sessionActual) {
                     sessionActual.usuario = data.usuario;
+                    // Sincronizar requiere_cambio_password desde el servidor
+                    if (data.requiere_cambio_password) {
+                        sessionActual.requiere_cambio_password = true;
+                        setMostrarCambioPassword(true);
+                    }
                     localStorage.setItem('session', JSON.stringify(sessionActual));
                     setUsuario(data.usuario);
                     window.dispatchEvent(new Event('session-updated'));
@@ -126,7 +131,7 @@ export default function Dashboard() {
                 <div className="workspace-area">
                     {!empresaOpen && (
                         <button className="toggle-panel-btn" onClick={toggleEmpresa}>
-                            ◀
+                            &laquo;
                         </button>
                     )}
                     <Outlet context={{ toggleEmpresa }} />

@@ -97,7 +97,7 @@ export function renderContenidoMensaje(m, mostrarDescargar = false) {
     return (
       <div className="chat-msg-archivo">
         <a href={CHAT_URL + m.archivo_url} target="_blank" rel="noopener noreferrer" className="chat-msg-file-link">
-          📎 {m.archivo_nombre}
+          <IconoFa icono={faDownload} /> {m.archivo_nombre}
         </a>
         {mostrarDescargar && (
           <button

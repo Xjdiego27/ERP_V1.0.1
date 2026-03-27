@@ -90,7 +90,7 @@ export default function ChatVentana({ contacto, socket, onCerrar, posicion, enLi
                     sonidoMensaje.currentTime = 0;
                     sonidoMensaje.play().catch(() => {});
                     if (document.hidden) {
-                        parpadearTitulo(`💬 ${contacto.nombre.split(' ')[0]} te envió un mensaje`);
+                        parpadearTitulo(`${contacto.nombre.split(' ')[0]} te envio un mensaje`);
                     }
                     // Marcar como leído en el servidor (la ventana está abierta)
                     const token = obtenerToken();
@@ -214,7 +214,7 @@ export default function ChatVentana({ contacto, socket, onCerrar, posicion, enLi
                 const esImagen = file.type.startsWith('image/');
                 socket.emit('enviar_mensaje', {
                     destinatario_id: contacto.id_personal,
-                    contenido: esImagen ? `📷 ${data.nombre_original}` : `📎 ${data.nombre_original}`,
+                    contenido: esImagen ? `[Imagen] ${data.nombre_original}` : `[Archivo] ${data.nombre_original}`,
                     tipo: 'archivo',
                     archivo_url: data.url,
                     archivo_nombre: data.nombre_original,
@@ -329,7 +329,7 @@ export default function ChatVentana({ contacto, socket, onCerrar, posicion, enLi
                     >
                         {arrastrando && (
                             <div className="chat-drop-overlay">
-                                <span>📁 Suelta el archivo aquí</span>
+                                <span>Suelta el archivo aqui</span>
                             </div>
                         )}
                         {cargando ? (

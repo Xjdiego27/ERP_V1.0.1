@@ -37,7 +37,7 @@ export default function ChatSala({ tipo = 'general', grupo, socket, onCerrar, po
     // ── Config por tipo ──
     const esGeneral = tipo === 'general';
     const salaId = esGeneral ? null : grupo?.id;
-    const nombreSala = esGeneral ? '💬 Chat General' : `👥 ${grupo?.nombre || 'Grupo'}`;
+    const nombreSala = esGeneral ? 'Chat General' : grupo?.nombre || 'Grupo';
     const icono = esGeneral ? faGlobe : faUsers;
     const claseHeader = esGeneral ? 'chat-ventana-header-general' : 'chat-ventana-header-grupo';
     const claseVentana = esGeneral ? 'chat-ventana-general' : 'chat-ventana-grupo';
@@ -141,14 +141,14 @@ export default function ChatSala({ tipo = 'general', grupo, socket, onCerrar, po
                 const esImg = file.type.startsWith('image/');
                 const payload = esGeneral
                     ? {
-                        contenido: esImg ? `📷 ${data.nombre_original}` : `📎 ${data.nombre_original}`,
+                        contenido: esImg ? `[Imagen] ${data.nombre_original}` : `[Archivo] ${data.nombre_original}`,
                         tipo: 'archivo',
                         archivo_url: data.url,
                         archivo_nombre: data.nombre_original,
                     }
                     : {
                         grupo_id: salaId,
-                        contenido: esImg ? `📷 ${data.nombre_original}` : `📎 ${data.nombre_original}`,
+                        contenido: esImg ? `[Imagen] ${data.nombre_original}` : `[Archivo] ${data.nombre_original}`,
                         tipo: 'archivo',
                         archivo_url: data.url,
                         archivo_nombre: data.nombre_original,

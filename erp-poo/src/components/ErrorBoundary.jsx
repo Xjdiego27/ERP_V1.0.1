@@ -41,7 +41,7 @@ export default class ErrorBoundary extends Component {
                     color: '#64748b',
                 }}>
                     <h2 style={{ margin: '0 0 0.5rem', fontSize: '1.25rem', color: '#ef4444' }}>
-                        ⚠️ Algo salió mal
+                        Algo salio mal
                     </h2>
                     <p style={{ margin: '0 0 1rem', fontSize: '0.9rem' }}>
                         Ocurrió un error inesperado. Intenta recargar la sección.

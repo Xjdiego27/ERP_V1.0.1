@@ -34,9 +34,9 @@ async def timing_middleware(request, call_next):
     response = await call_next(request)
     ms = (time.time() - start) * 1000
     response.headers["X-Process-Time-Ms"] = f"{ms:.2f}"
-    print(f"⏱️  [Chat] {request.method} {request.url.path} — {ms:.1f} ms")
+    print(f"[Chat] {request.method} {request.url.path} -- {ms:.1f} ms")
     if ms > 200:
-        print(f"⚠️  [Chat] LENTO {request.method} {request.url.path} — {ms:.1f} ms")
+        print(f"[WARN] [Chat] LENTO {request.method} {request.url.path} -- {ms:.1f} ms")
     return response
 
 

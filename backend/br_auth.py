@@ -19,14 +19,14 @@ def validar_usuario_br(db: Session, usuario_input: str, password_input: str):
     if verificar_password(password_input, usuario_db.PASSWORD):
         usuario_db.INTENT_LOGIN = 0
 
+        # Leer RESET_PASS ANTES del commit (evita problemas de atributo expirado)
+        requiere_cambio = bool(getattr(usuario_db, 'RESET_PASS', 0))
+
         # Auto-rehash: migrar contraseña plana a Argon2 de forma transparente
         if _es_texto_plano(usuario_db.PASSWORD):
             usuario_db.PASSWORD = hashear_password(password_input)
 
         db.commit()
-
-        # Detectar si debe forzar cambio de contraseña (RESET_PASS=1 en BD)
-        requiere_cambio = bool(getattr(usuario_db, 'RESET_PASS', 0))
 
         personal = db.query(Personal).filter(Personal.ID_ACCS == usuario_db.ID_ACCS).first()
         rol = db.query(RolAccs).filter(RolAccs.ID_ROL == usuario_db.ID_ROL).first()

@@ -421,6 +421,36 @@ async def desactivar_personal(id: int, db: Session = Depends(get_db), token: dic
     )
     return {"mensaje": mensaje}
 
+
+# === REINICIAR CLAVE (admin resetea password y fuerza cambio) ===
+@router.post("/personal/{id}/reiniciar-clave")
+async def reiniciar_clave(id: int, db: Session = Depends(get_db), token: dict = Depends(verificar_token)):
+    """Reinicia la clave de un empleado a su NUM_DOC y activa RESET_PASS=1."""
+    persona = db.query(Personal).filter(Personal.ID_PERSONAL == id).first()
+    if not persona:
+        raise HTTPException(status_code=404, detail="Empleado no encontrado")
+    acceso = db.query(Acceso).filter(Acceso.ID_ACCS == persona.ID_ACCS).first()
+    if not acceso:
+        raise HTTPException(status_code=404, detail="Acceso no encontrado")
+    # Restablecer password al NUM_DOC (texto plano, se hasheara en el proximo login)
+    acceso.PASSWORD = persona.NUM_DOC
+    acceso.RESET_PASS = 1
+    acceso.INTENT_LOGIN = 0
+    # Si estaba bloqueado, reactivar
+    if acceso.ID_ESTADO == 2:
+        acceso.ID_ESTADO = 1
+    db.commit()
+    await registrar_accion(
+        usuario=token.get("sub", "desconocido"),
+        accion="REINICIAR_CLAVE",
+        modulo="PERSONAL",
+        id_afectado=id,
+        nombre_afectado=f"{persona.APE_PATERNO} {persona.APE_MATERNO}, {persona.NOMBRES}",
+        datos_nuevos={"reset_pass": 1}
+    )
+    return {"mensaje": f"Clave reiniciada. Nueva clave temporal: {persona.NUM_DOC}", "usuario": acceso.USUARIO}
+
+
 # === ESQUEMA: contactos de emergencia ===
 class ContactoItem(BaseModel):
     nombre: str

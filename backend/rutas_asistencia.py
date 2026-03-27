@@ -42,7 +42,7 @@ def _horario_del_empleado(db: Session, personal, contrato=None) -> dict:
                     "descanso": bool(getattr(dh, 'DIA_DESC', 0))
                 }
     except Exception as e:
-        print(f"⚠️ Error obteniendo horario: {e}")
+        print(f"[WARN] Error obteniendo horario: {e}")
     return resultado
 
 
@@ -554,7 +554,7 @@ def listar_categorias(db: Session = Depends(get_db)):
     try:
         return [{"id": c.ID_CATGA, "descrip": c.DESCRIP} for c in db.query(CatgAsistencia).order_by(CatgAsistencia.DESCRIP).all()]
     except Exception as e:
-        print(f"⚠️ Error categorias: {e}")
+        print(f"[WARN] Error categorias: {e}")
         return []
 
 
