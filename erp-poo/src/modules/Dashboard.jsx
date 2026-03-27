@@ -108,7 +108,8 @@ export default function Dashboard() {
             <Header 
                 onToggleMenu={toggleSidebar} 
                 onToggleEmpresa={toggleEmpresa} 
-                usuario={usuario} 
+                usuario={usuario}
+                onCambiarPassword={function () { setMostrarCambioPassword(true); }}
             />
             <div className="dashboard-body">
                 <Sidebar 

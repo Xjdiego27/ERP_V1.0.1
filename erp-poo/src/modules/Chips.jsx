@@ -11,7 +11,7 @@ import '../styles/Chips.css';
 
 export default function Chips() {
     var [chips, setChips] = useState([]);
-    var [catalogos, setCatalogos] = useState({ operadores: [], planes: [], descuentos: [] });
+    var [catalogos, setCatalogos] = useState({ operadores: [], planes: [], descuentos: [], empresas: [] });
     var [personal, setPersonal] = useState([]);
     var [cargando, setCargando] = useState(true);
     var [filtro, setFiltro] = useState('');
@@ -23,7 +23,7 @@ export default function Chips() {
     // Formulario nueva línea
     var [verFormNuevo, setVerFormNuevo] = useState(false);
     var [formNuevo, setFormNuevo] = useState({
-        numero: '', precio: '', id_operador: '', id_plan: '', id_descuento: '', fech_asignacion: ''
+        numero: '', precio: '', id_operador: '', id_plan: '', id_descuento: '', id_emp: '', fech_asignacion: ''
     });
 
     // Edición inline
@@ -51,7 +51,7 @@ export default function Chips() {
             fetch(API_URL + '/chips/personal', { headers: headersConToken() }).then(function (r) { return r.json(); }),
         ]).then(function (res) {
             setChips(Array.isArray(res[0]) ? res[0] : []);
-            setCatalogos(res[1] || { operadores: [], planes: [], descuentos: [] });
+            setCatalogos(res[1] || { operadores: [], planes: [], descuentos: [], empresas: [] });
             setPersonal(Array.isArray(res[2]) ? res[2] : []);
         }).catch(function () {
             mostrarMensaje('Error cargando datos', false);
@@ -70,7 +70,7 @@ export default function Chips() {
     var totalChips = chips.length;
     var asignados = chips.filter(function (c) { return c.asignacion; }).length;
     var disponibles = totalChips - asignados;
-    var costoTotal = chips.reduce(function (s, c) { return s + (c.precio || 0); }, 0);
+    var costoTotal = chips.reduce(function (s, c) { return s + (c.precio_con_descuento || c.precio || 0); }, 0);
 
     // ── Filtros ──
     var chipsFiltrados = chips.filter(function (c) {
@@ -102,7 +102,7 @@ export default function Chips() {
         .then(function (res) {
             if (!res.ok) throw new Error(res.data.detail || 'Error');
             mostrarMensaje('¡Línea creada correctamente!', true);
-            setFormNuevo({ numero: '', precio: '', id_operador: '', id_plan: '', id_descuento: '', fech_asignacion: '' });
+            setFormNuevo({ numero: '', precio: '', id_operador: '', id_plan: '', id_descuento: '', id_emp: '', fech_asignacion: '' });
             setVerFormNuevo(false);
             cargarDatos();
         })
@@ -120,6 +120,7 @@ export default function Chips() {
             id_operador: chip.id_operador || '',
             id_plan: chip.id_plan || '',
             id_descuento: chip.id_descuento || '',
+            id_emp: chip.id_emp || '',
             fech_asignacion: chip.fech_asignacion || ''
         });
     }
@@ -316,6 +317,13 @@ export default function Chips() {
                             </select>
                         </div>
                         <div className="chip-campo">
+                            <label>Empresa</label>
+                            <select value={formNuevo.id_emp} onChange={function (e) { setFormNuevo(Object.assign({}, formNuevo, { id_emp: e.target.value })); }}>
+                                <option value="">-- Seleccionar --</option>
+                                {catalogos.empresas.map(function (emp) { return <option key={emp.id} value={emp.id}>{emp.nombre}</option>; })}
+                            </select>
+                        </div>
+                        <div className="chip-campo">
                             <label>Fecha asignación</label>
                             <input type="date" value={formNuevo.fech_asignacion} onChange={function (e) { setFormNuevo(Object.assign({}, formNuevo, { fech_asignacion: e.target.value })); }} />
                         </div>
@@ -330,10 +338,12 @@ export default function Chips() {
                     <thead>
                         <tr>
                             <th>Número</th>
+                            <th>Empresa</th>
                             <th>Operador</th>
                             <th>Plan</th>
                             <th>Precio</th>
                             <th>Descuento</th>
+                            <th>Precio c/Desc.</th>
                             <th>Asignado a</th>
                             <th>Fecha asig.</th>
                             <th>Estado</th>
@@ -342,7 +352,7 @@ export default function Chips() {
                     </thead>
                     <tbody>
                         {chipsFiltrados.length === 0 && (
-                            <tr><td colSpan="9" className="chip-vacio">No se encontraron líneas</td></tr>
+                            <tr><td colSpan="11" className="chip-vacio">No se encontraron líneas</td></tr>
                         )}
                         {chipsFiltrados.map(function (chip) {
                             var esEdicion = editandoId === chip.id;
@@ -351,6 +361,12 @@ export default function Chips() {
                                 return (
                                     <tr key={chip.id} className="chip-fila-edit">
                                         <td><input type="text" value={formEditar.numero} onChange={function (e) { setFormEditar(Object.assign({}, formEditar, { numero: e.target.value })); }} /></td>
+                                        <td>
+                                            <select value={formEditar.id_emp} onChange={function (e) { setFormEditar(Object.assign({}, formEditar, { id_emp: e.target.value })); }}>
+                                                <option value="">--</option>
+                                                {catalogos.empresas.map(function (emp) { return <option key={emp.id} value={emp.id}>{emp.nombre}</option>; })}
+                                            </select>
+                                        </td>
                                         <td>
                                             <select value={formEditar.id_operador} onChange={function (e) { setFormEditar(Object.assign({}, formEditar, { id_operador: e.target.value })); }}>
                                                 <option value="">--</option>
@@ -370,6 +386,7 @@ export default function Chips() {
                                                 {catalogos.descuentos.map(function (d) { return <option key={d.id} value={d.id}>{d.nombre}</option>; })}
                                             </select>
                                         </td>
+                                        <td>—</td>
                                         <td colSpan="2">{chip.asignacion ? chip.asignacion.empleado : '—'}</td>
                                         <td colSpan="2" className="chip-acciones">
                                             <button className="chip-btn chip-btn-guardar" onClick={guardarEdicion} title="Guardar"><IconoFa icono={faFloppyDisk} /></button>
@@ -382,10 +399,12 @@ export default function Chips() {
                             return (
                                 <tr key={chip.id}>
                                     <td className="chip-numero"><IconoFa icono={faPhone} /> {chip.numero}</td>
+                                    <td>{chip.empresa || '—'}</td>
                                     <td>{chip.operador || '—'}</td>
                                     <td>{chip.plan || '—'}</td>
                                     <td>S/ {(chip.precio || 0).toFixed(2)}</td>
                                     <td>{chip.descuento ? chip.descuento + ' (' + chip.descuento_pct + '%)' : '—'}</td>
+                                    <td>S/ {(chip.precio_con_descuento || chip.precio || 0).toFixed(2)}</td>
                                     <td>{chip.asignacion ? chip.asignacion.empleado : <span className="chip-disponible-tag">Disponible</span>}</td>
                                     <td>{chip.asignacion ? chip.asignacion.fecha_asig : '—'}</td>
                                     <td>

@@ -215,6 +215,21 @@ export default function DocumentosTab(props) {
 
   function etiquetaCampo(campo) {
     var mapa = {
+      // Campos automáticos
+      'nombres': 'Nombres',
+      'ape_paterno': 'Apellido Paterno',
+      'ape_materno': 'Apellido Materno',
+      'num_doc': 'N° Documento',
+      'direccion': 'Dirección',
+      'distrito': 'Distrito',
+      'depart_y_provinc': 'Depto. y Provincia',
+      'provincia_y_departamento': 'Provincia y Depto.',
+      'cargo': 'Cargo',
+      'sueldo (en numeros)': 'Sueldo',
+      'fecha_fin_contrato': 'Día Fin Contrato',
+      'mes_fin_contrato': 'Mes Fin Contrato',
+      'año_fin_contrato': 'Año Fin Contrato',
+      // Campos manuales
       'fecha a eleccion1': 'Fecha (día)',
       'mes a elección1': 'Mes',
       'año a selección1': 'Año',
@@ -222,9 +237,12 @@ export default function DocumentosTab(props) {
       'año seleccionado2': 'Año (segundo)',
       'mes de NS': 'Mes de NS',
       'año de NS': 'Año de NS',
-      'fecha_fin_contrato': 'Día Fin Contrato',
-      'mes_fin_contrato': 'Mes Fin Contrato',
-      'año_fin_contrato': 'Año Fin Contrato',
+      'inicio_dia_mes_año_contrato_anterior': 'Inicio Contrato Anterior',
+      'final_dia_mes_año_contrato_anterior': 'Fin Contrato Anterior',
+      'inicio_dia_mes_año_contrato_nuevo': 'Inicio Nuevo Contrato',
+      'inicio_dia_mes_año_contrato': 'Inicio de Contrato',
+      'final_dia_mes_año_contrato': 'Fin de Contrato',
+      'nuevo_cargo': 'Nuevo Cargo',
     };
     return mapa[campo] || mapa[campo.toLowerCase()] || campo;
   }
@@ -232,6 +250,9 @@ export default function DocumentosTab(props) {
   // Detecta el tipo de selector a usar según el nombre del campo
   function tipoCampoManual(campo) {
     var cl = campo.toLowerCase();
+    // Fechas compuestas ("dia_mes_año" en una sola cadena → date picker)
+    if (cl.indexOf('dia_mes') !== -1 && cl.indexOf('año') !== -1) return 'fecha_completa';
+    if (cl === 'nuevo_cargo') return 'cargo';
     if (cl.indexOf('mes') !== -1) return 'mes';
     if (cl.indexOf('año') !== -1) return 'anio';
     if (cl.indexOf('fecha') !== -1 || cl.indexOf('dia') !== -1 || cl.indexOf('día') !== -1) return 'dia';
@@ -279,6 +300,37 @@ export default function DocumentosTab(props) {
           disabled={esMiPerfil}>
           <option value="">-- Seleccionar día --</option>
           {dias.map(function (d) { return <option key={d} value={String(d)}>{d}</option>; })}
+        </select>
+      );
+    }
+
+    if (tipo === 'fecha_completa') {
+      return (
+        <div style={{display: 'flex', gap: '8px', alignItems: 'center'}}>
+          <input type="date" className="det-input" style={{maxWidth: '170px'}}
+            onChange={function (e) {
+              if (!e.target.value) { cambiarCampoManual(c.campo, ''); return; }
+              var p = e.target.value.split('-');
+              var texto = parseInt(p[2]) + ' de ' + MESES[parseInt(p[1]) - 1] + ' de ' + p[0];
+              cambiarCampoManual(c.campo, texto);
+            }}
+            disabled={esMiPerfil} />
+          <span style={{color: '#64748b', fontSize: '13px', fontStyle: 'italic', minWidth: '140px'}}>
+            {valor || 'Seleccione una fecha'}
+          </span>
+        </div>
+      );
+    }
+
+    if (tipo === 'cargo') {
+      return (
+        <select className="det-select" value={valor}
+          onChange={function (e) { cambiarCampoManual(c.campo, e.target.value); }}
+          disabled={esMiPerfil}>
+          <option value="">-- Seleccionar cargo --</option>
+          {allCargos.map(function (cargo) {
+            return <option key={cargo.id} value={cargo.nombre}>{cargo.nombre}</option>;
+          })}
         </select>
       );
     }

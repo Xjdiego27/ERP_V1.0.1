@@ -13,7 +13,7 @@ import '../styles/Header.css';
 const sonidoNotificacion = new Audio('/sounds/msn_notificacion.mp3');
 sonidoNotificacion.volume = 0.5;
 
-export default function Header({ onToggleMenu, onToggleEmpresa }) {
+export default function Header({ onToggleMenu, onToggleEmpresa, onCambiarPassword }) {
     const { usuario, menuOpen, toggleMenu, closeMenu } = useHeader();
     const [notiOpen, setNotiOpen] = useState(false);
     const [notificaciones, setNotificaciones] = useState([]);
@@ -185,7 +185,7 @@ export default function Header({ onToggleMenu, onToggleEmpresa }) {
                             descripcion="Usuario" 
                         />
                     </div>
-                    {menuOpen && <UserDropdown datos={usuario} />}
+                    {menuOpen && <UserDropdown datos={usuario} onCambiarPassword={onCambiarPassword} />}
                 </div>
                 {/* Toggle Modo Nocturno — extremo derecho */}
                 <span className="header-icon dark-toggle" onClick={toggleDarkMode} title={darkMode ? 'Modo claro' : 'Modo nocturno'}>

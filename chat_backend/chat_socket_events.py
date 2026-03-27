@@ -73,7 +73,7 @@ async def connect(sid, environ, auth):
         usuarios_conectados[id_personal].add(sid)
 
     # ── Auto-join sala general (TODOS reciben mensajes sin abrir ventana) ──
-    sio.enter_room(sid, SALA_GENERAL)
+    await sio.enter_room(sid, SALA_GENERAL)
 
     # ── Auto-join todos los grupos del usuario ──
     try:

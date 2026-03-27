@@ -123,9 +123,9 @@ def _obtener_datos_auto(id_personal: int, db: Session):
     depart_y_provinc = ''
     id_dep = getattr(persona, 'ID_DEPARTAMENTO', None)
     if id_dep and DepartYProvinc:
-        dep = db.query(DepartYProvinc).filter(DepartYProvinc.ID_DEPARTAMENTO == id_dep).first()
+        dep = db.query(DepartYProvinc).filter(DepartYProvinc.ID_PROV_DEPART == id_dep).first()
         if dep:
-            depart_y_provinc = dep.NOMBR_DEP if hasattr(dep, 'NOMBR_DEP') else ''
+            depart_y_provinc = dep.DESCRIP if hasattr(dep, 'DESCRIP') else ''
 
     # Dirección
     direccion = getattr(persona, 'DIRECCION', '') or ''
@@ -174,6 +174,10 @@ def _obtener_datos_auto(id_personal: int, db: Session):
         'fecha_fin_contrato': fecha_fin_contrato,
         'mes_fin_contrato': mes_fin_contrato,
         'año_fin_contrato': anio_fin_contrato,
+        # Fecha compuesta de generación (ej: "27 de marzo de 2026")
+        'dia_mes_año_que se genera': f"{hoy.day} de {MESES_ES.get(hoy.month, '')} de {hoy.year}",
+        # Alias (algunas plantillas usan nombre diferente)
+        'provincia_y_departamento': depart_y_provinc,
     }
     return datos
 
@@ -201,9 +205,12 @@ def _extraer_placeholders(doc_path: str):
 # Campos que se llenan automáticamente desde la BD
 CAMPOS_AUTO = {
     'nombres', 'ape_paterno', 'ape_materno', 'num_doc',
-    'direccion', 'distrito', 'depart_y_provinc', 'cargo',
+    'direccion', 'distrito', 'depart_y_provinc', 'provincia_y_departamento',
+    'cargo',
     'dia que se genera', 'mes que se genera', 'año que se genera',
+    'dia_mes_año_que se genera',
     'sueldo (en numeros)', 'sueldo en texto',
+    'fecha_fin_contrato', 'mes_fin_contrato', 'año_fin_contrato',
 }
 
 
@@ -358,18 +365,27 @@ def generar_documento(
     if formato == 'pdf':
         try:
             import tempfile
-            from docx2pdf import convert
+            import subprocess
+            import sys
+            import uuid as _uuid
 
             tmp_dir = tempfile.gettempdir()
-            tmp_docx = os.path.join(tmp_dir, f"temp_{nombre_descarga}.docx")
-            tmp_pdf = os.path.join(tmp_dir, f"temp_{nombre_descarga}.pdf")
+            uid = _uuid.uuid4().hex[:8]
+            tmp_docx = os.path.join(tmp_dir, f"doc_{uid}_{nombre_descarga}.docx")
+            tmp_pdf  = os.path.join(tmp_dir, f"doc_{uid}_{nombre_descarga}.pdf")
 
             # Guardar DOCX temporal
             with open(tmp_docx, 'wb') as f:
                 f.write(buffer.getvalue())
 
-            # Convertir usando MS Word vía docx2pdf
-            convert(tmp_docx, tmp_pdf)
+            # Convertir en subproceso aislado (evita problemas COM en threads)
+            resultado_conv = subprocess.run(
+                [sys.executable, '-c',
+                 f'from docx2pdf import convert; convert(r"{tmp_docx}", r"{tmp_pdf}")'],
+                capture_output=True, text=True, timeout=120
+            )
+            if resultado_conv.returncode != 0:
+                raise RuntimeError(resultado_conv.stderr or 'Error en conversión PDF')
 
             if os.path.isfile(tmp_pdf):
                 with open(tmp_pdf, 'rb') as f:

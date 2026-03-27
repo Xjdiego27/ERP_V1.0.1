@@ -4,7 +4,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from database import (
     get_db, Chips, PlanChips, OperadorChips, DescuentoChips,
-    AsignacionChip, Personal, Contrato, Acceso
+    AsignacionChip, Personal, Contrato, Acceso, Empresa
 )
 from auth_token import verificar_token
 
@@ -33,6 +33,7 @@ def catalogos_chip(db: Session = Depends(get_db), _=Depends(verificar_token)):
         "operadores": _lista(OperadorChips, 'ID_OPERADOR', 'DESCRIP'),
         "planes": _lista(PlanChips, 'ID_PLAN', 'DESCRIP'),
         "descuentos": _lista(DescuentoChips, 'ID_DESCUENTO', 'DESCRIP', ['DESCUENTO']),
+        "empresas": _lista(Empresa, 'ID_EMP', 'NOMBRE'),
     }
 
 
@@ -43,7 +44,10 @@ def catalogos_chip(db: Session = Depends(get_db), _=Depends(verificar_token)):
 def listar_chips(db: Session = Depends(get_db), token: dict = Depends(verificar_token)):
     if not Chips:
         return []
-    chips = db.query(Chips).order_by(Chips.NUMERO).all()
+
+    # Filtrar por empresa del token
+    id_emp = token.get("id_emp", 1)
+    chips = db.query(Chips).filter(Chips.ID_EMP == id_emp).order_by(Chips.NUMERO).all()
 
     # ── Precargar catálogos para evitar N+1 ──
     operadores_map = {}
@@ -60,6 +64,11 @@ def listar_chips(db: Session = Depends(get_db), token: dict = Depends(verificar_
     if DescuentoChips:
         for dc in db.query(DescuentoChips).all():
             descuentos_map[dc.ID_DESCUENTO] = (dc.DESCRIP, dc.DESCUENTO)
+
+    empresas_map = {}
+    if Empresa:
+        for emp in db.query(Empresa).all():
+            empresas_map[emp.ID_EMP] = emp.NOMBRE
 
     # Precargar asignaciones activas con datos de personal
     asignaciones_map = {}
@@ -81,17 +90,23 @@ def listar_chips(db: Session = Depends(get_db), token: dict = Depends(verificar_
     resultado = []
     for c in chips:
         desc_info = descuentos_map.get(c.ID_DESCUENTO)
+        precio = float(c.PRECIO) if c.PRECIO else 0
+        desc_pct = desc_info[1] if desc_info else 0
+        precio_con_descuento = round(precio * (1 - (desc_pct or 0) / 100), 2)
         resultado.append({
             "id": c.ID_CHIPS,
+            "id_emp": c.ID_EMP,
+            "empresa": empresas_map.get(c.ID_EMP),
             "numero": c.NUMERO,
-            "precio": float(c.PRECIO) if c.PRECIO else 0,
+            "precio": precio,
             "id_operador": c.ID_OPERADOR,
             "operador": operadores_map.get(c.ID_OPERADOR),
             "id_plan": c.ID_PLAN,
             "plan": planes_map.get(c.ID_PLAN),
             "id_descuento": c.ID_DESCUENTO,
             "descuento": desc_info[0] if desc_info else None,
-            "descuento_pct": desc_info[1] if desc_info else None,
+            "descuento_pct": desc_pct,
+            "precio_con_descuento": precio_con_descuento,
             "fech_asignacion": str(c.FECH_ASIGNACION) if c.FECH_ASIGNACION else None,
             "asignacion": asignaciones_map.get(c.ID_CHIPS),
         })
@@ -128,7 +143,7 @@ def personal_disponible(db: Session = Depends(get_db), token: dict = Depends(ver
 #  CREAR CHIP (nueva línea)
 # ═══════════════════════════════════════════
 @router.post("/chips")
-def crear_chip(datos: dict, db: Session = Depends(get_db), _=Depends(verificar_token)):
+def crear_chip(datos: dict, db: Session = Depends(get_db), token: dict = Depends(verificar_token)):
     if not Chips:
         raise HTTPException(status_code=500, detail="Tabla chips no disponible")
 
@@ -148,6 +163,7 @@ def crear_chip(datos: dict, db: Session = Depends(get_db), _=Depends(verificar_t
     nuevo.ID_PLAN = datos.get("id_plan") or None
     nuevo.ID_DESCUENTO = datos.get("id_descuento") or None
     nuevo.FECH_ASIGNACION = datos.get("fech_asignacion") or None
+    nuevo.ID_EMP = datos.get("id_emp") or token.get("id_emp", 1)
 
     db.add(nuevo)
     db.commit()
@@ -182,6 +198,8 @@ def editar_chip(id_chip: int, datos: dict, db: Session = Depends(get_db), _=Depe
         chip.ID_PLAN = datos["id_plan"] or None
     if "id_descuento" in datos:
         chip.ID_DESCUENTO = datos["id_descuento"] or None
+    if "id_emp" in datos:
+        chip.ID_EMP = datos["id_emp"] or None
     if "fech_asignacion" in datos:
         chip.FECH_ASIGNACION = datos["fech_asignacion"] or None
 

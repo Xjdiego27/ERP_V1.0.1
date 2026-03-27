@@ -71,7 +71,7 @@ async def listar_personal(db: Session = Depends(get_db), token: dict = Depends(v
         modalidad_map = {m.ID_MODALID: m.DESCRIP for m in db.query(Modalidad).all()}
     depart_prov_map = {}
     if DepartYProvinc:
-        depart_prov_map = {d.ID_DEPARTAMENTO: d.NOMBR_DEP for d in db.query(DepartYProvinc).all()}
+        depart_prov_map = {d.ID_PROV_DEPART: d.DESCRIP for d in db.query(DepartYProvinc).all()}
 
     horarios_map = {}
     horarios_descrip_map = {}
@@ -212,7 +212,7 @@ async def mi_perfil(db: Session = Depends(get_db), token: dict = Depends(verific
         modalidad_map = {m.ID_MODALID: m.DESCRIP for m in db.query(Modalidad).all()}
     depart_prov_map = {}
     if DepartYProvinc:
-        depart_prov_map = {d.ID_DEPARTAMENTO: d.NOMBR_DEP for d in db.query(DepartYProvinc).all()}
+        depart_prov_map = {d.ID_PROV_DEPART: d.DESCRIP for d in db.query(DepartYProvinc).all()}
 
     horarios_map = {}
     horarios_descrip_map = {}

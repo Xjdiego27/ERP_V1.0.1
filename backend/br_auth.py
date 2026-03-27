@@ -25,8 +25,8 @@ def validar_usuario_br(db: Session, usuario_input: str, password_input: str):
 
         db.commit()
 
-        # Detectar si debe forzar cambio de contraseña
-        requiere_cambio = _es_texto_plano(usuario_db.PASSWORD)
+        # Detectar si debe forzar cambio de contraseña (RESET_PASS=1 en BD)
+        requiere_cambio = bool(getattr(usuario_db, 'RESET_PASS', 0))
 
         personal = db.query(Personal).filter(Personal.ID_ACCS == usuario_db.ID_ACCS).first()
         rol = db.query(RolAccs).filter(RolAccs.ID_ROL == usuario_db.ID_ROL).first()
