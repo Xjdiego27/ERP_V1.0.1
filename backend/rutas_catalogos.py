@@ -10,7 +10,6 @@ from database import (
     Area, Departamento, Cargo, TipoContrato,
     EstadoCivil, GradoAcademico, Distrito, Documento,
     TipoFamiliar, AFP, Banco, Moneda, TipoCuenta, Modalidad,
-    DepartYProvinc,
 )
 from auth_token import verificar_token
 
@@ -189,9 +188,13 @@ async def listar_depart_provincias(
     db: Session = Depends(get_db),
     token: dict = Depends(verificar_token),
 ):
-    if not DepartYProvinc:
+    # Tabla real: provincia_departamento (ID_PROV_DEPART, DESCRIP, UBIGEO)
+    try:
+        from sqlalchemy import text
+        rows = db.execute(
+            text("SELECT ID_PROV_DEPART, DESCRIP FROM provincia_departamento ORDER BY DESCRIP")
+        ).fetchall()
+        return [{"id": r[0], "nombre": r[1]} for r in rows]
+    except Exception as e:
+        print(f"[ERROR] /depart-provincias: {e}")
         return []
-    return [
-        {"id": d.ID_DEPARTAMENTO, "nombre": d.NOMBR_DEP}
-        for d in db.query(DepartYProvinc).order_by(DepartYProvinc.NOMBR_DEP).all()
-    ]

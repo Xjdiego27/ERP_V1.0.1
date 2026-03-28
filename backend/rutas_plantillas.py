@@ -16,7 +16,7 @@ from typing import Dict, Optional
 from docx import Document as DocxDocument
 
 from database import (
-    get_db, Personal, Contrato, Distrito, Area, Cargo, DepartYProvinc
+    get_db, Personal, Contrato, Distrito, Area, Cargo
 )
 from auth_token import verificar_token
 
@@ -119,13 +119,17 @@ def _obtener_datos_auto(id_personal: int, db: Session):
         if dist:
             distrito_nombre = dist.DESCRIP if hasattr(dist, 'DESCRIP') else ''
 
-    # Departamento y Provincia (resuelto via FK ID_DEPARTAMENTO)
+    # Departamento y Provincia (resuelto via FK ID_PROV_DEPART)
     depart_y_provinc = ''
-    id_dep = getattr(persona, 'ID_DEPARTAMENTO', None)
-    if id_dep and DepartYProvinc:
-        dep = db.query(DepartYProvinc).filter(DepartYProvinc.ID_PROV_DEPART == id_dep).first()
-        if dep:
-            depart_y_provinc = dep.DESCRIP if hasattr(dep, 'DESCRIP') else ''
+    id_dep = getattr(persona, 'ID_PROV_DEPART', None)
+    if id_dep:
+        try:
+            from sqlalchemy import text as _text
+            row = db.execute(_text("SELECT DESCRIP FROM provincia_departamento WHERE ID_PROV_DEPART = :id"), {"id": id_dep}).first()
+            if row:
+                depart_y_provinc = row[0]
+        except Exception:
+            pass
 
     # Dirección
     direccion = getattr(persona, 'DIRECCION', '') or ''

@@ -63,7 +63,7 @@ export default function PersonalDetalle() {
     id_tipocontr: '1', id_modalidad: '', sueldo: '', asig_fam: 0,
     fech_ingr: '', fech_cese: '',
     id_estcivil: '', id_acadm: '', id_distr: '',
-    id_departamento: '',
+    id_prov_depart: '',
   });
 
   // Cargar catálogos + empleado (Promise.all para llamadas independientes)
@@ -73,22 +73,33 @@ export default function PersonalDetalle() {
     var h = headersAuth();
 
     // Catálogos independientes — se cargan en paralelo
+    // Cada fetch es resiliente: si uno falla, devuelve [] sin afectar a los demás
+    function safeFetch(url) {
+      return fetch(url, { headers: h, signal: signal })
+        .then(function (r) {
+          if (!r.ok) { console.warn('Catálogo falló:', url, r.status); return []; }
+          return r.json();
+        })
+        .then(function (data) { return Array.isArray(data) ? data : []; })
+        .catch(function () { return []; });
+    }
+
     Promise.all([
-      fetch(API_URL + '/areas', { headers: h, signal: signal }).then(function (r) { return r.json(); }),
-      fetch(API_URL + '/departamentos', { headers: h, signal: signal }).then(function (r) { return r.json(); }),
-      fetch(API_URL + '/cargos', { headers: h, signal: signal }).then(function (r) { return r.json(); }),
-      fetch(API_URL + '/tipos-contrato', { headers: h, signal: signal }).then(function (r) { return r.json(); }),
-      fetch(API_URL + '/modalidad', { headers: h, signal: signal }).then(function (r) { return r.json(); }),
-      fetch(API_URL + '/estados-civiles', { headers: h, signal: signal }).then(function (r) { return r.json(); }),
-      fetch(API_URL + '/grados', { headers: h, signal: signal }).then(function (r) { return r.json(); }),
-      fetch(API_URL + '/distritos', { headers: h, signal: signal }).then(function (r) { return r.json(); }),
-      fetch(API_URL + '/tipos-documento', { headers: h, signal: signal }).then(function (r) { return r.json(); }),
-      fetch(API_URL + '/tipos-familiar', { headers: h, signal: signal }).then(function (r) { return r.json(); }),
-      fetch(API_URL + '/afps', { headers: h, signal: signal }).then(function (r) { return r.json(); }),
-      fetch(API_URL + '/bancos', { headers: h, signal: signal }).then(function (r) { return r.json(); }),
-      fetch(API_URL + '/monedas', { headers: h, signal: signal }).then(function (r) { return r.json(); }),
-      fetch(API_URL + '/tipos-cuenta', { headers: h, signal: signal }).then(function (r) { return r.json(); }),
-      fetch(API_URL + '/depart-provincias', { headers: h, signal: signal }).then(function (r) { return r.json(); }),
+      safeFetch(API_URL + '/areas'),
+      safeFetch(API_URL + '/departamentos'),
+      safeFetch(API_URL + '/cargos'),
+      safeFetch(API_URL + '/tipos-contrato'),
+      safeFetch(API_URL + '/modalidad'),
+      safeFetch(API_URL + '/estados-civiles'),
+      safeFetch(API_URL + '/grados'),
+      safeFetch(API_URL + '/distritos'),
+      safeFetch(API_URL + '/tipos-documento'),
+      safeFetch(API_URL + '/tipos-familiar'),
+      safeFetch(API_URL + '/afps'),
+      safeFetch(API_URL + '/bancos'),
+      safeFetch(API_URL + '/monedas'),
+      safeFetch(API_URL + '/tipos-cuenta'),
+      safeFetch(API_URL + '/depart-provincias'),
     ]).then(function (res) {
       if (signal.aborted) return;
       setAreas(res[0]);
@@ -106,7 +117,8 @@ export default function PersonalDetalle() {
       setMonedas(res[12]);
       setTiposCuenta(res[13]);
       setDepartProvincias(res[14]);
-    }).catch(function () {});
+      console.log('Depart. provincias cargadas:', res[14].length, res[14]);
+    });
 
     if (esNuevo) { setCargando(false); return function () { abortCtrl.abort(); }; }
 
@@ -182,7 +194,7 @@ export default function PersonalDetalle() {
       fech_ingr: empleado.fech_ingreso || '', fech_cese: empleado.fech_cese || '',
       id_estcivil: empleado.id_estcivil || '', id_acadm: empleado.id_acadm || '',
       id_distr: empleado.id_distr || '',
-      id_departamento: empleado.id_departamento ? String(empleado.id_departamento) : '',
+      id_prov_depart: empleado.id_prov_depart ? String(empleado.id_prov_depart) : '',
     });
     // Cargar contactos al estado editable
     var ctsList = empleado.contactos ? empleado.contactos.map(function (c) {
@@ -221,7 +233,7 @@ export default function PersonalDetalle() {
     if (!datosLimpios.email) datosLimpios.email = null;
     if (!datosLimpios.celular) datosLimpios.celular = null;
     if (!datosLimpios.direccion) datosLimpios.direccion = null;
-    datosLimpios.id_departamento = datosLimpios.id_departamento ? Number(datosLimpios.id_departamento) : null;
+    datosLimpios.id_prov_depart = datosLimpios.id_prov_depart ? Number(datosLimpios.id_prov_depart) : null;
     if (!datosLimpios.sueldo) datosLimpios.sueldo = null;
     if (!datosLimpios.fech_ingr) datosLimpios.fech_ingr = null;
     if (!datosLimpios.fech_cese) datosLimpios.fech_cese = null;
@@ -595,7 +607,7 @@ export default function PersonalDetalle() {
                   <div className="det-fila">
                     <div className="det-campo">
                       <label className="det-label">Departamento y Provincia</label>
-                      <span className="det-valor">{empleado.depart_y_provinc || '—'}</span>
+                      <span className="det-valor">{empleado.depart_y_provinc || (empleado.id_prov_depart && departProvincias.length > 0 ? (departProvincias.find(function (dp) { return dp.id == empleado.id_prov_depart; }) || {}).nombre || '—' : '—')}</span>
                     </div>
                   </div>
 
@@ -816,8 +828,8 @@ export default function PersonalDetalle() {
                   <div className="det-fila">
                     <div className="det-campo">
                       <label className="det-label">Departamento y Provincia</label>
-                      <select className="det-select" value={datos.id_departamento}
-                        onChange={function (e) { cambiarCampo('id_departamento', e.target.value); }}>
+                      <select className="det-select" value={datos.id_prov_depart}
+                        onChange={function (e) { cambiarCampo('id_prov_depart', e.target.value); }}>
                         <option value="">-- Seleccionar --</option>
                         {departProvincias.map(function (dp) {
                           return <option key={dp.id} value={String(dp.id)}>{dp.nombre}</option>;
