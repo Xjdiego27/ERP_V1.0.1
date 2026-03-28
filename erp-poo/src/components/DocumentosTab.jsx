@@ -71,8 +71,9 @@ export default function DocumentosTab(props) {
       .then(function (r) { return r.json(); })
       .then(function (d) { setMotivos(d || []); })
       .catch(function () {});
-    // Cargar plantillas disponibles
-    fetch(API_URL + '/plantillas', { headers: headersAuth() })
+    // Cargar plantillas disponibles (filtradas por departamento del empleado)
+    var depParam = empleado && empleado.id_depart ? '?id_depart=' + empleado.id_depart : '';
+    fetch(API_URL + '/plantillas' + depParam, { headers: headersAuth() })
       .then(function (r) { return r.json(); })
       .then(function (d) { setPlantillas(d || []); })
       .catch(function () {});
@@ -150,7 +151,8 @@ export default function DocumentosTab(props) {
     if (!archivo) return;
 
     setCargandoCampos(true);
-    fetch(API_URL + '/plantillas/' + encodeURIComponent(archivo) + '/campos?id_personal=' + idPersonal, {
+    var depQ = empleado && empleado.id_depart ? '&id_depart=' + empleado.id_depart : '';
+    fetch(API_URL + '/plantillas/' + encodeURIComponent(archivo) + '/campos?id_personal=' + idPersonal + depQ, {
       headers: headersAuth()
     })
       .then(function (r) { return r.json(); })
@@ -180,8 +182,9 @@ export default function DocumentosTab(props) {
     if (!plantillaSeleccionada) return;
     setGenerando(true);
 
+    var depQ2 = empleado && empleado.id_depart ? '&id_depart=' + empleado.id_depart : '';
     var url = API_URL + '/plantillas/' + encodeURIComponent(plantillaSeleccionada)
-      + '/generar?id_personal=' + idPersonal + '&formato=' + formato;
+      + '/generar?id_personal=' + idPersonal + '&formato=' + formato + depQ2;
 
     fetch(url, {
       method: 'POST',
@@ -541,8 +544,7 @@ export default function DocumentosTab(props) {
                         return (
                           <div className="det-campo" key={c.campo}>
                             <label className="det-label">{etiquetaCampo(c.campo)}</label>
-                            <input className="det-input" type="text" value={c.valor || '—'} readOnly
-                              style={{ background: '#f1f5f9', cursor: 'default' }} />
+                            <input className="det-input det-input-readonly" type="text" value={c.valor || '—'} readOnly />
                           </div>
                         );
                       })}

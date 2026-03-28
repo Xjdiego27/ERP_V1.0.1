@@ -1326,6 +1326,10 @@ body.dark-mode .chat-avatar-placeholder {
     border: 2px solid transparent;
     cursor: pointer;
     transition: transform .1s, border-color .1s;
+    padding: 0;
+    appearance: none;
+    -webkit-appearance: none;
+    outline: none;
 }
 .mi-espacio-color-btn:hover {
     transform: scale(1.15);

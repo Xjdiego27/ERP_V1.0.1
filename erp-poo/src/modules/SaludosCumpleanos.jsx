@@ -11,13 +11,10 @@ var SaludoCard = memo(function SaludoCard(props) {
     var copiado = props.copiado;
     var onCopiar = props.onCopiar;
 
-    var stickerTexto = '';
-    if (s.sticker) {
-        var esEmojiCopy = typeof s.sticker === 'string' && !s.sticker.startsWith('/');
-        stickerTexto = esEmojiCopy ? '\n' + s.sticker : '';
-    }
-    var textoParaCopiar = s.nombre + ':\n' + s.mensaje + stickerTexto;
-    var esEmoji = s.sticker && typeof s.sticker === 'string' && !s.sticker.startsWith('/');
+    var esImagenSticker = s.sticker && typeof s.sticker === 'string' && s.sticker.startsWith('/');
+
+    // Texto para copiar: el mensaje ya contiene los emojis inline
+    var textoParaCopiar = s.nombre + ':\n' + s.mensaje;
 
     return (
         <div className="saludo-card">
@@ -33,12 +30,9 @@ var SaludoCard = memo(function SaludoCard(props) {
                 </button>
             </div>
             <p className="saludo-card-mensaje">{s.mensaje}</p>
-            {s.sticker && (
+            {esImagenSticker && (
                 <div className="saludo-card-sticker">
-                    {esEmoji
-                        ? <span className="saludo-card-sticker-emoji">{s.sticker}</span>
-                        : <img src={typeof s.sticker === 'object' ? s.sticker.img : s.sticker} alt="sticker" className="saludo-card-sticker-img" />
-                    }
+                    <img src={typeof s.sticker === 'object' ? s.sticker.img : s.sticker} alt="sticker" className="saludo-card-sticker-img" />
                 </div>
             )}
         </div>
@@ -96,10 +90,37 @@ export default function SaludosCumpleanos() {
     var cargaInicialRef = useRef(true);
 
     function copiarSaludo(texto, idx) {
-        navigator.clipboard.writeText(texto).then(function () {
+        function marcarCopiado() {
             setCopiado(idx);
             setTimeout(function () { setCopiado(null); }, 1500);
-        }).catch(function () {});
+        }
+        // Intentar con Clipboard API (requiere HTTPS o localhost)
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(texto).then(marcarCopiado).catch(function () {
+                // Fallback para contextos inseguros (HTTP)
+                copiarFallback(texto, marcarCopiado);
+            });
+        } else {
+            copiarFallback(texto, marcarCopiado);
+        }
+    }
+
+    function copiarFallback(texto, onExito) {
+        try {
+            var ta = document.createElement('textarea');
+            ta.value = texto;
+            ta.style.position = 'fixed';
+            ta.style.left = '-9999px';
+            ta.style.top = '-9999px';
+            document.body.appendChild(ta);
+            ta.focus();
+            ta.select();
+            var ok = document.execCommand('copy');
+            document.body.removeChild(ta);
+            if (ok) { onExito(); }
+        } catch (e) {
+            console.error('Error al copiar:', e);
+        }
     }
 
     // Cargar cumpleaños activos

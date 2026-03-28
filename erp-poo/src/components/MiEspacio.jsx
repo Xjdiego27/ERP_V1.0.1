@@ -4,12 +4,12 @@ import { faTimes, faMinus, faExpand, faPlus, faPen, faTrash, faCheck, faStickyNo
 import { CHAT_URL, obtenerToken } from '../auth';
 
 const COLORES = [
-    '#fef9c3', // amarillo
-    '#dbeafe', // azul
-    '#dcfce7', // verde
-    '#fce7f3', // rosa
-    '#f3e8ff', // morado
-    '#ffedd5', // naranja
+    '#fde047', // amarillo
+    '#7dd3fc', // azul
+    '#86efac', // verde
+    '#f9a8d4', // rosa
+    '#c4b5fd', // morado
+    '#fdba74', // naranja
 ];
 
 /**
@@ -24,6 +24,7 @@ export default function MiEspacio({ onCerrar, panelAbierto, posicion }) {
     const [colorNueva, setColorNueva] = useState(COLORES[0]);
     const [editandoId, setEditandoId] = useState(null);
     const [textoEdicion, setTextoEdicion] = useState('');
+    const [colorEdicion, setColorEdicion] = useState(COLORES[0]);
     const [creando, setCreando] = useState(false);
     const inputRef = useRef(null);
     const ventanaRef = useRef(null);
@@ -83,7 +84,6 @@ export default function MiEspacio({ onCerrar, panelAbierto, posicion }) {
     async function handleEditar(notaId) {
         if (!textoEdicion.trim()) return;
         const token = obtenerToken();
-        const notaOriginal = notas.find(n => n.id === notaId);
         try {
             const resp = await fetch(CHAT_URL + '/notas/' + notaId, {
                 method: 'PUT',
@@ -93,13 +93,13 @@ export default function MiEspacio({ onCerrar, panelAbierto, posicion }) {
                 },
                 body: JSON.stringify({
                     contenido: textoEdicion,
-                    color: notaOriginal?.color || COLORES[0],
+                    color: colorEdicion,
                 }),
             });
             const data = await resp.json();
             if (data.ok) {
                 setNotas(prev => prev.map(n =>
-                    n.id === notaId ? { ...n, contenido: textoEdicion, editado: true } : n
+                    n.id === notaId ? { ...n, contenido: textoEdicion, color: colorEdicion, editado: true } : n
                 ));
                 setEditandoId(null);
                 setTextoEdicion('');
@@ -190,10 +190,22 @@ export default function MiEspacio({ onCerrar, panelAbierto, posicion }) {
                                     <div
                                         key={nota.id}
                                         className="mi-espacio-nota"
-                                        style={{ backgroundColor: nota.color || COLORES[0] }}
+                                        style={{ backgroundColor: editandoId === nota.id ? colorEdicion : (nota.color || COLORES[0]) }}
                                     >
                                         {editandoId === nota.id ? (
                                             <div className="mi-espacio-nota-editar">
+                                                <div className="mi-espacio-colores">
+                                                    {COLORES.map(c => (
+                                                        <button
+                                                            key={c}
+                                                            type="button"
+                                                            className={'mi-espacio-color-btn' + (colorEdicion === c ? ' activo' : '')}
+                                                            style={{ backgroundColor: c }}
+                                                            onClick={() => setColorEdicion(c)}
+                                                            title="Color de nota"
+                                                        />
+                                                    ))}
+                                                </div>
                                                 <textarea
                                                     value={textoEdicion}
                                                     onChange={e => setTextoEdicion(e.target.value)}
@@ -231,6 +243,7 @@ export default function MiEspacio({ onCerrar, panelAbierto, posicion }) {
                                                             onClick={() => {
                                                                 setEditandoId(nota.id);
                                                                 setTextoEdicion(nota.contenido);
+                                                                setColorEdicion(nota.color || COLORES[0]);
                                                             }}
                                                         >
                                                             <IconoFa icono={faPen} />

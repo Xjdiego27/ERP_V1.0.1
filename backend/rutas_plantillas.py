@@ -12,7 +12,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from fastapi.responses import StreamingResponse
 from sqlalchemy.orm import Session
 from pydantic import BaseModel
-from typing import Dict
+from typing import Dict, Optional
 from docx import Document as DocxDocument
 
 from database import (
@@ -278,34 +278,62 @@ class GenerarDocumentoRequest(BaseModel):
 
 # ─── ENDPOINTS ──────────────────────────────────
 
-@router.get("/plantillas")
-def listar_plantillas(token: dict = Depends(verificar_token)):
-    """Lista las plantillas DOCX disponibles en la carpeta templates."""
-    if not os.path.isdir(TEMPLATES_DIR):
-        return []
+def _resolver_carpeta_plantillas(id_emp=None, id_depart=None):
+    """Resuelve la carpeta de plantillas según empresa y departamento.
+    Busca en orden: templates/{id_emp}/{id_depart}/ → templates/{id_emp}/ → templates/
+    """
+    if id_emp and id_depart:
+        ruta = os.path.join(TEMPLATES_DIR, str(id_emp), str(id_depart))
+        if os.path.isdir(ruta):
+            return ruta
+    if id_emp:
+        ruta = os.path.join(TEMPLATES_DIR, str(id_emp))
+        if os.path.isdir(ruta):
+            return ruta
+    return TEMPLATES_DIR
 
+
+def _listar_docx(carpeta):
+    """Lista archivos .docx en una carpeta (sin subcarpetas)."""
+    if not os.path.isdir(carpeta):
+        return []
     archivos = []
-    for f in os.listdir(TEMPLATES_DIR):
+    for f in os.listdir(carpeta):
         if f.lower().endswith('.docx') and not f.startswith('~$'):
             nombre_sin_ext = os.path.splitext(f)[0]
             archivos.append({
                 'archivo': f,
                 'nombre': nombre_sin_ext,
             })
+    archivos.sort(key=lambda x: x['nombre'])
     return archivos
+
+
+@router.get("/plantillas")
+def listar_plantillas(
+    id_depart: Optional[int] = Query(None),
+    token: dict = Depends(verificar_token),
+):
+    """Lista las plantillas DOCX disponibles, filtradas por empresa (del token) y departamento."""
+    id_emp = token.get("id_emp")
+    carpeta = _resolver_carpeta_plantillas(id_emp, id_depart)
+    return _listar_docx(carpeta)
 
 
 @router.get("/plantillas/{nombre_archivo}/campos")
 def obtener_campos_plantilla(
     nombre_archivo: str,
     id_personal: int = Query(...),
+    id_depart: Optional[int] = Query(None),
     db: Session = Depends(get_db),
     token: dict = Depends(verificar_token)
 ):
     """Analiza una plantilla y retorna sus campos clasificados como auto/manual,
-    incluyendo los valores automáticos ya resueltos desde la BD."""
+    incluyendo los valores automaticos ya resueltos desde la BD."""
 
-    ruta = os.path.join(TEMPLATES_DIR, nombre_archivo)
+    id_emp = token.get("id_emp")
+    carpeta = _resolver_carpeta_plantillas(id_emp, id_depart)
+    ruta = os.path.join(carpeta, nombre_archivo)
     if not os.path.isfile(ruta):
         raise HTTPException(status_code=404, detail="Plantilla no encontrada")
 
@@ -336,13 +364,16 @@ def generar_documento(
     data: GenerarDocumentoRequest,
     id_personal: int = Query(...),
     formato: str = Query('docx', pattern='^(docx|pdf)$'),
+    id_depart: Optional[int] = Query(None),
     db: Session = Depends(get_db),
     token: dict = Depends(verificar_token)
 ):
     """Genera el documento rellenado con datos auto + manuales.
     Retorna el archivo DOCX (o PDF si se especifica formato=pdf)."""
 
-    ruta = os.path.join(TEMPLATES_DIR, nombre_archivo)
+    id_emp = token.get("id_emp")
+    carpeta = _resolver_carpeta_plantillas(id_emp, id_depart)
+    ruta = os.path.join(carpeta, nombre_archivo)
     if not os.path.isfile(ruta):
         raise HTTPException(status_code=404, detail="Plantilla no encontrada")
 

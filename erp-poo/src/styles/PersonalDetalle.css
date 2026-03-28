@@ -390,6 +390,11 @@ body.dark-mode .asist-horario-badge {
   background: var(--bg-card, #fff);
 }
 
+.det-input-readonly {
+  background: var(--bg-input, #f1f5f9);
+  cursor: default;
+}
+
 .det-select {
   width: 100%;
   padding: 8px 10px;
@@ -1296,6 +1301,30 @@ body.dark-mode .asist-rango-info {
 .dark-mode .doc-btn-accion {
   border-color: var(--border-color, #2c3e50);
   color: var(--text-secondary, #8899aa);
+}
+.dark-mode .doc-header h3 {
+  color: var(--text-primary, #e2e8f0);
+}
+.dark-mode .doc-campos-titulo {
+  color: var(--active-color, #60a5fa);
+}
+.dark-mode .doc-card-tipo {
+  color: var(--text-primary, #e2e8f0);
+}
+.dark-mode .doc-card-motivo {
+  color: var(--text-secondary, #94a3b8);
+}
+.dark-mode .doc-card-detalle {
+  color: var(--text-secondary, #94a3b8);
+}
+.dark-mode .doc-card-fechas span {
+  color: var(--text-muted, #64748b);
+}
+.dark-mode .doc-form-panel h4 {
+  color: var(--text-primary, #e2e8f0);
+}
+.dark-mode .doc-plantilla-seccion {
+  border-top-color: var(--border-color, #334155);
 }
 
 @media (max-width: 768px) {

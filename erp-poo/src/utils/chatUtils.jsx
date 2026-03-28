@@ -65,18 +65,29 @@ export function descargarArchivo(url, nombreArchivo) {
 /**
  * Renderiza el contenido de un mensaje (archivo, sticker o texto).
  * @param {object} m - Objeto mensaje con campos: tipo, archivo_url, archivo_nombre, contenido
- * @param {boolean} mostrarDescargar - Mostrar botón de descarga (true en chat individual)
+ * @param {boolean} mostrarDescargar - Mostrar boton de descarga (true en chat individual)
+ * @param {function} onImagenClick - Callback al hacer clic en una imagen (url) para expandirla
  */
-export function renderContenidoMensaje(m, mostrarDescargar = false) {
+export function renderContenidoMensaje(m, mostrarDescargar = false, onImagenClick = null) {
   // Archivo adjunto
   if (m.tipo === 'archivo' && m.archivo_url) {
     const esImg = esImagen(m.archivo_url);
     if (esImg) {
+      const urlCompleta = CHAT_URL + m.archivo_url;
       return (
         <div className="chat-msg-archivo">
-          <a href={CHAT_URL + m.archivo_url} target="_blank" rel="noopener noreferrer">
-            <img src={CHAT_URL + m.archivo_url} alt={m.archivo_nombre} className="chat-msg-img-preview" />
-          </a>
+          {onImagenClick ? (
+            <img
+              src={urlCompleta}
+              alt={m.archivo_nombre}
+              className="chat-msg-img-preview chat-msg-img-clickable"
+              onClick={() => onImagenClick(urlCompleta)}
+            />
+          ) : (
+            <a href={urlCompleta} target="_blank" rel="noopener noreferrer">
+              <img src={urlCompleta} alt={m.archivo_nombre} className="chat-msg-img-preview" />
+            </a>
+          )}
           {mostrarDescargar ? (
             <div className="chat-msg-archivo-footer">
               <span className="chat-msg-archivo-nombre">{m.archivo_nombre}</span>

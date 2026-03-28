@@ -523,3 +523,8 @@
 .saludo-card-sticker-emoji {
     font-size: 2rem;
 }
+
+.saludo-card-emoji-inline {
+    font-size: 1.15em;
+    vertical-align: middle;
+}

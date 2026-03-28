@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import IconoFa from './IconoFa';
 import StickerPicker from './StickerPicker';
 import { faCakeCandles, faCalendarDay, faPaperPlane, faCircleCheck, faFaceSmile, faTimes } from '@fortawesome/free-solid-svg-icons';
@@ -22,6 +22,7 @@ export default function CumpleanosModal() {
     var [enviado, setEnviado] = useState(false);
     var [stickerSeleccionado, setStickerSeleccionado] = useState(null);
     var [mostrarStickers, setMostrarStickers] = useState(false);
+    var textareaRef = useRef(null);
 
     var sessionData = getSession();
     var miIdPersonal = sessionData && sessionData.usuario ? sessionData.usuario.id_personal : null;
@@ -137,6 +138,7 @@ export default function CumpleanosModal() {
                         </div>
                         <p className="cumple-modal-desc">Escribe un saludo especial para esta persona:</p>
                         <textarea
+                            ref={textareaRef}
                             className="cumple-modal-textarea"
                             placeholder="Escribe tu saludo de cumpleaños..."
                             value={mensaje}
@@ -185,8 +187,21 @@ export default function CumpleanosModal() {
                                         setMostrarStickers(false);
                                     }}
                                     onSelectEmoji={function (emoji) {
-                                        setStickerSeleccionado(emoji);
-                                        setMostrarStickers(false);
+                                        // Insertar emoji directamente en el texto del mensaje
+                                        var ta = textareaRef.current;
+                                        var pos = ta ? ta.selectionStart || mensaje.length : mensaje.length;
+                                        var nuevoMsg = mensaje.slice(0, pos) + emoji + mensaje.slice(pos);
+                                        if (nuevoMsg.length <= 500) {
+                                            setMensaje(nuevoMsg);
+                                            // Restaurar foco y posición del cursor después del emoji
+                                            setTimeout(function () {
+                                                if (ta) {
+                                                    ta.focus();
+                                                    var nuevaPos = pos + emoji.length;
+                                                    ta.setSelectionRange(nuevaPos, nuevaPos);
+                                                }
+                                            }, 0);
+                                        }
                                     }}
                                     onClose={function () { setMostrarStickers(false); }}
                                 />

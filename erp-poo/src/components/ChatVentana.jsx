@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import IconoFa from './IconoFa';
 import StickerPicker from './StickerPicker';
+import ModalImagen from './ModalImagen';
 import { faTimes, faPaperPlane, faCircle, faMinus, faExpand, faFaceSmile, faBolt, faPaperclip } from '@fortawesome/free-solid-svg-icons';
 import { CHAT_URL, obtenerToken } from '../auth';
 import { getSession } from '../utils/session';
@@ -51,6 +52,7 @@ export default function ChatVentana({ contacto, socket, onCerrar, posicion, enLi
     const [pickerAbierto, setPickerAbierto] = useState(false);
     const [sacudiendo, setSacudiendo] = useState(false);
     const [arrastrando, setArrastrando] = useState(false);
+    const [imagenExpandida, setImagenExpandida] = useState(null);
     const chatBodyRef = useRef(null);
     const inputRef = useRef(null);
     const escribiendoTimer = useRef(null);
@@ -260,6 +262,20 @@ export default function ChatVentana({ contacto, socket, onCerrar, posicion, enLi
         if (file) await handleSubirArchivo(file);
     }
 
+    // ── Ctrl+V pegar imagen/archivo ──
+    async function handlePaste(e) {
+        const items = e.clipboardData?.items;
+        if (!items) return;
+        for (let i = 0; i < items.length; i++) {
+            if (items[i].kind === 'file') {
+                e.preventDefault();
+                const file = items[i].getAsFile();
+                if (file) await handleSubirArchivo(file);
+                return;
+            }
+        }
+    }
+
     // ── Notificar que estoy escribiendo ──
     function handleInput(e) {
         setTexto(e.target.value);
@@ -367,7 +383,7 @@ export default function ChatVentana({ contacto, socket, onCerrar, posicion, enLi
                                         <div className="chat-msg-contenido">
                                             {!esMio && <strong className="chat-msg-nombre">{contacto.nombre.split(' ')[0]}</strong>}
                                             <div className={'chat-msg-burbuja' + (esSticker ? ' chat-msg-burbuja-sticker' : '')}>
-                                                {renderContenidoMensaje(m, true)}
+                                                {renderContenidoMensaje(m, true, (url) => setImagenExpandida(url))}
                                                 <span className="chat-msg-hora">{formatHora(m.fecha || m.fecha_creacion)}</span>
                                             </div>
                                         </div>
@@ -420,12 +436,16 @@ export default function ChatVentana({ contacto, socket, onCerrar, posicion, enLi
                             placeholder="Escribe un mensaje..."
                             value={texto}
                             onChange={handleInput}
+                            onPaste={handlePaste}
                             autoFocus
                         />
                         <button type="submit" disabled={!texto.trim()}>
                             <IconoFa icono={faPaperPlane} />
                         </button>
                     </form>
+                    {imagenExpandida && (
+                        <ModalImagen url={imagenExpandida} onCerrar={() => setImagenExpandida(null)} />
+                    )}
                 </>
             )}
         </div>
