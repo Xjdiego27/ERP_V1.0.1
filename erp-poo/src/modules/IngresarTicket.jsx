@@ -103,6 +103,7 @@ export default function IngresarTicket() {
     function handleFoto(e) {
         var archivo = e.target.files[0];
         if (archivo) {
+            if (fotoPreview) URL.revokeObjectURL(fotoPreview);
             setFoto(archivo);
             setFotoPreview(URL.createObjectURL(archivo));
         }

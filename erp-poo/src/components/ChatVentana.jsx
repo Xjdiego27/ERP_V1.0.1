@@ -16,18 +16,22 @@ sonidoZumbido.volume = 0.7;
 // ── Notificación en pestaña del navegador ──
 const TITULO_ORIGINAL = document.title;
 let tituloInterval = null;
+let tituloListenerCount = 0;
 
 function parpadearTitulo(texto) {
     if (tituloInterval) return; // ya parpadeando
     let visible = true;
+    tituloListenerCount++;
     tituloInterval = setInterval(() => {
         document.title = visible ? texto : TITULO_ORIGINAL;
         visible = !visible;
     }, 800);
     // Detener al volver a la pestaña
     const detener = () => {
-        clearInterval(tituloInterval);
-        tituloInterval = null;
+        if (tituloInterval) {
+            clearInterval(tituloInterval);
+            tituloInterval = null;
+        }
         document.title = TITULO_ORIGINAL;
         window.removeEventListener('focus', detener);
     };

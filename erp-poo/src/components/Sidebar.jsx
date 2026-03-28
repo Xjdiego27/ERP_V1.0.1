@@ -63,8 +63,9 @@ export default function Sidebar({ isOpen, onToggleMenu }) {
     // Items simples (sin hijos) — cada uno con su clave de permiso
     const menuSimple = [
         { nombre: 'Inicio',     ruta: '/dashboard',              icono: faHouse,      modulo: 'INICIO' },
-        { nombre: 'Inventario', ruta: '/dashboard/inventario',   icono: faBoxArchive, modulo: 'INVENTARIO' },
-        { nombre: 'Clientes',   ruta: '/dashboard/clientes',     icono: faUsers,      modulo: 'CLIENTES' },
+        // TODO: habilitar cuando existan los módulos
+        // { nombre: 'Inventario', ruta: '/dashboard/inventario',   icono: faBoxArchive, modulo: 'INVENTARIO' },
+        // { nombre: 'Clientes',   ruta: '/dashboard/clientes',     icono: faUsers,      modulo: 'CLIENTES' },
     ];
 
     // ── Permisos de módulos (POO) ──

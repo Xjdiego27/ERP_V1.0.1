@@ -82,11 +82,11 @@ export default function MiPerfil() {
     var archivo = e.target.files[0];
     if (!archivo || !empleado) return;
     var formData = new FormData();
-    formData.append('foto', archivo);
+    formData.append('archivo', archivo);
 
     var session = getSession();
     fetch(API_URL + '/personal/' + empleado.id + '/foto', {
-      method: 'POST',
+      method: 'PUT',
       headers: { 'Authorization': 'Bearer ' + session.access_token },
       body: formData
     })

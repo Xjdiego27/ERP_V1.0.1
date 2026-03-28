@@ -66,6 +66,7 @@ export default function EquiposCrear() {
     function handleFoto(e) {
         var file = e.target.files[0];
         if (file) {
+            if (fotoPreview) URL.revokeObjectURL(fotoPreview);
             setFoto(file);
             setFotoPreview(URL.createObjectURL(file));
         }

@@ -53,7 +53,7 @@ def validar_usuario_br(db: Session, usuario_input: str, password_input: str):
             "mensaje":  "EXITO",
             "usuario":  usuario_db.USUARIO,
             "nombre":   personal.NOMBRES     if personal else usuario_db.USUARIO,
-            "apellido": f"{personal.APE_PATERNO} {personal.APE_MATERNO}" if personal else "",
+            "apellido": f"{personal.APE_PATERNO or ''} {personal.APE_MATERNO or ''}".strip() if personal else "",
             "foto":     personal.FOTO        if personal else None,
             "id_personal": personal.ID_PERSONAL if personal else None,
             "id_rol":   usuario_db.ID_ROL,
