@@ -1980,6 +1980,8 @@ body.dark-mode .chat-head-letra {
     display: flex;
     flex-direction: column;
     gap: 4px;
+    max-width: 200px;
+    min-width: 0;
 }
 .chat-msg-img-preview {
     max-width: 200px;
@@ -1998,7 +2000,8 @@ body.dark-mode .chat-head-letra {
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    max-width: 200px;
+    min-width: 0;
+    flex: 1;
 }
 /* Archivo nombre dentro de mi burbuja (fondo oscuro) */
 .chat-msg.mio .chat-msg-archivo-nombre {
@@ -2027,12 +2030,13 @@ body.dark-mode .chat-head-letra {
     text-decoration: underline;
 }
 
-/* ── Footer archivo (nombre + botón guardar) ── */
+/* ── Footer archivo (nombre + boton guardar) ── */
 .chat-msg-archivo-footer {
     display: flex;
     align-items: center;
-    justify-content: space-between;
     gap: 6px;
+    min-width: 0;
+    max-width: 200px;
 }
 .chat-msg-descargar-btn {
     display: inline-flex;

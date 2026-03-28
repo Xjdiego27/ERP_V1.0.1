@@ -47,7 +47,10 @@ async def listar_cargos(
     db: Session = Depends(get_db),
     token: dict = Depends(verificar_token),
 ):
+    id_emp = token.get("id_emp")
     query = db.query(Cargo)
+    if id_emp:
+        query = query.filter(Cargo.ID_EMP == id_emp)
     if id_depart:
         query = query.filter(Cargo.ID_DEPART == id_depart)
     return [
