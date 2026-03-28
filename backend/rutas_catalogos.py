@@ -192,6 +192,6 @@ async def listar_depart_provincias(
     if not DepartYProvinc:
         return []
     return [
-        {"id": d.ID_PROV_DEPART, "nombre": d.DESCRIP}
-        for d in db.query(DepartYProvinc).order_by(DepartYProvinc.DESCRIP).all()
+        {"id": d.ID_DEPARTAMENTO, "nombre": d.NOMBR_DEP}
+        for d in db.query(DepartYProvinc).order_by(DepartYProvinc.NOMBR_DEP).all()
     ]

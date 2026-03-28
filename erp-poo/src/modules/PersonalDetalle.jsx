@@ -182,7 +182,7 @@ export default function PersonalDetalle() {
       fech_ingr: empleado.fech_ingreso || '', fech_cese: empleado.fech_cese || '',
       id_estcivil: empleado.id_estcivil || '', id_acadm: empleado.id_acadm || '',
       id_distr: empleado.id_distr || '',
-      id_departamento: empleado.id_departamento || '',
+      id_departamento: empleado.id_departamento ? String(empleado.id_departamento) : '',
     });
     // Cargar contactos al estado editable
     var ctsList = empleado.contactos ? empleado.contactos.map(function (c) {
@@ -820,7 +820,7 @@ export default function PersonalDetalle() {
                         onChange={function (e) { cambiarCampo('id_departamento', e.target.value); }}>
                         <option value="">-- Seleccionar --</option>
                         {departProvincias.map(function (dp) {
-                          return <option key={dp.id} value={dp.id}>{dp.nombre}</option>;
+                          return <option key={dp.id} value={String(dp.id)}>{dp.nombre}</option>;
                         })}
                       </select>
                     </div>

@@ -71,7 +71,7 @@ async def listar_personal(db: Session = Depends(get_db), token: dict = Depends(v
         modalidad_map = {m.ID_MODALID: m.DESCRIP for m in db.query(Modalidad).all()}
     depart_prov_map = {}
     if DepartYProvinc:
-        depart_prov_map = {d.ID_PROV_DEPART: d.DESCRIP for d in db.query(DepartYProvinc).all()}
+        depart_prov_map = {d.ID_DEPARTAMENTO: d.NOMBR_DEP for d in db.query(DepartYProvinc).all()}
 
     horarios_map = {}
     horarios_descrip_map = {}
@@ -212,7 +212,7 @@ async def mi_perfil(db: Session = Depends(get_db), token: dict = Depends(verific
         modalidad_map = {m.ID_MODALID: m.DESCRIP for m in db.query(Modalidad).all()}
     depart_prov_map = {}
     if DepartYProvinc:
-        depart_prov_map = {d.ID_PROV_DEPART: d.DESCRIP for d in db.query(DepartYProvinc).all()}
+        depart_prov_map = {d.ID_DEPARTAMENTO: d.NOMBR_DEP for d in db.query(DepartYProvinc).all()}
 
     horarios_map = {}
     horarios_descrip_map = {}
@@ -341,7 +341,8 @@ async def crear_personal(datos: PersonalSchema, db: Session = Depends(get_db), t
         if AsignacionEmp:
             asig = AsignacionEmp(ID_ACCS=nuevo_acceso.ID_ACCS, ID_EMP=id_emp)
             db.add(asig)
-        nuevo = Personal(ID_ACCS=nuevo_acceso.ID_ACCS, NOMBRES=datos.nombres, APE_PATERNO=datos.ape_paterno, APE_MATERNO=datos.ape_materno, GENERO_PERS=1 if datos.genero=="M" else 2, NUM_DOC=datos.num_doc, ID_DOC=datos.id_doc, FECH_NAC=datos.fech_nac, EMAIL=datos.email, CELULAR=datos.celular, ID_ESTCIVIL=datos.id_estcivil, ID_ACADM=datos.id_acadm, ID_DISTR=datos.id_distr, DIRECCION=datos.direccion, ID_DEPARTAMENTO=datos.id_departamento or 1)
+        _id_dep = datos.id_departamento if datos.id_departamento is not None else 1
+        nuevo = Personal(ID_ACCS=nuevo_acceso.ID_ACCS, NOMBRES=datos.nombres, APE_PATERNO=datos.ape_paterno, APE_MATERNO=datos.ape_materno, GENERO_PERS=1 if datos.genero=="M" else 2, NUM_DOC=datos.num_doc, ID_DOC=datos.id_doc, FECH_NAC=datos.fech_nac, EMAIL=datos.email, CELULAR=datos.celular, ID_ESTCIVIL=datos.id_estcivil, ID_ACADM=datos.id_acadm, ID_DISTR=datos.id_distr, DIRECCION=datos.direccion, ID_DEPARTAMENTO=_id_dep)
         db.add(nuevo); db.flush()
         contrato = Contrato(ID_PERSONAL=nuevo.ID_PERSONAL, ID_ESTADO_CONTRATO=1, ID_TIPOCONTR=datos.id_tipocontr, ID_MODALID=datos.id_modalidad, ID_AREA=datos.id_area, ID_CARGO=datos.id_cargo, SUELDO=datos.sueldo, ASIG_FAM=datos.asig_fam or 0, FECH_INGR=datos.fech_ingr, FECH_CESE=datos.fech_cese)
         db.add(contrato); db.commit()
@@ -370,7 +371,8 @@ async def actualizar_personal(id: int, datos: PersonalSchema, db: Session = Depe
         persona.FECH_NAC = datos.fech_nac; persona.EMAIL = datos.email; persona.CELULAR = datos.celular
         persona.ID_ESTCIVIL = datos.id_estcivil; persona.ID_ACADM = datos.id_acadm
         persona.ID_DISTR = datos.id_distr; persona.DIRECCION = datos.direccion
-        persona.ID_DEPARTAMENTO = datos.id_departamento or 1
+        persona.ID_DEPARTAMENTO = datos.id_departamento if datos.id_departamento is not None else 1
+        db.flush()
         contrato = (
             db.query(Contrato)
             .join(Cargo, Cargo.ID_CARGO == Contrato.ID_CARGO)
