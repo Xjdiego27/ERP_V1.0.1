@@ -137,14 +137,29 @@
 | **Etiquetas** | `infra`, `setup`, `devops` |
 | **Descripción** | Como desarrollador, necesito configurar el entorno de desarrollo con Python 3.10+, Node.js, MariaDB, MongoDB y las dependencias del proyecto para comenzar el desarrollo. |
 
+**Criterios de Aceptación:**
+- ✅ Python 3.10+ instalado con virtualenv funcional en `HUELLERO/.venv`
+- ✅ Todas las dependencias de `requirements.txt` (FastAPI, SQLAlchemy, Motor, Argon2, python-jose, pyzk, python-docx, ReportLab) instaladas sin errores
+- ✅ Node.js instalado y `npm install` exitoso en `erp-poo/` (React 19, Vite 7, React Router DOM 7, TanStack Query 5, Socket.IO Client 4)
+- ✅ MariaDB 10.4 operativa en XAMPP con BD `erp` creada y esquema importado desde `erp.sql`
+- ✅ MongoDB operativa con BD `erp_nosql` y `erp_sql` accesibles
+- ✅ Archivos `.env` configurados con variables: `DB_HOST`, `DB_USER`, `DB_PASS`, `DB_NAME`, `JWT_SECRET`, `MONGO_URI`
+- ✅ Backend arranca en puerto 4000 (`uvicorn main:app`) sin errores de conexión
+- ✅ Chat backend arranca en puerto 4001 (`uvicorn chat_server:app`) sin errores
+- ✅ Frontend Vite arranca en puerto 3000 con HMR funcional
+
 **Tareas:**
 | ID | Tarea | Estado |
 |----|-------|--------|
-| ERP-001-1 | Instalar Python 3.10+, crear virtualenv y ejecutar `pip install -r requirements.txt` | ✅ Done |
-| ERP-001-2 | Instalar Node.js, ejecutar `npm install` en `erp-poo/` | ✅ Done |
-| ERP-001-3 | Configurar MariaDB 10.4 en XAMPP, crear BD `erp` | ✅ Done |
-| ERP-001-4 | Instalar MongoDB, crear BD `erp_nosql` | ✅ Done |
-| ERP-001-5 | Crear archivos `.env` para backend y chat_backend | ✅ Done |
+| ERP-001-1 | Instalar Python 3.10+, crear virtualenv (`python -m venv .venv`) y activar entorno | ✅ Done |
+| ERP-001-2 | Ejecutar `pip install -r requirements.txt` (backend) y `pip install -r chat_backend/requirements.txt` | ✅ Done |
+| ERP-001-3 | Instalar Node.js LTS, ejecutar `npm install` en `erp-poo/` — verificar 0 vulnerabilidades críticas | ✅ Done |
+| ERP-001-4 | Instalar XAMPP con MariaDB 10.4, configurar `my.ini`, crear BD `erp` con charset `utf8mb4` | ✅ Done |
+| ERP-001-5 | Importar esquema completo desde `erp.sql` (71 tablas) y verificar integridad referencial | ✅ Done |
+| ERP-001-6 | Instalar MongoDB Community, crear BD `erp_nosql` y verificar conexión con Motor async | ✅ Done |
+| ERP-001-7 | Crear `.env` para backend (`DB_HOST`, `DB_USER`, `DB_PASS`, `DB_NAME`, `JWT_SECRET`, `MONGO_URI`) | ✅ Done |
+| ERP-001-8 | Crear `.env` para chat_backend con variables de conexión MySQL + MongoDB + JWT compartido | ✅ Done |
+| ERP-001-9 | Verificar arranque completo: backend (4000) + chat (4001) + frontend (3000) sin errores | ✅ Done |
 
 ---
 
@@ -158,14 +173,33 @@
 | **Etiquetas** | `database`, `mariadb`, `modeling` |
 | **Descripción** | Como arquitecto de datos, necesito diseñar y crear el esquema relacional normalizado (3FN) con más de 20 tablas para soportar todos los módulos del ERP. |
 
+**Criterios de Aceptación:**
+- ✅ Esquema con 71 tablas en 3FN desplegadas en MariaDB 10.4 con charset `utf8mb4`
+- ✅ Tablas núcleo: `acceso`, `personal`, `contrato`, `empresa` con relaciones FK correctas
+- ✅ Tablas de catálogos: `area`, `departamento`, `cargo`, `distrito`, `afp`, `banco`, `moneda`, `tipo_cuenta`, `modalidad`, `grado_academico`, `estado_civil`, `tipo_contrato`, `tipo_familiar`
+- ✅ Tablas de inventario TI: `equipo`, `tipo_equipo`, `marca`, `modelo`, `procesador`, `ram`, `tipo_ram`, `disco`, `tipo_disco`, `capacidad_disco`, `gama`, `red`, `especificaciones_tec`, `almacenamiento`, `asignacion_equipo`, `estado_equipo`
+- ✅ Tablas de chips/telefonía: `chips`, `asignacion_chip`, `operador_chips`, `plan_chips`, `descuento_chips`
+- ✅ Tablas de tickets/SAP: `ticket`, `categoria_ticket`, `subcategoria_ticket`, `sap_articulo`, `sap_servicio`, `sap_socio_negocio` + catálogos SAP
+- ✅ Tablas de RRHH: `contacto`, `cuenta_banca`, `seguros_aportaciones`, `anexos`, `horario`, `horario_detalle`, `catg_asistencia`
+- ✅ Tablas de seguridad: `rol_accs`, `permiso_accs`, `asignacion_accs`, `asignacion_emp`, `estado_accs`
+- ✅ Todas las FK con `ON DELETE` y `ON UPDATE` correctos, índices en columnas de búsqueda frecuente
+- ✅ Script `erp.sql` versionado y reproducible (DROP IF EXISTS + CREATE)
+- ✅ SQLAlchemy automap (`Base.prepare(autoload_with=engine)`) refleja todas las tablas sin error
+
 **Tareas:**
 | ID | Tarea | Estado |
 |----|-------|--------|
-| ERP-002-1 | Diseñar modelo E-R con tablas: `acceso`, `personal`, `empresa`, `contrato`, `contacto`, `area`, `cargo` | ✅ Done |
-| ERP-002-2 | Crear tablas de soporte: `afp`, `documento`, `anexos`, `estado_accs`, `rol_accs`, `permiso` | ✅ Done |
-| ERP-002-3 | Crear tablas de inventario: `equipo`, `almacenamiento`, `tipo_disco`, `chip` | ✅ Done |
-| ERP-002-4 | Crear tablas de tickets: `ticket`, `estado_ticket`, `tipo_ticket` | ✅ Done |
-| ERP-002-5 | Establecer FK, índices y constraints. Exportar script `erp.sql` | ✅ Done |
+| ERP-002-1 | Diseñar modelo E-R: tablas núcleo `acceso`, `personal`, `empresa`, `contrato`, `contacto` con relaciones 1:N y N:M | ✅ Done |
+| ERP-002-2 | Crear tablas de catálogos: `area`, `departamento`, `cargo`, `distrito`, `afp`, `banco`, `moneda`, `tipo_cuenta`, `modalidad`, `grado_academico`, `estado_civil`, `tipo_contrato`, `tipo_familiar` | ✅ Done |
+| ERP-002-3 | Crear tablas de seguridad: `estado_accs`, `rol_accs`, `permiso_accs`, `asignacion_accs`, `asignacion_emp` | ✅ Done |
+| ERP-002-4 | Crear tablas de RRHH: `contacto`, `cuenta_banca`, `seguros_aportaciones`, `anexos`, `horario`, `horario_detalle`, `catg_asistencia` | ✅ Done |
+| ERP-002-5 | Crear tablas de inventario TI: `equipo`, `tipo_equipo`, `marca`, `modelo`, `procesador`, `ram`, `tipo_ram`, `disco`, `tipo_disco`, `capacidad_disco`, `gama`, `red`, `especificaciones_tec`, `almacenamiento`, `asignacion_equipo`, `estado_equipo` | ✅ Done |
+| ERP-002-6 | Crear tablas de telefonía: `chips`, `asignacion_chip`, `operador_chips`, `plan_chips`, `descuento_chips` | ✅ Done |
+| ERP-002-7 | Crear tablas de tickets: `ticket`, `categoria_ticket`, `subcategoria_ticket` + tablas SAP (`sap_articulo`, `sap_servicio`, `sap_socio_negocio`, `familia_sap`, `subfamilia_sap`, `marca_sap`, `modelo_sap`, `grupo_articulos`, `tipo_unidad`, `tipo_socio_negocio`) | ✅ Done |
+| ERP-002-8 | Establecer todas las FK con constraints de integridad referencial y cascada | ✅ Done |
+| ERP-002-9 | Crear índices en columnas de búsqueda frecuente (id_emp, id_personal, estado, fecha) | ✅ Done |
+| ERP-002-10 | Exportar script `erp.sql` completo y verificar importación limpia en BD nueva | ✅ Done |
+| ERP-002-11 | Validar que SQLAlchemy automap refleja las 71 tablas correctamente | ✅ Done |
 
 ---
 
@@ -179,14 +213,32 @@
 | **Etiquetas** | `database`, `mongodb`, `nosql` |
 | **Descripción** | Como arquitecto de datos, necesito crear las colecciones MongoDB para datos de alta escritura: asistencias, chat, auditoría, eventos y notificaciones. |
 
+**Criterios de Aceptación:**
+- ✅ BD `erp_nosql` creada con 9 colecciones operativas para el sistema principal
+- ✅ BD `erp_sql` creada como base de archivo/auditoría
+- ✅ Colecciones de asistencia: `asistencia` (marcajes biométricos), `justificaciones` (justificaciones manuales)
+- ✅ Colecciones de chat: `chat_mensajes` (privados), `chat_general` (sala general), `msg_grupo` (grupos), `grupos` (metadata de grupos)
+- ✅ Colecciones de contenido: `menus`, `eventos`, `eventos2`, `evento_mujeres`
+- ✅ Colecciones de soporte: `notificaciones_tickets`, `saludos_cumpleanos`, `archivo_saludos`, `auditoria`
+- ✅ Índices compuestos creados en 10 colecciones para optimizar consultas frecuentes
+- ✅ Índice `idx_dia_emppin` y `idx_emppin_dia` en `asistencia` para búsqueda bidireccional
+- ✅ Índice `idx_personal_leido_fecha` en `notificaciones_tickets` para consultas de notificaciones no leídas
+- ✅ Índices de chat (`idx_par_fecha`, `idx_fecha`) para paginación eficiente de mensajes
+- ✅ Script `crear_indices_mongo.py` ejecutable y reproducible
+
 **Tareas:**
 | ID | Tarea | Estado |
 |----|-------|--------|
-| ERP-003-1 | Crear colecciones: `asistencia`, `justificaciones`, `auditoria` | ✅ Done |
-| ERP-003-2 | Crear colecciones: `menus`, `eventos`, `eventos2`, `evento_mujeres` | ✅ Done |
-| ERP-003-3 | Crear colecciones de chat: `mensajes`, `msg_general`, `msg_grupo`, `grupos` | ✅ Done |
-| ERP-003-4 | Crear colecciones: `notificaciones_tickets`, `saludos_cumpleanos` | ✅ Done |
-| ERP-003-5 | Ejecutar `crear_indices_mongo.py` para índices compuestos | ✅ Done |
+| ERP-003-1 | Crear BD `erp_nosql` y colecciones de asistencia: `asistencia`, `justificaciones` | ✅ Done |
+| ERP-003-2 | Crear colecciones de contenido: `menus`, `eventos`, `eventos2`, `evento_mujeres` | ✅ Done |
+| ERP-003-3 | Crear colecciones de chat: `chat_mensajes`, `chat_general`, `msg_grupo`, `grupos`, `chat_notas_personales` | ✅ Done |
+| ERP-003-4 | Crear colecciones de soporte: `notificaciones_tickets`, `saludos_cumpleanos`, `archivo_saludos` | ✅ Done |
+| ERP-003-5 | Crear BD `erp_sql` con colección `auditoria` para registro de cambios | ✅ Done |
+| ERP-003-6 | Implementar `crear_indices_mongo.py` — índices compuestos: `asistencia` (dia+emp_pin), `justificaciones` (fecha), `notificaciones_tickets` (personal+leido+fecha, ticket+personal+leido) | ✅ Done |
+| ERP-003-7 | Crear índices de chat: `chat_mensajes` (par+fecha), `chat_general` (fecha), `chat_notas_personales` (personal+fecha) | ✅ Done |
+| ERP-003-8 | Crear índices de contenido: `menus` (fecha_subida), `eventos` (fecha_subida) | ✅ Done |
+| ERP-003-9 | Crear índices de auditoría: `auditoria` (fecha, modulo+fecha) y `saludos_cumpleanos` (personal_cumple+anio) | ✅ Done |
+| ERP-003-10 | Verificar rendimiento de consultas con `explain()` en las colecciones más usadas | ✅ Done |
 
 ---
 
@@ -214,13 +266,16 @@
 **Tareas:**
 | ID | Tarea | Estado |
 |----|-------|--------|
-| ERP-004-1 | Implementar `br_auth.py` — validación de credenciales con Argon2 | ✅ Done |
-| ERP-004-2 | Implementar `auth_token.py` — generación y verificación JWT | ✅ Done |
-| ERP-004-3 | Crear schemas Pydantic: `LoginRequest`, `SeleccionEmpresaRequest` | ✅ Done |
-| ERP-004-4 | Implementar endpoints: `POST /auth/login`, `POST /auth/seleccionar-empresa`, `GET /auth/verificar` | ✅ Done |
-| ERP-004-5 | Implementar `helpers.py` — `construir_respuesta_usuario()` | ✅ Done |
-| ERP-004-6 | Configurar CORS con regex para redes LAN privadas | ✅ Done |
-| ERP-004-7 | Middleware unificado de rendimiento + captura de errores 500 | ✅ Done |
+| ERP-004-1 | Backend: `br_auth.py` — validación de credenciales: consulta usuario por `USUARIO`, verificación de hash Argon2id, control de `INTENT_LOGIN` (bloqueo tras 3 intentos) | ✅ Done |
+| ERP-004-2 | Backend: `auth_token.py` — generación de token JWT (HS256) con payload: `sub`, `id_accs`, `id_emp`, `rol`, `id_personal`, `nombre`; verificación y decodificación | ✅ Done |
+| ERP-004-3 | Backend: schemas Pydantic — `LoginRequest` (usuario, password), `SeleccionEmpresaRequest` (id_emp, token), `EmpresaSchema` (id, razon_social) | ✅ Done |
+| ERP-004-4 | Backend: endpoint `POST /auth/login` — autenticación inicial, retorna lista de empresas del usuario o error contextual | ✅ Done |
+| ERP-004-5 | Backend: endpoint `POST /auth/seleccionar-empresa` — genera token JWT definitivo con `id_emp` de la empresa seleccionada | ✅ Done |
+| ERP-004-6 | Backend: endpoint `GET /auth/verificar` — valida token activo, retorna datos del usuario o 401 | ✅ Done |
+| ERP-004-7 | Backend: `helpers.py` — `construir_respuesta_usuario()` consolida datos de acceso + personal + empresa + rol en un solo objeto | ✅ Done |
+| ERP-004-8 | Backend: configurar CORS con regex para redes LAN privadas (192.168.x.x, 10.x.x.x, 172.16-31.x.x) | ✅ Done |
+| ERP-004-9 | Backend: middleware unificado de rendimiento (`X-Process-Time-Ms`) + captura global de errores 500 con clasificación OK/LENTO/CRITICO | ✅ Done |
+| ERP-004-10 | Backend: detección de flag `RESET_PASS` en respuesta de login para forzar cambio de contraseña en frontend | ✅ Done |
 
 ---
 
@@ -234,13 +289,28 @@
 | **Etiquetas** | `auth`, `frontend`, `react`, `ux` |
 | **Descripción** | Como usuario, necesito una pantalla de Login intuitiva que me permita seleccionar mi empresa, ingresar credenciales y ser redirigido al Dashboard. |
 
+**Criterios de Aceptación:**
+- ✅ Pantalla de login responsiva con campos: empresa (selector dinámico), usuario y contraseña
+- ✅ Selector de empresa carga opciones desde `/auth/login` (lista de empresas asociadas al usuario)
+- ✅ Mensajes de error contextuales: credenciales inválidas, cuenta bloqueada, sin empresa asignada
+- ✅ Token JWT almacenado en memoria (no localStorage) para seguridad XSS
+- ✅ Módulo `auth.js` expone funciones: `guardarToken()`, `obtenerToken()`, `cerrarSesion()`, `obtenerUsuario()`
+- ✅ Rutas protegidas redirigen a `/login` si no hay token válido
+- ✅ Respuestas 401 en cualquier endpoint redirigen automáticamente a `/login`
+- ✅ Detección de `RESET_PASS` → redirige a `CambioPassword.jsx` antes de acceder al Dashboard
+- ✅ `CambioPassword.jsx` valida: contraseña actual, nueva contraseña (mín. 6 caracteres), confirmación coincidente
+- ✅ Botón de cerrar (X) en `CambioPassword` para cancelar el cambio voluntario
+
 **Tareas:**
 | ID | Tarea | Estado |
 |----|-------|--------|
-| ERP-005-1 | Crear `Login.jsx` — formulario con selector de empresa | ✅ Done |
-| ERP-005-2 | Implementar `auth.js` — manejo de token JWT en memoria | ✅ Done |
-| ERP-005-3 | Configurar rutas protegidas con React Router DOM | ✅ Done |
-| ERP-005-4 | Implementar flujo de cambio de contraseña obligatorio (`CambioPassword.jsx`) | ✅ Done |
+| ERP-005-1 | Crear `Login.jsx` — formulario con selector de empresa dinámico y validación de campos | ✅ Done |
+| ERP-005-2 | Implementar `auth.js` — almacenamiento de token JWT en memoria, funciones `guardarToken()`, `obtenerToken()`, `cerrarSesion()`, `obtenerUsuario()` | ✅ Done |
+| ERP-005-3 | Configurar React Router DOM con rutas protegidas — validación de token en cada navegación | ✅ Done |
+| ERP-005-4 | Implementar `CambioPassword.jsx` — formulario de cambio con validación de contraseña actual + nueva + confirmación | ✅ Done |
+| ERP-005-5 | Implementar flujo `RESET_PASS` — detección del flag y redirección obligatoria antes de acceder al Dashboard | ✅ Done |
+| ERP-005-6 | Implementar manejo global de 401 — interceptar respuestas y redirigir a `/login` con limpieza de sesión | ✅ Done |
+| ERP-005-7 | Estilizar `Login.css` y `CambioPassword.css` — diseño responsivo con soporte dark mode | ✅ Done |
 
 ---
 
@@ -256,16 +326,36 @@
 | **Etiquetas** | `rrhh`, `crud`, `backend`, `frontend` |
 | **Descripción** | Como jefe de RRHH, necesito gestionar la información completa de los empleados: datos personales, contratos, contactos, documentos y anexos laborales. |
 
+**Criterios de Aceptación:**
+- ✅ CRUD completo de empleados con 12 endpoints en `rutas_personal.py` (crear, editar, activar/desactivar, reset password, foto, contactos, AFP, cuentas bancarias)
+- ✅ Listado de personal filtrado por empresa del token (`id_emp`), solo contratos activos
+- ✅ Precarga de 15+ mapas de catálogos para evitar N+1 queries en el listado
+- ✅ Endpoint `/mi-perfil` para que cualquier usuario consulte su propia información completa
+- ✅ Gestión de sub-recursos: contactos de emergencia, seguros/AFP, cuentas bancarias (reemplazo completo: delete all + insert)
+- ✅ Subida de foto de perfil con validación de formato (JPG/PNG/WEBP) y tamaño máximo 5MB
+- ✅ Reset de contraseña por admin: establece password = NUM_DOC, activa flag `RESET_PASS=1`, desbloquea si está bloqueado
+- ✅ 15 endpoints GET de catálogos en `rutas_catalogos.py` (áreas, departamentos, cargos, AFP, bancos, monedas, distritos, etc.)
+- ✅ CRUD de documentos laborales (contratos, adendas, memorandums) vinculados por contrato → anexos
+- ✅ Historial combinado de subidas (menús + eventos) desde MongoDB con resolución de nombres desde MySQL
+- ✅ Registro automático de auditoría en MongoDB para todos los cambios en datos de personal
+- ✅ Frontend: listado con búsqueda por nombre/DNI, filtros por área y estado, paginación
+- ✅ Frontend: vista detallada con pestañas (datos personales, contrato, contactos, documentos, asistencia)
+
 **Tareas:**
 | ID | Tarea | Estado |
 |----|-------|--------|
-| ERP-006-1 | Backend: `rutas_personal.py` — CRUD de empleados con filtros por empresa/área | ✅ Done |
-| ERP-006-2 | Backend: `rutas_catalogos.py` — endpoints de áreas, cargos, AFP, estados | ✅ Done |
-| ERP-006-3 | Backend: `rutas_historial.py` — consulta de historial laboral | ✅ Done |
-| ERP-006-4 | Backend: `rutas_documentos.py` — gestión de documentos y anexos | ✅ Done |
-| ERP-006-5 | Frontend: `RRHH.jsx` — listado de personal con búsqueda y filtros | ✅ Done |
-| ERP-006-6 | Frontend: `PersonalDetalle.jsx` — vista detallada del empleado | ✅ Done |
-| ERP-006-7 | Backend: `auditoria.py` — registro de cambios en MongoDB | ✅ Done |
+| ERP-006-1 | Backend: `rutas_personal.py` — endpoint GET `/` listado de empleados con precarga de catálogos y filtro por empresa | ✅ Done |
+| ERP-006-2 | Backend: `rutas_personal.py` — endpoints POST `/` (crear) y PUT `/{id}` (editar) con validación de campos obligatorios | ✅ Done |
+| ERP-006-3 | Backend: `rutas_personal.py` — endpoint PUT `/{id}/estado` (activar/desactivar), POST `/{id}/reset-password` | ✅ Done |
+| ERP-006-4 | Backend: `rutas_personal.py` — endpoints de sub-recursos: PUT `/{id}/contactos`, GET/PUT `/{id}/seguros`, GET/PUT `/{id}/cuentas`, PUT `/{id}/foto` | ✅ Done |
+| ERP-006-5 | Backend: `rutas_personal.py` — endpoint GET `/mi-perfil` para consulta del perfil propio | ✅ Done |
+| ERP-006-6 | Backend: `rutas_catalogos.py` — 15 endpoints GET de catálogos (áreas, departamentos, cargos, AFP, bancos, monedas, distritos, estados civiles, grados, tipos contrato, tipos familiar, modalidades, tipos cuenta, depart-provincias, documentos) | ✅ Done |
+| ERP-006-7 | Backend: `rutas_historial.py` — endpoints GET `/historial`, `/historial/menus`, `/historial/eventos` con paginación y resolución de nombres | ✅ Done |
+| ERP-006-8 | Backend: `rutas_documentos.py` — CRUD completo: GET `/documentos/tipos`, GET `/documentos/motivos`, GET/POST/PUT/DELETE de documentos vinculados por contrato | ✅ Done |
+| ERP-006-9 | Backend: `auditoria.py` — registro automático de cambios en MongoDB `auditoria` con módulo, acción, datos anteriores/nuevos y usuario | ✅ Done |
+| ERP-006-10 | Frontend: `RRHH.jsx` — listado de personal con búsqueda por texto, filtros por área/estado y tabla responsiva | ✅ Done |
+| ERP-006-11 | Frontend: `PersonalDetalle.jsx` — vista detallada con pestañas: datos personales, contrato, contactos, documentos, AFP/seguros, cuentas bancarias, asistencia | ✅ Done |
+| ERP-006-12 | Frontend: estilos responsivos `RRHH.css` y `PersonalDetalle.css` con soporte dark mode | ✅ Done |
 
 ---
 
@@ -279,11 +369,29 @@
 | **Etiquetas** | `rrhh`, `horarios`, `backend`, `frontend` |
 | **Descripción** | Como jefe de RRHH, necesito configurar y asignar horarios laborales a los empleados por área. |
 
+**Criterios de Aceptación:**
+- ✅ CRUD completo de horarios con 7 endpoints en `rutas_horario.py`
+- ✅ Cada horario incluye detalle semanal: 7 registros (DIA, HORA_E, HORA_S, DIA_DESC) en tabla `horario_detalle`
+- ✅ Crear horario genera automáticamente los 7 días de detalle
+- ✅ Editar horario recrea los detalles (delete + insert) para mantener consistencia
+- ✅ Eliminar horario solo es posible si no hay empleados asignados (validación de integridad)
+- ✅ Desactivación lógica (ESTADO=0) en lugar de borrado físico
+- ✅ Asignación individual: asignar un horario a un empleado específico
+- ✅ Asignación masiva: asignar el mismo horario a múltiples empleados en batch
+- ✅ Listado de empleados con su horario asignado para visualización general
+- ✅ Frontend muestra tabla de horarios con detalle semanal expandible
+
 **Tareas:**
 | ID | Tarea | Estado |
 |----|-------|--------|
-| ERP-007-1 | Backend: `rutas_horario.py` — CRUD de horarios | ✅ Done |
-| ERP-007-2 | Frontend: `HorariosRRHH.jsx` — interfaz de gestión de horarios | ✅ Done |
+| ERP-007-1 | Backend: `rutas_horario.py` — endpoint GET `/` listado de horarios con detalle semanal batch-loaded | ✅ Done |
+| ERP-007-2 | Backend: `rutas_horario.py` — endpoint POST `/` crear horario con 7 días de detalle (hora_e, hora_s, descanso) | ✅ Done |
+| ERP-007-3 | Backend: `rutas_horario.py` — endpoint PUT `/{id}` editar horario (delete + recreate details) | ✅ Done |
+| ERP-007-4 | Backend: `rutas_horario.py` — endpoint DELETE `/{id}` desactivar horario con validación de empleados asignados | ✅ Done |
+| ERP-007-5 | Backend: `rutas_horario.py` — endpoint GET `/empleados` listado de empleados con horario asignado | ✅ Done |
+| ERP-007-6 | Backend: `rutas_horario.py` — endpoints PUT `/empleado/{id}` (asignación individual) y PUT `/empleados/masivo` (asignación batch) | ✅ Done |
+| ERP-007-7 | Frontend: `HorariosRRHH.jsx` — interfaz de gestión con tabla de horarios, formulario de creación/edición y asignación a empleados | ✅ Done |
+| ERP-007-8 | Frontend: estilos `HorariosRRHH.css` con diseño responsivo y soporte dark mode | ✅ Done |
 
 ---
 
@@ -299,15 +407,30 @@
 | **Etiquetas** | `dashboard`, `mongodb`, `backend`, `frontend` |
 | **Descripción** | Como empleado, necesito ver en el Dashboard: el menú semanal del comedor, los próximos eventos corporativos y los cumpleaños del mes, para estar informado. |
 
+**Criterios de Aceptación:**
+- ✅ Dashboard muestra 3 secciones informativas: Menú del día, Eventos corporativos y Cumpleaños del mes
+- ✅ Menú: subida de imagen WebP, visualización del menú más reciente, eliminación por admin
+- ✅ Eventos: 3 slots independientes (evento principal, evento 2, evento mujeres) cada uno con CRUD de imagen
+- ✅ Cumpleaños: listado del mes actual con nombre, día y foto, ordenado cronológicamente
+- ✅ Saludos de cumpleaños: detección de pendientes, envío con mensaje + sticker opcional
+- ✅ Vista de saludos recibidos por cada cumpleañero y listado de empleados que no han saludado
+- ✅ Tarea de limpieza automática (`tarea_limpieza_periodica`) que archiva saludos vencidos en background
+- ✅ Persistencia de menús y eventos en MongoDB con imagen en disco (`public/assets/`)
+- ✅ Sistema de notificaciones integrado: alerta de menú nuevo, evento publicado, cumpleaños hoy/próximo
+
 **Tareas:**
 | ID | Tarea | Estado |
 |----|-------|--------|
-| ERP-008-1 | Backend: `rutas_menu.py` — CRUD de menú semanal (MongoDB) | ✅ Done |
-| ERP-008-2 | Backend: `rutas_evento.py` — CRUD de eventos (MongoDB) | ✅ Done |
-| ERP-008-3 | Backend: `rutas_cumpleanos.py` — consulta de cumpleaños del mes | ✅ Done |
-| ERP-008-4 | Backend: `rutas_saludos_cumpleanos.py` — recopilación de saludos + limpieza automática | ✅ Done |
-| ERP-008-5 | Frontend: `DashboardHome.jsx` — vista principal con secciones informativas | ✅ Done |
-| ERP-008-6 | Frontend: `SeccionCumpleanos.jsx`, `CumpleanosModal.jsx` — interacción de cumpleaños | ✅ Done |
+| ERP-008-1 | Backend: `rutas_menu.py` — endpoints POST `/menus` (subida WebP), GET `/menus` (menú actual), DELETE `/menus` — persistencia en MongoDB + archivo en disco | ✅ Done |
+| ERP-008-2 | Backend: `rutas_evento.py` — 3 sets de CRUD (POST/GET/DELETE) para evento principal, evento2, evento_mujeres — colecciones MongoDB independientes | ✅ Done |
+| ERP-008-3 | Backend: `rutas_cumpleanos.py` — endpoint GET `/cumpleanos` consulta cross-empresa del mes actual desde MySQL, ordenado por día | ✅ Done |
+| ERP-008-4 | Backend: `rutas_saludos_cumpleanos.py` — 6 endpoints: GET `/pendiente`, POST `/enviar`, GET `/activos`, GET `/{id}/saludos`, GET `/{id}/faltantes`, GET `/limpiar` | ✅ Done |
+| ERP-008-5 | Backend: `rutas_saludos_cumpleanos.py` — tarea async `tarea_limpieza_periodica` para archivar saludos vencidos a colección `archivo_saludos` | ✅ Done |
+| ERP-008-6 | Frontend: `DashboardHome.jsx` — vista principal con secciones: menú (imagen expandible), eventos (carrusel/grid), cumpleaños (lista con avatares) | ✅ Done |
+| ERP-008-7 | Frontend: `SeccionCumpleanos.jsx` — componente de lista de cumpleaños con indicador de "hoy" | ✅ Done |
+| ERP-008-8 | Frontend: `CumpleanosModal.jsx` — modal para enviar saludo con mensaje de texto + sticker opcional | ✅ Done |
+| ERP-008-9 | Frontend: `SeccionImagen.jsx` — componente reutilizable para visualizar/subir imágenes de menú y eventos | ✅ Done |
+| ERP-008-10 | Frontend: estilos `DashboardHome.css` con grid responsivo y soporte dark mode | ✅ Done |
 
 ---
 
@@ -324,21 +447,38 @@
 | **Descripción** | Como empleado, necesito crear tickets de soporte y seguir su estado. Como administrador, necesito gestionar, responder y cerrar tickets con valoración final. |
 
 **Criterios de Aceptación:**
-- ✅ Crear ticket con tipo, descripción y archivos adjuntos
-- ✅ Flujo de estados: Abierto → En Proceso → Cerrado
-- ✅ Reapertura de tickets cerrados (`ReaperturaModal.jsx`)
-- ✅ Valoración del servicio al cerrar (`ValoracionModal.jsx`)
-- ✅ Notificaciones persistentes en MongoDB
-- ✅ Generación de plantillas Word/PDF (`rutas_plantillas.py`)
+- ✅ Crear ticket con tipo, categoría, subcategoría, prioridad, descripción y foto adjunta (multipart)
+- ✅ Flujo de estados: `ABIERTO → ASIGNADO → RESUELTO → CERRADO` (transiciones controladas por backend)
+- ✅ Prioridades: `BAJA`, `MEDIA`, `ALTA`, `URGENTE` — modificable por ADMIN/SOPORTE
+- ✅ Asignación de ticket a técnico del equipo SOPORTE
+- ✅ Reapertura de tickets cerrados con motivo obligatorio
+- ✅ Valoración del servicio al cerrar: escala 1-3 (malo, regular, bueno)
+- ✅ Notificaciones persistentes en MongoDB: creación, asignación, cambio de estado, cierre, reapertura
+- ✅ Dashboard de estadísticas: conteos por estado + gráfico mensual (solo ADMIN/SOPORTE)
+- ✅ Generación de reporte PDF por mes/año con ReportLab
+- ✅ Integración SAP: registro de artículos, servicios y socios de negocio vinculados al ticket
+- ✅ Generación de plantillas Word/PDF con placeholders auto-rellenados desde BD
+- ✅ Paginación de listados (parámetros `page` y `limit`)
+- ✅ Control de acceso: ADMIN/SOPORTE ven todos los tickets; USUARIO solo los propios
+- ✅ Pestañas frontend: "En Atención" e "Historial" para separar tickets activos de cerrados
 
 **Tareas:**
 | ID | Tarea | Estado |
 |----|-------|--------|
-| ERP-009-1 | Backend: `rutas_tickets.py` — CRUD + cambio de estados | ✅ Done |
-| ERP-009-2 | Backend: `rutas_notificaciones.py` — sistema de notificaciones | ✅ Done |
-| ERP-009-3 | Backend: `rutas_plantillas.py` — generación de documentos Word/PDF | ✅ Done |
-| ERP-009-4 | Frontend: `IngresarTicket.jsx` — formulario de creación | ✅ Done |
-| ERP-009-5 | Frontend: `ReaperturaModal.jsx`, `ValoracionModal.jsx` — modales de flujo | ✅ Done |
+| ERP-009-1 | Backend: `rutas_tickets.py` — endpoints POST `/` (crear con multipart), GET `/` (listado paginado), GET `/{id}` (detalle) | ✅ Done |
+| ERP-009-2 | Backend: `rutas_tickets.py` — endpoints de flujo: PUT `/{id}/asignar`, PUT `/{id}/estado`, PUT `/{id}/cerrar`, PUT `/{id}/valorar`, PUT `/{id}/reabrir` | ✅ Done |
+| ERP-009-3 | Backend: `rutas_tickets.py` — endpoint PUT `/{id}/prioridad` cambio de prioridad (solo ADMIN/SOPORTE) con auditoría y notificación | ✅ Done |
+| ERP-009-4 | Backend: `rutas_tickets.py` — endpoints GET `/categorias`, GET `/subcategorias`, GET `/tecnicos`, GET `/estadisticas`, GET `/reporte-pdf` | ✅ Done |
+| ERP-009-5 | Backend: `rutas_tickets.py` — endpoints SAP: POST `/{id}/sap`, PUT `/{id}/codigo-sap`, GET `/catalogos-sap` | ✅ Done |
+| ERP-009-6 | Backend: `rutas_tickets.py` — endpoints de notificación: GET `/{id}/reapertura-notif`, PUT `/{id}/reapertura-notif/leer` | ✅ Done |
+| ERP-009-7 | Backend: `rutas_notificaciones.py` — endpoint GET `/notificaciones` con 9 tipos de notificación agregada (contratos, cumpleaños, menú, evento, faltas, tickets) | ✅ Done |
+| ERP-009-8 | Backend: `rutas_plantillas.py` — endpoints GET `/plantillas` (listar), GET `/{nombre}/campos` (analizar placeholders), POST `/{nombre}/generar` (generar DOCX/PDF con auto-fill) | ✅ Done |
+| ERP-009-9 | Frontend: `IngresarTicket.jsx` — formulario de creación con selector de categoría/subcategoría, prioridad, descripción y adjunto | ✅ Done |
+| ERP-009-10 | Frontend: `IngresarTicket.jsx` — pestañas "En Atención" e "Historial" para separar tickets activos de cerrados/resueltos | ✅ Done |
+| ERP-009-11 | Frontend: `Tickets.jsx` — panel de administración con detalle lateral, dropdown de prioridad, cambio de estado y asignación | ✅ Done |
+| ERP-009-12 | Frontend: `ReaperturaModal.jsx` — modal de reapertura con campo de motivo obligatorio | ✅ Done |
+| ERP-009-13 | Frontend: `ValoracionModal.jsx` — modal de valoración con escala visual 1-3 | ✅ Done |
+| ERP-009-14 | Frontend: manejo global de 401 → redirección a login en `Tickets.jsx` e `IngresarTicket.jsx` | ✅ Done |
 
 ---
 
@@ -368,16 +508,20 @@
 **Tareas:**
 | ID | Tarea | Estado |
 |----|-------|--------|
-| ERP-010-1 | Backend: `chat_config.py` — configuración de entorno | ✅ Done |
-| ERP-010-2 | Backend: `chat_db.py` — conexiones MySQL + MongoDB | ✅ Done |
-| ERP-010-3 | Backend: `chat_auth.py` — resolución de identidad desde JWT | ✅ Done |
-| ERP-010-4 | Backend: `chat_socket_events.py` — eventos: connect, disconnect, msg, typing, zumbido | ✅ Done |
-| ERP-010-5 | Backend: `chat_routes.py` — endpoints REST (contactos, historial, grupos) | ✅ Done |
-| ERP-010-6 | Backend: `chat_server.py` — orquestador ASGI (Socket.IO + FastAPI) | ✅ Done |
-| ERP-010-7 | Frontend: `ChatPanel.jsx` — panel lateral de contactos | ✅ Done |
-| ERP-010-8 | Frontend: `ChatVentana.jsx` — ventana de conversación flotante | ✅ Done |
-| ERP-010-9 | Frontend: `ChatSala.jsx` — sala de chat general | ✅ Done |
-| ERP-010-10 | Frontend: `StickerPicker.jsx`, `CrearGrupoModal.jsx`, `ModalImagen.jsx` | ✅ Done |
+| ERP-010-1 | Backend: `chat_config.py` — configuración de entorno (MONGO_URI, JWT_SECRET, CORS origins, puerto 4001) | ✅ Done |
+| ERP-010-2 | Backend: `chat_db.py` — conexión dual MySQL (PyMySQL) + MongoDB (Motor async) con pool de conexiones | ✅ Done |
+| ERP-010-3 | Backend: `chat_auth.py` — resolución de identidad desde JWT compartido con backend principal, extracción de `id_personal`, `nombre`, `id_emp` | ✅ Done |
+| ERP-010-4 | Backend: `chat_socket_events.py` — eventos WebSocket: `connect` (auth), `disconnect` (cleanup), `mensaje` (1-a-1), `msg_general`, `msg_grupo`, `typing`, `zumbido` | ✅ Done |
+| ERP-010-5 | Backend: `chat_socket_events.py` — gestión de usuarios conectados en memoria, broadcast de estado online/offline | ✅ Done |
+| ERP-010-6 | Backend: `chat_routes.py` — endpoints REST: GET contactos, GET historial de mensajes (paginado), CRUD de grupos, POST subir archivo | ✅ Done |
+| ERP-010-7 | Backend: `chat_server.py` — orquestador ASGI: monta Socket.IO + FastAPI en mismo servidor, configuración CORS para WebSocket | ✅ Done |
+| ERP-010-8 | Frontend: `ChatPanel.jsx` — panel lateral con lista de contactos, indicador online/offline, badge de mensajes no leídos, buscador | ✅ Done |
+| ERP-010-9 | Frontend: `ChatVentana.jsx` — ventana flotante de conversación con scroll infinito, indicador "escribiendo...", envío de texto/sticker/archivo | ✅ Done |
+| ERP-010-10 | Frontend: `ChatSala.jsx` — sala de chat general con mensajes en tiempo real y scroll automático | ✅ Done |
+| ERP-010-11 | Frontend: `StickerPicker.jsx` — selector de stickers con catálogo organizado por categorías (`stickerCatalog.js`) | ✅ Done |
+| ERP-010-12 | Frontend: `CrearGrupoModal.jsx` — modal de creación de grupo con selección múltiple de participantes y nombre | ✅ Done |
+| ERP-010-13 | Frontend: `ModalImagen.jsx` — visor de imágenes ampliadas enviadas por chat | ✅ Done |
+| ERP-010-14 | Frontend: sonidos de notificación (`public/sounds/`) para mensajes nuevos y zumbidos | ✅ Done |
 
 ---
 
@@ -393,14 +537,35 @@
 | **Etiquetas** | `biometrics`, `zkteco`, `mongodb`, `iot`, `backend`, `frontend` |
 | **Descripción** | Como jefe de RRHH, necesito que las marcaciones del reloj biométrico se sincronicen automáticamente con el sistema para consultar asistencias, tardanzas y generar reportes. |
 
+**Criterios de Aceptación:**
+- ✅ Script `Asistencias.py` se conecta al reloj ZKTeco vía protocolo ZK (UDP) con librería `pyzk`
+- ✅ Sincronización bulk con `UpdateOne` (upsert) hacia MongoDB colección `asistencia`
+- ✅ Cada registro incluye: `emp_pin` (DNI), `dia`, `marcajes` (lista de horas), `timestamp`
+- ✅ 9 endpoints en `rutas_asistencia.py` para consulta y gestión
+- ✅ Consulta individual: asistencia de un empleado por rango de fechas con desglose diario + resumen + horario asignado
+- ✅ Consulta general: asistencia de todos los empleados con filtros (fecha, área, cargo, turno, estado)
+- ✅ Cálculo automático de estado: puntual, tardanza, falta — comparando marcajes vs horario asignado
+- ✅ Justificación individual (un día) y por rango de fechas en MongoDB `justificaciones`
+- ✅ CRUD de categorías de justificación (catálogo configurable)
+- ✅ Consulta de marcajes crudos del huellero por DNI
+- ✅ Datos híbridos: MySQL (personal, contrato, horario) + MongoDB (asistencia, justificaciones)
+- ✅ Frontend muestra tabla con indicadores visuales de estado (colores por puntual/tardanza/falta)
+- ✅ Pestaña de asistencia integrada en el perfil del empleado (`AsistenciaTab.jsx`)
+
 **Tareas:**
 | ID | Tarea | Estado |
 |----|-------|--------|
-| ERP-011-1 | Script: `HUELLERO/Asistencias.py` — sincronización ZKTeco → MongoDB vía protocolo ZK (UDP) | ✅ Done |
-| ERP-011-2 | Backend: `rutas_asistencia.py` — consulta de asistencias con filtros | ✅ Done |
-| ERP-011-3 | Backend: Gestión de justificaciones manuales en MongoDB | ✅ Done |
-| ERP-011-4 | Frontend: `AsistenciasGeneral.jsx` — vista de asistencias con tabla y filtros | ✅ Done |
-| ERP-011-5 | Frontend: `AsistenciaTab.jsx` — pestaña de asistencia en perfil | ✅ Done |
+| ERP-011-1 | Script: `HUELLERO/Asistencias.py` — conexión ZKTeco vía protocolo ZK (UDP), lectura de marcajes con `pyzk` | ✅ Done |
+| ERP-011-2 | Script: `HUELLERO/Asistencias.py` — operación bulk `UpdateOne` (upsert) hacia MongoDB `asistencia` agrupando marcajes por día y `emp_pin` | ✅ Done |
+| ERP-011-3 | Backend: `rutas_asistencia.py` — endpoint GET `/{id}` consulta individual con parámetros `fecha_ini`, `fecha_fin`, `empresa`, cálculo vs horario | ✅ Done |
+| ERP-011-4 | Backend: `rutas_asistencia.py` — endpoint GET `/asistencia/general` consulta masiva con filtros: fecha (requerido), area, cargo, turno, estado, nombre | ✅ Done |
+| ERP-011-5 | Backend: `rutas_asistencia.py` — endpoint GET `/{dni}/marcajes` marcajes crudos del huellero desde MongoDB | ✅ Done |
+| ERP-011-6 | Backend: `rutas_asistencia.py` — endpoints PUT `/asistencia/justificar` (un día) y POST `/asistencia/justificar-rango` (rango de fechas) | ✅ Done |
+| ERP-011-7 | Backend: `rutas_asistencia.py` — endpoints CRUD de categorías de justificación: GET `/categorias`, POST `/categorias`, PUT `/categorias/{id}` | ✅ Done |
+| ERP-011-8 | Backend: `rutas_asistencia.py` — endpoint GET `/horarios` listado de horarios activos con detalle semanal | ✅ Done |
+| ERP-011-9 | Frontend: `AsistenciasGeneral.jsx` — vista general con tabla de asistencias, filtros por fecha/área/estado, indicadores de color por estado | ✅ Done |
+| ERP-011-10 | Frontend: `AsistenciaTab.jsx` — pestaña de asistencia en perfil del empleado con calendario y resumen mensual | ✅ Done |
+| ERP-011-11 | Frontend: estilos `AsistenciasGeneral.css` con tabla responsiva, badges de estado y soporte dark mode | ✅ Done |
 
 ---
 
@@ -416,12 +581,33 @@
 | **Etiquetas** | `inventory`, `equipos`, `backend`, `frontend` |
 | **Descripción** | Como administrador de TI, necesito registrar, asignar y rastrear los equipos tecnológicos de la empresa (PCs, laptops, monitores) con sus especificaciones de almacenamiento. |
 
+**Criterios de Aceptación:**
+- ✅ 13 endpoints en `rutas_equipo.py` para CRUD completo de equipos, catálogos, asignaciones y devoluciones
+- ✅ Endpoint `/equipos/catalogos` retorna todos los catálogos en una sola llamada (tipos, marcas, modelos, procesadores, RAM, disco, gama, red)
+- ✅ Catálogos dinámicos: POST/PUT `/equipos/catalogo/{tabla}` para agregar/editar ítems en cualquier tabla catálogo con manejo de errores (try/except, rollback)
+- ✅ Crear equipo con especificaciones técnicas (procesador, RAM, disco) y foto opcional
+- ✅ Cada equipo tiene: serie, tipo, estado, código, gama, marca, modelo, especificaciones + almacenamiento
+- ✅ Listado de equipos filtrado por empresa con specs completas y foto
+- ✅ Asignación de equipo a empleado activo con fecha de asignación
+- ✅ Devolución de equipo: registra `fecha_devol` sin borrar la asignación (historial preservado)
+- ✅ Listado de equipos disponibles (sin asignación activa) y empleados activos
+- ✅ Frontend: vista de tarjetas (cards) con specs, estado, asignación inline y filtros por tipo/estado
+- ✅ Frontend: formulario de creación con selectores dinámicos de catálogos y subida de foto
+- ✅ Stats interactivos: Total, Disponibles, Asignados — clickeables para filtrar
+
 **Tareas:**
 | ID | Tarea | Estado |
 |----|-------|--------|
-| ERP-012-1 | Backend: `rutas_equipo.py` — CRUD de equipos con relaciones a almacenamiento | ✅ Done |
-| ERP-012-2 | Frontend: `EquiposCrear.jsx` — formulario de creación de equipos | ✅ Done |
-| ERP-012-3 | Frontend: `EquiposAsignar.jsx` — asignación de equipos a personal | ✅ Done |
+| ERP-012-1 | Backend: `rutas_equipo.py` — endpoint GET `/equipos/catalogos` retorno unificado de todos los catálogos TI | ✅ Done |
+| ERP-012-2 | Backend: `rutas_equipo.py` — endpoints POST/PUT `/equipos/catalogo/{tabla}` gestión dinámica de catálogos con manejo de errores SQLAlchemy | ✅ Done |
+| ERP-012-3 | Backend: `rutas_equipo.py` — endpoints GET `/equipos` (listado con specs), POST `/equipos` (crear con specs + disco), POST `/{id}/foto` (subir foto) | ✅ Done |
+| ERP-012-4 | Backend: `rutas_equipo.py` — endpoint POST `/equipos/disco` crear registro de almacenamiento, DELETE `/{id}/disco` eliminar | ✅ Done |
+| ERP-012-5 | Backend: `rutas_equipo.py` — endpoints GET `/equipos/asignaciones` (historial), GET `/equipos/disponibles`, GET `/equipos/empleados-activos` | ✅ Done |
+| ERP-012-6 | Backend: `rutas_equipo.py` — endpoints POST `/equipos/asignar` (asignar a empleado) y PUT `/equipos/devolver/{id}` (registrar devolución) | ✅ Done |
+| ERP-012-7 | Frontend: `EquiposCrear.jsx` — formulario de creación con selectores dinámicos de catálogos, specs técnicas y subida de foto | ✅ Done |
+| ERP-012-8 | Frontend: `EquiposAsignar.jsx` — vista de tarjetas (card grid) con stats, búsqueda, filtro por tipo/estado, asignación inline y devolución | ✅ Done |
+| ERP-012-9 | Frontend: `EquiposAsignar.css` — estilos de tarjetas con grid responsivo, badges de estado, formulario inline y soporte dark mode | ✅ Done |
+| ERP-012-10 | Frontend: `EquiposCrear.css` — estilos del formulario de creación con soporte dark mode | ✅ Done |
 
 ---
 
@@ -435,11 +621,30 @@
 | **Etiquetas** | `chips`, `telecom`, `backend`, `frontend` |
 | **Descripción** | Como administrador, necesito gestionar las líneas celulares corporativas y su asignación a empleados. |
 
+**Criterios de Aceptación:**
+- ✅ 11 endpoints en `rutas_chip.py` para CRUD completo de líneas, catálogos y asignaciones
+- ✅ Cada línea incluye: número, operador, plan, precio, descuento, precio con descuento, empresa, estado
+- ✅ Catálogos dinámicos de operadores, planes y descuentos con POST `/chips/catalogo/{tabla}`
+- ✅ Asignación de chip a empleado activo con fecha de asignación
+- ✅ Devolución y reasignación de chip a otro empleado
+- ✅ Historial de asignaciones por chip (`/chips/{id}/historial`)
+- ✅ Stats informativos: Total líneas, Asignados, Disponibles, Costo mensual (original), Total con descuento, Ahorro
+- ✅ Filtros por: texto (número, empleado, operador), estado (todos/asignado/disponible), operador
+- ✅ Tabla con columnas: Número, Empresa, Operador, Plan, Precio, Descuento, Precio c/Desc., Asignado a, Fecha, Estado, Acciones
+- ✅ Frontend muestra modal de creación/edición de líneas con selectores de catálogos
+
 **Tareas:**
 | ID | Tarea | Estado |
 |----|-------|--------|
-| ERP-013-1 | Backend: `rutas_chip.py` — CRUD de líneas corporativas | ✅ Done |
-| ERP-013-2 | Frontend: `Chips.jsx` — interfaz de gestión de chips | ✅ Done |
+| ERP-013-1 | Backend: `rutas_chip.py` — endpoint GET `/chips/catalogos` (operadores, planes, descuentos), POST `/chips/catalogo/{tabla}` (agregar catálogo) | ✅ Done |
+| ERP-013-2 | Backend: `rutas_chip.py` — endpoints GET `/chips` (listado con asignación), POST `/chips` (crear), PUT `/{id}` (editar), DELETE `/{id}` (eliminar) | ✅ Done |
+| ERP-013-3 | Backend: `rutas_chip.py` — endpoint GET `/chips/personal` empleados activos para asignación | ✅ Done |
+| ERP-013-4 | Backend: `rutas_chip.py` — endpoints POST `/chips/{id}/asignar`, PUT `/chips/{id}/devolver`, PUT `/chips/{id}/reasignar` | ✅ Done |
+| ERP-013-5 | Backend: `rutas_chip.py` — endpoint GET `/chips/{id}/historial` historial de asignaciones del chip | ✅ Done |
+| ERP-013-6 | Frontend: `Chips.jsx` — vista con stats (total, asignados, disponibles, costo original, total c/descuento, ahorro), tabla filtrable y acciones | ✅ Done |
+| ERP-013-7 | Frontend: `Chips.jsx` — formularios de creación/edición de línea con selectores de operador, plan, descuento, empresa | ✅ Done |
+| ERP-013-8 | Frontend: `Chips.jsx` — acciones inline: asignar, devolver, reasignar, ver historial, editar, eliminar | ✅ Done |
+| ERP-013-9 | Frontend: `Chips.css` — estilos de tabla, stats, formularios con soporte dark mode y responsive | ✅ Done |
 
 ---
 
@@ -455,12 +660,29 @@
 | **Etiquetas** | `permisos`, `workflow`, `service-layer`, `backend`, `frontend` |
 | **Descripción** | Como empleado, necesito solicitar permisos laborales. Como jefe de área, necesito aprobar o rechazar solicitudes de mis subordinados. |
 
+**Criterios de Aceptación:**
+- ✅ 6 endpoints en `rutas_permisos.py` para gestión RBAC de permisos del sistema
+- ✅ Listado de todos los submódulos registrados en `permiso_accs`
+- ✅ Vista de roles con sus submódulos asignados (ADMIN + SUPERVISOR pueden leer)
+- ✅ Modificación de permisos por rol: actualizar submódulos accesibles (solo ADMIN)
+- ✅ Cambio de rol de usuario (solo ADMIN)
+- ✅ Consulta de permisos propios para renderizado dinámico del Sidebar
+- ✅ Listado de empleados con permisos derivados de su rol (vista de auditoría)
+- ✅ Arquitectura de servicio separada: `permiso_service.py` con lógica de negocio (SRP)
+- ✅ Control de acceso en capa de ruta: ADMIN full access, SUPERVISOR read-only, otros 403
+- ✅ Frontend: interfaz de administración con asignación de submódulos por rol
+
 **Tareas:**
 | ID | Tarea | Estado |
 |----|-------|--------|
-| ERP-014-1 | Backend: `rutas_permisos.py` — endpoints de solicitud y aprobación | ✅ Done |
-| ERP-014-2 | Backend: `servicios/permiso_service.py` — lógica de negocio separada (SRP) | ✅ Done |
-| ERP-014-3 | Frontend: `GestionPermisos.jsx` — interfaz de gestión de permisos | ✅ Done |
+| ERP-014-1 | Backend: `rutas_permisos.py` — endpoints GET `/submodulos` (listar submódulos) y GET `/roles` (roles con permisos asignados) | ✅ Done |
+| ERP-014-2 | Backend: `rutas_permisos.py` — endpoint PUT `/roles/{id}` actualizar permisos de un rol (solo ADMIN) | ✅ Done |
+| ERP-014-3 | Backend: `rutas_permisos.py` — endpoint GET `/empleados` empleados con permisos derivados del rol | ✅ Done |
+| ERP-014-4 | Backend: `rutas_permisos.py` — endpoint PUT `/empleados/{id}/rol` cambiar rol de un usuario (solo ADMIN) | ✅ Done |
+| ERP-014-5 | Backend: `rutas_permisos.py` — endpoint GET `/mis-permisos` submódulos accesibles del usuario actual (para Sidebar dinámico) | ✅ Done |
+| ERP-014-6 | Backend: `servicios/permiso_service.py` — lógica de negocio separada siguiendo SRP: validaciones de rol, resolución de permisos, autorización | ✅ Done |
+| ERP-014-7 | Frontend: `GestionPermisos.jsx` — interfaz de administración: tabla de roles, checkboxes de submódulos, cambio de rol de empleados | ✅ Done |
+| ERP-014-8 | Frontend: `GestionPermisos.css` — estilos con tabla de permisos, checkboxes y soporte dark mode | ✅ Done |
 
 ---
 
@@ -476,14 +698,35 @@
 | **Etiquetas** | `devops`, `nginx`, `deploy`, `security` |
 | **Descripción** | Como administrador del sistema, necesito desplegar la aplicación en la red corporativa con Nginx como punto de entrada unificado, con seguridad HTTP y proxy inverso. |
 
+**Criterios de Aceptación:**
+- ✅ Nginx escucha en puerto 80 como punto de entrada unificado
+- ✅ Proxy inverso: `/api/` → backend FastAPI (puerto 4000) con timeouts de 120s
+- ✅ Proxy inverso: `/chat/` → chat backend FastAPI (puerto 4001)
+- ✅ WebSocket upgrade: `/socket.io/` → chat backend (puerto 4001) con timeout de 86400s (24h)
+- ✅ Servicio de archivos estáticos: Vite build desde `C:\nginx\html\erp\`
+- ✅ SPA routing: `try_files $uri $uri/ /index.html` para React Router
+- ✅ Headers de seguridad: `X-Content-Type-Options: nosniff`, `X-Frame-Options: SAMEORIGIN`, `X-XSS-Protection: 1; mode=block`, `Referrer-Policy: strict-origin-when-cross-origin`
+- ✅ Compresión gzip habilitada para text/CSS/JSON/JS/XML/SVG
+- ✅ Caché de assets: `/assets/` → 1 año, `Cache-Control: public, immutable`
+- ✅ Límite de subida: `client_max_body_size 25M`
+- ✅ Script `start.ps1` automatiza arranque de 3 servicios: backend (4000), chat (4001), frontend dev (3000)
+- ✅ Script mata procesos previos en puertos 4000/4001/3000, valida existencia de venv, cleanup al salir
+- ✅ Acceso desde cualquier dispositivo en red LAN (`http://intraneteq`)
+
 **Tareas:**
 | ID | Tarea | Estado |
 |----|-------|--------|
-| ERP-015-1 | Configurar `nginx.conf` — Proxy: `/api/` → :4000, `/chat/` → :4001, `/socket.io/` → :4001 WS | ✅ Done |
-| ERP-015-2 | Configurar headers de seguridad: X-Content-Type-Options, X-Frame-Options, X-XSS-Protection | ✅ Done |
-| ERP-015-3 | Configurar compresión gzip y caché de assets estáticos (1 año, immutable) | ✅ Done |
-| ERP-015-4 | Crear `start.ps1` — script de arranque automatizado de servicios | ✅ Done |
-| ERP-015-5 | Ejecutar `vite build` y desplegar assets en Nginx (`html/erp/`) | ✅ Done |
+| ERP-015-1 | Configurar `nginx.conf` — server block puerto 80 con `server_name intraneteq` y root en `html/erp` | ✅ Done |
+| ERP-015-2 | Configurar proxy inverso `/api/` → `localhost:4000` con `proxy_read_timeout 120s`, `proxy_send_timeout 120s` | ✅ Done |
+| ERP-015-3 | Configurar proxy inverso `/chat/` → `localhost:4001` para endpoints REST del chat | ✅ Done |
+| ERP-015-4 | Configurar WebSocket upgrade `/socket.io/` → `localhost:4001` con headers `Upgrade`, `Connection` y timeout 86400s | ✅ Done |
+| ERP-015-5 | Configurar headers de seguridad: `X-Content-Type-Options`, `X-Frame-Options`, `X-XSS-Protection`, `Referrer-Policy` | ✅ Done |
+| ERP-015-6 | Configurar compresión gzip para tipos: text/plain, text/css, application/json, application/javascript, text/xml, image/svg+xml | ✅ Done |
+| ERP-015-7 | Configurar caché de assets estáticos: location `/assets/` con `expires 1y` y `Cache-Control: public, immutable` | ✅ Done |
+| ERP-015-8 | Configurar SPA routing: `try_files $uri $uri/ /index.html` y `client_max_body_size 25M` | ✅ Done |
+| ERP-015-9 | Crear `start.ps1` — script PowerShell que arranca backend (4000), chat (4001), frontend (3000) con kill de procesos previos | ✅ Done |
+| ERP-015-10 | Ejecutar `npm run build` en `erp-poo/` y copiar `dist/*` a `C:\nginx\html\erp\` | ✅ Done |
+| ERP-015-11 | Verificar acceso completo desde navegador: login, dashboard, API, chat WebSocket | ✅ Done |
 
 ---
 
@@ -497,13 +740,26 @@
 | **Etiquetas** | `docs`, `delivery`, `knowledge-transfer` |
 | **Descripción** | Como responsable del proyecto, necesito documentar técnicamente todo el sistema para garantizar la mantenibilidad y transferencia de conocimiento. |
 
+**Criterios de Aceptación:**
+- ✅ `DOCUMENTACION_ERP.md` con más de 1500 líneas cubriendo arquitectura, backend, frontend y despliegue
+- ✅ Documentación de cada módulo backend: endpoints, parámetros, respuestas y dependencias
+- ✅ Documentación de cada módulo frontend: componentes, props, hooks y flujos de navegación
+- ✅ Diagramas de arquitectura: topología de red, flujo de datos, stack tecnológico
+- ✅ `README.md` con instrucciones paso a paso de instalación y despliegue
+- ✅ Script SQL (`erp.sql`) versionado y documentado con comentarios
+- ✅ `PLAN_DE_TRABAJO_Y_JIRA.md` con plan de trabajo completo y estructura JIRA (épicas, stories, tasks)
+- ✅ Capacitación impartida a usuarios finales con guía de uso del sistema
+
 **Tareas:**
 | ID | Tarea | Estado |
 |----|-------|--------|
-| ERP-016-1 | Redactar `DOCUMENTACION_ERP.md` — guía completa Backend + Frontend (1500+ líneas) | ✅ Done |
-| ERP-016-2 | Documentar `README.md` — instrucciones de instalación y despliegue | ✅ Done |
-| ERP-016-3 | Versionado del esquema SQL (`erp.sql`) | ✅ Done |
-| ERP-016-4 | Capacitación a usuarios finales | ✅ Done |
+| ERP-016-1 | Redactar `DOCUMENTACION_ERP.md` — sección Backend: arquitectura FastAPI, middleware, autenticación, ORM automap, MongoDB async | ✅ Done |
+| ERP-016-2 | Redactar `DOCUMENTACION_ERP.md` — sección Frontend: estructura Vite+React, componentes, módulos, hooks, servicios, routing | ✅ Done |
+| ERP-016-3 | Redactar `DOCUMENTACION_ERP.md` — sección Despliegue: configuración Nginx, proxy inverso, WebSocket, headers de seguridad | ✅ Done |
+| ERP-016-4 | Documentar `README.md` — instrucciones de instalación: requisitos, BD, dependencias, variables de entorno, arranque | ✅ Done |
+| ERP-016-5 | Versionado del esquema SQL (`erp.sql`) — 71 tablas documentadas con comentarios, DROP IF EXISTS + CREATE | ✅ Done |
+| ERP-016-6 | Redactar `PLAN_DE_TRABAJO_Y_JIRA.md` — plan de trabajo con tabla de actividades + estructura JIRA completa (10 épicas, 16 stories, 140+ tareas) | ✅ Done |
+| ERP-016-7 | Capacitación a usuarios finales — sesiones presenciales con guía de uso para cada módulo del sistema | ✅ Done |
 
 ---
 
@@ -527,7 +783,7 @@
 |---------|-------|
 | Total de Épicas | 10 |
 | Total de User Stories | 16 |
-| Total de Tareas | 68 |
+| Total de Tareas | 143 |
 | Story Points totales | 146 |
 | Archivos Backend (API) | 17 rutas + 5 soporte |
 | Archivos Chat Backend | 6 módulos |

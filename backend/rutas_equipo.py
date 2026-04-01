@@ -99,9 +99,13 @@ def agregar_catalogo(tabla: str, datos: dict, db: Session = Depends(get_db), _=D
         nuevo.NUCLEOS = datos.get("nucleos", 0)
         nuevo.HILOS = datos.get("hilos", 0)
 
-    db.add(nuevo)
-    db.commit()
-    db.refresh(nuevo)
+    try:
+        db.add(nuevo)
+        db.commit()
+        db.refresh(nuevo)
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=400, detail=f"Error al crear: {str(e)}")
 
     pk_col = list(model.__table__.primary_key.columns)[0].name
     return {"id": getattr(nuevo, pk_col), "nombre": nuevo.DESCRIP}
@@ -132,7 +136,11 @@ def editar_catalogo(tabla: str, item_id: int, datos: dict, db: Session = Depends
         raise HTTPException(status_code=400, detail="Descripción requerida")
 
     item.DESCRIP = descrip
-    db.commit()
+    try:
+        db.commit()
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=400, detail=f"Error al actualizar: {str(e)}")
 
     return {"id": getattr(item, pk_col), "nombre": item.DESCRIP}
 

@@ -70,7 +70,9 @@ export default function Chips() {
     var totalChips = chips.length;
     var asignados = chips.filter(function (c) { return c.asignacion; }).length;
     var disponibles = totalChips - asignados;
-    var costoTotal = chips.reduce(function (s, c) { return s + (c.precio_con_descuento || c.precio || 0); }, 0);
+    var costoOriginal = chips.reduce(function (s, c) { return s + (c.precio || 0); }, 0);
+    var costoConDescuento = chips.reduce(function (s, c) { return s + (c.precio_con_descuento || c.precio || 0); }, 0);
+    var ahorro = costoOriginal - costoConDescuento;
 
     // ── Filtros ──
     var chipsFiltrados = chips.filter(function (c) {
@@ -242,9 +244,17 @@ export default function Chips() {
                     <span className="chip-stat-label">Disponibles</span>
                 </div>
                 <div className="chip-stat costo">
-                    <span className="chip-stat-num">S/ {costoTotal.toFixed(2)}</span>
+                    <span className="chip-stat-num">S/ {costoOriginal.toFixed(2)}</span>
                     <span className="chip-stat-label">Costo mensual</span>
                 </div>
+                <div className="chip-stat costo descuento">
+                    <span className="chip-stat-num">S/ {costoConDescuento.toFixed(2)}</span>
+                    <span className="chip-stat-label">Total c/Descuento</span>
+                </div>
+                {ahorro > 0 && <div className="chip-stat costo ahorro">
+                    <span className="chip-stat-num">S/ {ahorro.toFixed(2)}</span>
+                    <span className="chip-stat-label">Ahorro</span>
+                </div>}
             </div>
 
             {/* ── Toolbar ── */}

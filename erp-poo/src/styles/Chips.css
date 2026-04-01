@@ -76,6 +76,10 @@
 .chip-stat.disponible .chip-stat-num { color: #16a34a; }
 .chip-stat.costo { border-left: 4px solid #d97706; }
 .chip-stat.costo .chip-stat-num { color: #d97706; font-size: 1.3rem; }
+.chip-stat.costo.descuento { border-left-color: #16a34a; }
+.chip-stat.costo.descuento .chip-stat-num { color: #16a34a; }
+.chip-stat.costo.ahorro { border-left-color: #7c3aed; }
+.chip-stat.costo.ahorro .chip-stat-num { color: #7c3aed; }
 
 /* ── Toolbar ── */
 .chip-toolbar {
