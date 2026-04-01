@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, Fragment } from 'react';
 import { API_URL, headersConToken } from '../auth';
 import { getSession } from '../utils/session';
 import IconoFa from '../components/IconoFa';
@@ -383,12 +383,12 @@ export default function Tickets() {
                                                 var esActual = i === pasoActual;
                                                 var lineaActiva = i < pasoActual;
                                                 return (
-                                                    <React.Fragment key={et}>
+                                                    <Fragment key={et}>
                                                         <div className={'step-det-dot' + (completado ? ' activo' : '') + (esActual ? ' actual' : '')}></div>
                                                         {i < ETIQUETAS_FLUJO.length - 1 && (
                                                             <div className={'step-det-line' + (lineaActiva ? ' activo' : '')}></div>
                                                         )}
-                                                    </React.Fragment>
+                                                    </Fragment>
                                                 );
                                             })}
                                         </div>
