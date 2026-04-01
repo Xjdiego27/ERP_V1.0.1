@@ -77,12 +77,27 @@ export default function EquiposCrear() {
         var desc = prompt('Ingresa el nombre para ' + label + ':');
         if (!desc || !desc.trim()) return;
 
+        var bodyData = { descripcion: desc.trim() };
+
+        // Marca necesita tipo de equipo, modelo necesita marca
+        if (tabla === 'marca') {
+            if (!form.id_tequipo) { setMensaje('Selecciona un TIPO de equipo antes de agregar una marca'); return; }
+            bodyData.id_tequipo = form.id_tequipo;
+        }
+        if (tabla === 'modelo') {
+            if (!form.id_marca) { setMensaje('Selecciona una MARCA antes de agregar un modelo'); return; }
+            bodyData.id_marca = form.id_marca;
+        }
+
         fetch(API_URL + '/equipos/catalogo/' + tabla, {
             method: 'POST',
             headers: headersConToken(),
-            body: JSON.stringify({ descripcion: desc.trim() })
+            body: JSON.stringify(bodyData)
         })
-        .then(function (r) { return r.json(); })
+        .then(function (r) {
+            if (!r.ok) return r.json().then(function (err) { throw new Error(err.detail || 'Error al agregar'); });
+            return r.json();
+        })
         .then(function (item) {
             // Recargar catálogos
             fetch(API_URL + '/equipos/catalogos', { headers: headersConToken() })
@@ -92,7 +107,7 @@ export default function EquiposCrear() {
                     handleChange(campo, String(item.id));
                 });
         })
-        .catch(function () { setMensaje('Error al agregar ' + label); });
+        .catch(function (err) { setMensaje(err.message || 'Error al agregar ' + label); });
     }
 
     // Editar item existente del catálogo
@@ -109,14 +124,17 @@ export default function EquiposCrear() {
             headers: headersConToken(),
             body: JSON.stringify({ descripcion: nuevoNombre.trim() })
         })
-        .then(function (r) { return r.json(); })
+        .then(function (r) {
+            if (!r.ok) return r.json().then(function (err) { throw new Error(err.detail || 'Error al editar'); });
+            return r.json();
+        })
         .then(function () {
             fetch(API_URL + '/equipos/catalogos', { headers: headersConToken() })
                 .then(function (r) { return r.json(); })
                 .then(function (data) { setCatalogos(data); });
             setMensaje('');
         })
-        .catch(function () { setMensaje('Error al editar ' + label); });
+        .catch(function (err) { setMensaje(err.message || 'Error al editar ' + label); });
     }
 
     // Crear disco si no existe

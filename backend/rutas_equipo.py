@@ -94,10 +94,20 @@ def agregar_catalogo(tabla: str, datos: dict, db: Session = Depends(get_db), _=D
     nuevo = model()
     nuevo.DESCRIP = descrip
 
-    # Campos extras para procesador
+    # Campos extras según tabla
     if tabla == "procesador":
         nuevo.NUCLEOS = datos.get("nucleos", 0)
         nuevo.HILOS = datos.get("hilos", 0)
+    elif tabla == "marca":
+        id_tequipo = datos.get("id_tequipo")
+        if not id_tequipo:
+            raise HTTPException(status_code=400, detail="Se requiere el tipo de equipo para crear una marca")
+        nuevo.ID_TEQUIPO = int(id_tequipo)
+    elif tabla == "modelo":
+        id_marca = datos.get("id_marca")
+        if not id_marca:
+            raise HTTPException(status_code=400, detail="Se requiere la marca para crear un modelo")
+        nuevo.ID_MARCA = int(id_marca)
 
     try:
         db.add(nuevo)
