@@ -1131,6 +1131,52 @@ async def cambiar_estado(
     return {"mensaje": f"Estado actualizado a {estado}"}
 
 
+@router.put("/tickets/{id_ticket}/prioridad")
+async def cambiar_prioridad(
+    id_ticket: int,
+    prioridad: str,
+    db: Session = Depends(get_db),
+    token: dict = Depends(verificar_token),
+):
+    """Cambiar prioridad del ticket. Solo Admin/Soporte."""
+    if not _es_ti(token):
+        raise HTTPException(status_code=403, detail="Sin permisos")
+    if not Ticket:
+        raise HTTPException(status_code=500, detail="Módulo no disponible")
+
+    prioridades_validas = ("BAJA", "MEDIA", "ALTA", "URGENTE")
+    prioridad = prioridad.upper()
+    if prioridad not in prioridades_validas:
+        raise HTTPException(status_code=400, detail=f"Prioridad inválida. Válidas: {prioridades_validas}")
+
+    t = db.query(Ticket).filter(Ticket.ID_TICKET == id_ticket).first()
+    if not t:
+        raise HTTPException(status_code=404, detail="Ticket no encontrado")
+
+    anterior = t.PRIORIDAD
+    t.PRIORIDAD = prioridad
+    db.commit()
+
+    await registrar_accion(
+        usuario=token.get("sub", "desconocido"),
+        accion="CAMBIAR_PRIORIDAD",
+        modulo="TICKETS",
+        id_afectado=id_ticket,
+        nombre_afectado=t.ASUNTO,
+        datos_nuevos={"prioridad": prioridad, "prioridad_anterior": anterior},
+    )
+
+    # Notificar al creador del ticket sobre el cambio de prioridad
+    await _notificar_ticket(
+        db, id_ticket,
+        tipo="ticket_estado",
+        texto=f"La prioridad de tu ticket fue cambiada a {prioridad}: {t.ASUNTO}",
+        destinatarios_ids=[t.ID_PERSONAL],
+    )
+
+    return {"mensaje": f"Prioridad actualizada a {prioridad}"}
+
+
 @router.put("/tickets/{id_ticket}/cerrar")
 async def cerrar_ticket(
     id_ticket: int,

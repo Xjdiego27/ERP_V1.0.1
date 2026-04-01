@@ -56,12 +56,23 @@ export default function Tickets() {
 
     function cargarDatos() {
         Promise.all([
-            fetch(API_URL + '/tickets', { headers: headersConToken() }).then(function (r) { return r.json(); }),
-            fetch(API_URL + '/tickets/estadisticas', { headers: headersConToken() }).then(function (r) { return r.json(); }),
-            fetch(API_URL + '/tickets/tecnicos', { headers: headersConToken() }).then(function (r) { return r.json(); }),
+            fetch(API_URL + '/tickets', { headers: headersConToken() }).then(function (r) {
+                if (r.status === 401) { localStorage.removeItem('session'); window.location.href = '/'; return []; }
+                return r.json();
+            }),
+            fetch(API_URL + '/tickets/estadisticas', { headers: headersConToken() }).then(function (r) {
+                if (r.status === 401) { localStorage.removeItem('session'); window.location.href = '/'; return null; }
+                if (r.status === 403) return null;
+                return r.json();
+            }),
+            fetch(API_URL + '/tickets/tecnicos', { headers: headersConToken() }).then(function (r) {
+                if (r.status === 401) { localStorage.removeItem('session'); window.location.href = '/'; return []; }
+                if (r.status === 403) return [];
+                return r.json();
+            }),
         ]).then(function (res) {
             setTickets(Array.isArray(res[0]) ? res[0] : []);
-            setEstadisticas(res[1]);
+            if (res[1]) setEstadisticas(res[1]);
             setTecnicos(Array.isArray(res[2]) ? res[2] : []);
         }).catch(function () {});
     }
@@ -207,6 +218,23 @@ export default function Tickets() {
             if (!resp.ok) throw new Error('Error al cambiar estado');
             cargarDatos();
             setMsgExito('Estado actualizado');
+            setTimeout(function () { setMsgExito(''); }, 3000);
+            var data = await fetch(API_URL + '/tickets/' + seleccionado.id_ticket, { headers: headersConToken() }).then(function (r) { return r.json(); });
+            setSeleccionado(data);
+        } catch (e) { alert(e.message); }
+        finally { setAccionando(false); }
+    }
+
+    async function cambiarPrioridad(nuevaPrioridad) {
+        if (!seleccionado) return;
+        setAccionando(true);
+        try {
+            var resp = await fetch(API_URL + '/tickets/' + seleccionado.id_ticket + '/prioridad?prioridad=' + nuevaPrioridad, {
+                method: 'PUT', headers: headersConToken(),
+            });
+            if (!resp.ok) throw new Error('Error al cambiar prioridad');
+            cargarDatos();
+            setMsgExito('Prioridad actualizada');
             setTimeout(function () { setMsgExito(''); }, 3000);
             var data = await fetch(API_URL + '/tickets/' + seleccionado.id_ticket, { headers: headersConToken() }).then(function (r) { return r.json(); });
             setSeleccionado(data);
@@ -449,6 +477,20 @@ export default function Tickets() {
                                         <option value="">Sin asignar</option>
                                         {tecnicos.map(function (tec) {
                                             return <option key={tec.id_personal} value={tec.id_personal}>{tec.nombre}</option>;
+                                        })}
+                                    </select>
+                                </div>
+                            )}
+
+                            {/* Cambiar prioridad — solo TI */}
+                            {seleccionado.estado !== 'CERRADO' && esRolTI && (
+                                <div className="detalle-asignar">
+                                    <span className="detalle-label">Prioridad</span>
+                                    <select value={seleccionado.prioridad || 'MEDIA'} onChange={function (e) {
+                                        cambiarPrioridad(e.target.value);
+                                    }} disabled={accionando}>
+                                        {['BAJA', 'MEDIA', 'ALTA', 'URGENTE'].map(function (p) {
+                                            return <option key={p} value={p}>{p}</option>;
                                         })}
                                     </select>
                                 </div>

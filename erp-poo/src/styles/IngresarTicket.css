@@ -722,3 +722,67 @@
         justify-content: center;
     }
 }
+
+/* ── Tabs de tickets (En Atención / Historial) ── */
+.mis-tickets-tabs {
+    display: flex;
+    gap: 4px;
+    margin-bottom: 16px;
+    border-bottom: 2px solid var(--borde, #e2e8f0);
+    padding-bottom: 0;
+}
+.mis-tickets-tab {
+    padding: 8px 18px;
+    border: none;
+    background: none;
+    font-size: 0.88rem;
+    font-weight: 600;
+    color: var(--texto-secundario, #94a3b8);
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    margin-bottom: -2px;
+    transition: color 0.2s, border-color 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+.mis-tickets-tab:hover {
+    color: var(--texto-primario, #1e293b);
+}
+.mis-tickets-tab.activo {
+    color: var(--color-primario, #3b82f6);
+    border-bottom-color: var(--color-primario, #3b82f6);
+}
+
+/* Historial styles */
+.historial-lista {
+    max-height: 600px;
+}
+.ticket-card-mini.cerrado {
+    opacity: 0.85;
+}
+.ticket-card-estado {
+    font-size: 0.7rem;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: 6px;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    margin-left: auto;
+}
+.ticket-card-meta {
+    display: flex;
+    gap: 12px;
+    font-size: 0.78rem;
+    color: var(--texto-secundario, #94a3b8);
+    margin-top: 4px;
+    flex-wrap: wrap;
+}
+.ticket-card-meta span:first-child {
+    font-weight: 600;
+}
+.cerrado-meta {
+    margin-top: 8px;
+    font-style: italic;
+    color: var(--texto-secundario, #64748b);
+}

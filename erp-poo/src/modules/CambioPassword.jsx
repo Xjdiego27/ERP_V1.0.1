@@ -2,10 +2,10 @@ import { useState } from 'react';
 import { getSession } from '../utils/session';
 import { API_URL, headersConToken } from '../auth';
 import IconoFa from '../components/IconoFa';
-import { faEye, faEyeSlash, faCheck, faXmark, faLock } from '@fortawesome/free-solid-svg-icons';
+import { faEye, faEyeSlash, faCheck, faXmark, faLock, faTimes } from '@fortawesome/free-solid-svg-icons';
 import '../styles/CambioPassword.css';
 
-export default function CambioPassword({ onCambiado }) {
+export default function CambioPassword({ onCambiado, onCerrar }) {
     var [actual, setActual] = useState('');
     var [nueva, setNueva] = useState('');
     var [confirmar, setConfirmar] = useState('');
@@ -105,6 +105,11 @@ export default function CambioPassword({ onCambiado }) {
     return (
         <div className="cambio-pw-overlay">
             <div className="cambio-pw-modal">
+                {onCerrar && (
+                    <button type="button" className="cambio-pw-cerrar" onClick={onCerrar} title="Cerrar">
+                        <IconoFa icono={faTimes} />
+                    </button>
+                )}
                 <div className="cambio-pw-icono"><IconoFa icono={faLock} /></div>
                 <h2 className="cambio-pw-titulo">Cambio de Contraseña Obligatorio</h2>
                 <p className="cambio-pw-desc">

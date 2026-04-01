@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { API_URL, headersConToken, headersAuth } from '../auth';
 import IconoFa from '../components/IconoFa';
 import PageContent from '../components/PageContent';
-import { faTicket, faCamera, faPaperPlane, faCheckCircle, faCircle, faSpinner } from '@fortawesome/free-solid-svg-icons';
+import { faTicket, faCamera, faPaperPlane, faCheckCircle, faCircle, faSpinner, faClockRotateLeft, faBolt } from '@fortawesome/free-solid-svg-icons';
 import '../styles/IngresarTicket.css';
 
 var PRIORIDADES = [
@@ -37,6 +37,7 @@ export default function IngresarTicket() {
     var [exito, setExito] = useState(false);
     var [ticketCreado, setTicketCreado] = useState(null);
     var [misTickets, setMisTickets] = useState([]);
+    var [tabTickets, setTabTickets] = useState('atencion');
     var fotoInput = useRef(null);
 
     // SAP catalogs
@@ -78,7 +79,10 @@ export default function IngresarTicket() {
 
     function cargarMisTickets() {
         fetch(API_URL + '/tickets', { headers: headersConToken() })
-            .then(function (r) { return r.json(); })
+            .then(function (r) {
+                if (r.status === 401) { localStorage.removeItem('session'); window.location.href = '/'; return []; }
+                return r.json();
+            })
             .then(function (data) { setMisTickets(Array.isArray(data) ? data : []); });
     }
 
@@ -367,47 +371,136 @@ export default function IngresarTicket() {
                 <div className="ticket-layout">
                     {/* ── Mis Tickets recientes (arriba) ── */}
                     <div className="mis-tickets-panel">
-                        <h3>Tickets</h3>
-                        {misTickets.filter(function (t) { return t.estado !== 'ABIERTO' && t.estado !== 'CERRADO'; }).length === 0 && <p className="sin-tickets">No tienes tickets en atención</p>}
-                        <div className="tickets-lista">
-                            {misTickets.filter(function (t) { return t.estado !== 'ABIERTO' && t.estado !== 'CERRADO'; }).slice(0, 8).map(function (tk) {
-                                var paso = indiceFlujo(tk.estado);
-                                return (
-                                    <div key={tk.id_ticket} className="ticket-card-mini" style={{ borderLeftColor: colorPrioridad(tk.prioridad) }}>
-                                        <div className="ticket-card-top">
-                                            <span className="ticket-codigo">TICKET: <b>#{tk.id_ticket}</b></span>
-                                            <span className="ticket-card-asunto">{tk.asunto}</span>
-                                        </div>
-
-                                        {/* Progress stepper */}
-                                        <div className="stepper-mini">
-                                            {ETIQUETAS_FLUJO.map(function (et, i) {
-                                                var completado = i <= paso;
-                                                var lineaActiva = i < paso;
-                                                return (
-                                                    <div key={et} className={'step-mini' + (completado ? ' activo' : '')}>
-                                                        <div className="step-dot"></div>
-                                                        {i < ETIQUETAS_FLUJO.length - 1 && <div className={'step-line' + (lineaActiva ? ' linea-activa' : '')}></div>}
-                                                    </div>
-                                                );
-                                            })}
-                                        </div>
-                                        <div className="stepper-labels">
-                                            {ETIQUETAS_FLUJO.map(function (et, i) {
-                                                return <span key={et} className={'step-label' + (i <= paso ? ' activo' : '')}>{et}</span>;
-                                            })}
-                                        </div>
-
-                                        {tk.mensaje_ti && (
-                                            <div className="ticket-card-mensaje">
-                                                <span className="ticket-msg-label">Respuesta TI:</span>
-                                                <p className="ticket-msg-text">{tk.mensaje_ti}</p>
-                                            </div>
-                                        )}
-                                    </div>
-                                );
-                            })}
+                        <div className="mis-tickets-tabs">
+                            <button type="button" className={'mis-tickets-tab' + (tabTickets === 'atencion' ? ' activo' : '')} onClick={function () { setTabTickets('atencion'); }}>
+                                <IconoFa icono={faBolt} /> En Atención
+                            </button>
+                            <button type="button" className={'mis-tickets-tab' + (tabTickets === 'historial' ? ' activo' : '')} onClick={function () { setTabTickets('historial'); }}>
+                                <IconoFa icono={faClockRotateLeft} /> Historial
+                            </button>
                         </div>
+
+                        {tabTickets === 'atencion' && (function () {
+                            var enAtencion = misTickets.filter(function (t) { return t.estado !== 'ABIERTO' && t.estado !== 'CERRADO'; });
+                            return (
+                                <>
+                                    {enAtencion.length === 0 && <p className="sin-tickets">No tienes tickets en atención</p>}
+                                    <div className="tickets-lista">
+                                        {enAtencion.slice(0, 8).map(function (tk) {
+                                            var paso = indiceFlujo(tk.estado);
+                                            return (
+                                                <div key={tk.id_ticket} className="ticket-card-mini" style={{ borderLeftColor: colorPrioridad(tk.prioridad) }}>
+                                                    <div className="ticket-card-top">
+                                                        <span className="ticket-codigo">TICKET: <b>#{tk.id_ticket}</b></span>
+                                                        <span className="ticket-card-asunto">{tk.asunto}</span>
+                                                    </div>
+
+                                                    {/* Progress stepper */}
+                                                    <div className="stepper-mini">
+                                                        {ETIQUETAS_FLUJO.map(function (et, i) {
+                                                            var completado = i <= paso;
+                                                            var lineaActiva = i < paso;
+                                                            return (
+                                                                <div key={et} className={'step-mini' + (completado ? ' activo' : '')}>
+                                                                    <div className="step-dot"></div>
+                                                                    {i < ETIQUETAS_FLUJO.length - 1 && <div className={'step-line' + (lineaActiva ? ' linea-activa' : '')}></div>}
+                                                                </div>
+                                                            );
+                                                        })}
+                                                    </div>
+                                                    <div className="stepper-labels">
+                                                        {ETIQUETAS_FLUJO.map(function (et, i) {
+                                                            return <span key={et} className={'step-label' + (i <= paso ? ' activo' : '')}>{et}</span>;
+                                                        })}
+                                                    </div>
+
+                                                    {tk.mensaje_ti && (
+                                                        <div className="ticket-card-mensaje">
+                                                            <span className="ticket-msg-label">Respuesta TI:</span>
+                                                            <p className="ticket-msg-text">{tk.mensaje_ti}</p>
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            );
+                                        })}
+                                    </div>
+                                </>
+                            );
+                        })()}
+
+                        {tabTickets === 'historial' && (function () {
+                            var todos = misTickets.slice().sort(function (a, b) {
+                                return new Date(b.fech_creacion) - new Date(a.fech_creacion);
+                            });
+                            return (
+                                <>
+                                    {todos.length === 0 && <p className="sin-tickets">No tienes tickets registrados</p>}
+                                    <div className="tickets-lista historial-lista">
+                                        {todos.map(function (tk) {
+                                            var paso = indiceFlujo(tk.estado);
+                                            var estiloPri = PRIORIDADES.find(function (p) { return p.valor === tk.prioridad; });
+                                            var esCerrado = tk.estado === 'CERRADO';
+                                            return (
+                                                <div key={tk.id_ticket} className={'ticket-card-mini' + (esCerrado ? ' cerrado' : '')} style={{ borderLeftColor: colorPrioridad(tk.prioridad) }}>
+                                                    <div className="ticket-card-top">
+                                                        <span className="ticket-codigo">TICKET: <b>#{tk.id_ticket}</b></span>
+                                                        <span className="ticket-card-estado" style={{
+                                                            background: esCerrado ? '#dcfce7' : '#dbeafe',
+                                                            color: esCerrado ? '#16a34a' : '#2563eb'
+                                                        }}>{tk.estado}</span>
+                                                    </div>
+                                                    <span className="ticket-card-asunto">{tk.asunto}</span>
+                                                    <div className="ticket-card-meta">
+                                                        <span style={{ color: estiloPri ? estiloPri.color : '#94a3b8' }}>{tk.prioridad}</span>
+                                                        <span>{tk.categoria}</span>
+                                                        <span>{tiempoRelativo(tk.fech_creacion)}</span>
+                                                    </div>
+
+                                                    {/* Progress stepper */}
+                                                    <div className="stepper-mini">
+                                                        {ETIQUETAS_FLUJO.map(function (et, i) {
+                                                            var completado = i <= paso;
+                                                            var lineaActiva = i < paso;
+                                                            return (
+                                                                <div key={et} className={'step-mini' + (completado ? ' activo' : '')}>
+                                                                    <div className="step-dot"></div>
+                                                                    {i < ETIQUETAS_FLUJO.length - 1 && <div className={'step-line' + (lineaActiva ? ' linea-activa' : '')}></div>}
+                                                                </div>
+                                                            );
+                                                        })}
+                                                    </div>
+                                                    <div className="stepper-labels">
+                                                        {ETIQUETAS_FLUJO.map(function (et, i) {
+                                                            return <span key={et} className={'step-label' + (i <= paso ? ' activo' : '')}>{et}</span>;
+                                                        })}
+                                                    </div>
+
+                                                    {tk.tecnico && (
+                                                        <div className="ticket-card-mensaje">
+                                                            <span className="ticket-msg-label">Técnico:</span>
+                                                            <p className="ticket-msg-text">{tk.tecnico}</p>
+                                                        </div>
+                                                    )}
+
+                                                    {tk.mensaje_ti && (
+                                                        <div className="ticket-card-mensaje">
+                                                            <span className="ticket-msg-label">Respuesta TI:</span>
+                                                            <p className="ticket-msg-text">{tk.mensaje_ti}</p>
+                                                        </div>
+                                                    )}
+
+                                                    {esCerrado && tk.fech_cierre && (
+                                                        <div className="ticket-card-meta cerrado-meta">
+                                                            <span>Cerrado: {new Date(tk.fech_cierre).toLocaleDateString('es-PE')}</span>
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            );
+                                        })}
+                                    </div>
+                                </>
+                            );
+                        })()}
                     </div>
 
                     {/* ── Formulario (abajo) ── */}

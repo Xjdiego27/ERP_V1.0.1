@@ -104,7 +104,10 @@ export default function Dashboard() {
     return (
         <div className={'dashboard-layout' + (esLectura ? ' modo-lectura' : '')}>
             {mostrarCambioPassword && (
-                <CambioPassword onCambiado={() => setMostrarCambioPassword(false)} />
+                <CambioPassword 
+                    onCambiado={() => setMostrarCambioPassword(false)} 
+                    onCerrar={() => setMostrarCambioPassword(false)} 
+                />
             )}
             <ValoracionModal />
             <CumpleanosModal />
