@@ -29,7 +29,19 @@ export default function EquiposCrear() {
     }, []);
 
     function handleChange(campo, valor) {
-        setForm(function (prev) { return Object.assign({}, prev, { [campo]: valor }); });
+        setForm(function (prev) {
+            var updated = Object.assign({}, prev, { [campo]: valor });
+            // Cascada: al cambiar tipo equipo, limpiar marca y modelo
+            if (campo === 'id_tequipo') {
+                updated.id_marca = '';
+                updated.id_modelo = '';
+            }
+            // Al cambiar marca, limpiar modelo
+            if (campo === 'id_marca') {
+                updated.id_modelo = '';
+            }
+            return updated;
+        });
     }
 
     // Agregar fila de almacenamiento
@@ -303,8 +315,12 @@ export default function EquiposCrear() {
                     </div>
 
                     {renderSelect('GAMMA:', 'id_gama', catalogos.gamas, 'gama')}
-                    {renderSelect('MARCA:', 'id_marca', catalogos.marcas, 'marca')}
-                    {renderSelect('MODELO:', 'id_modelo', catalogos.modelos, 'modelo')}
+                    {renderSelect('MARCA:', 'id_marca', form.id_tequipo
+                        ? catalogos.marcas.filter(function (m) { return String(m.id_tequipo) === String(form.id_tequipo); })
+                        : catalogos.marcas, 'marca')}
+                    {renderSelect('MODELO:', 'id_modelo', form.id_marca
+                        ? catalogos.modelos.filter(function (m) { return String(m.id_marca) === String(form.id_marca); })
+                        : catalogos.modelos, 'modelo')}
                     {renderSelect('PROCESADOR:', 'id_procesador', catalogos.procesadores, 'procesador')}
                     {renderSelect('TIPO RAM:', 'id_tipo_ram', catalogos.tipos_ram, 'tipo_ram')}
                     {renderSelect('RAM:', 'id_ram', catalogos.rams, 'ram')}
