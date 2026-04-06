@@ -38,7 +38,7 @@ export default function Tickets() {
     var [mensajeTI, setMensajeTI] = useState('');
     var [accionando, setAccionando] = useState(false);
     var [msgExito, setMsgExito] = useState('');
-    var [codigoSAP, setCodigoSAP] = useState('');
+    var [codigosSAP, setCodigosSAP] = useState({});
     var [fotoPreview, setFotoPreview] = useState(null);
     var canvasRef = useRef(null);
 
@@ -183,14 +183,22 @@ export default function Tickets() {
         if (!seleccionado) return;
         setAccionando(true);
         try {
-            // Si es ticket SAP, guardar código SAP antes de cerrar
-            if (seleccionado.es_sap && codigoSAP.trim()) {
-                var sapResp = await fetch(API_URL + '/tickets/' + seleccionado.id_ticket + '/sap/codigo?codigo_sap=' + encodeURIComponent(codigoSAP), {
-                    method: 'PUT', headers: headersConToken(),
-                });
-                if (!sapResp.ok) {
-                    var sapErr = await sapResp.json();
-                    throw new Error(sapErr.detail || 'Error al guardar código SAP');
+            // Si es ticket SAP, guardar códigos SAP antes de cerrar
+            if (seleccionado.es_sap && seleccionado.sap_data && seleccionado.sap_data.length > 0) {
+                var tieneAlguno = Object.values(codigosSAP).some(function (v) { return v && v.trim(); });
+                if (tieneAlguno) {
+                    var codigos = seleccionado.sap_data.map(function (item) {
+                        return { id: item.id, tipo: item.tipo, codigo_sap: codigosSAP[item.id] || '' };
+                    });
+                    var sapResp = await fetch(API_URL + '/tickets/' + seleccionado.id_ticket + '/sap/codigo', {
+                        method: 'PUT',
+                        headers: Object.assign({}, headersConToken(), { 'Content-Type': 'application/json' }),
+                        body: JSON.stringify({ codigos: codigos }),
+                    });
+                    if (!sapResp.ok) {
+                        var sapErr = await sapResp.json();
+                        throw new Error(sapErr.detail || 'Error al guardar código SAP');
+                    }
                 }
             }
             var url = API_URL + '/tickets/' + seleccionado.id_ticket + '/cerrar';
@@ -198,7 +206,7 @@ export default function Tickets() {
             var resp = await fetch(url, { method: 'PUT', headers: headersConToken() });
             if (!resp.ok) throw new Error('Error al cerrar');
             setMensajeTI('');
-            setCodigoSAP('');
+            setCodigosSAP({});
             cargarDatos();
             setMsgExito('Ticket cerrado exitosamente');
             setTimeout(function () { setMsgExito(''); }, 3000);
@@ -387,7 +395,7 @@ export default function Tickets() {
                         return (
                         <div className="ticket-vigente-card">
                             <div className="vigente-top-bar">
-                                <button className="btn-cerrar-vigente" onClick={function () { setSeleccionado(null); setCodigoSAP(''); }}>
+                                <button className="btn-cerrar-vigente" onClick={function () { setSeleccionado(null); setCodigosSAP({}); }}>
                                     <IconoFa icono={faTimes} />
                                 </button>
                             </div>
@@ -512,18 +520,35 @@ export default function Tickets() {
                                 </div>
                             )}
 
-                            {/* Código SAP — solo para tickets SAP y TI */}
-                            {seleccionado.es_sap && seleccionado.estado !== 'CERRADO' && esRolTI && (
+                            {/* Códigos SAP — solo para tickets SAP y TI */}
+                            {seleccionado.es_sap && seleccionado.estado !== 'CERRADO' && esRolTI && seleccionado.sap_data && seleccionado.sap_data.length > 0 && (
                                 <div className="detalle-sap-code">
-                                    <span className="detalle-label">Código SAP (asignar antes de cerrar)</span>
-                                    <input type="text" value={codigoSAP} placeholder="Ingrese código SAP..."
-                                        onChange={function (e) { setCodigoSAP(e.target.value); }} />
+                                    <span className="detalle-label">Código(s) SAP (asignar antes de cerrar)</span>
+                                    {seleccionado.sap_data.map(function (item, idx) {
+                                        var label = item.tipo === 'articulo' ? 'Artículo' : item.tipo === 'servicio' ? 'Servicio' : 'Socio';
+                                        return (
+                                            <div key={item.id || idx} style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 6 }}>
+                                                <span style={{ fontSize: '0.8rem', fontWeight: 600, minWidth: 80 }}>{label} #{idx + 1}</span>
+                                                <input type="text" value={codigosSAP[item.id] || ''} placeholder="Código SAP..."
+                                                    onChange={function (e) { setCodigosSAP(function (prev) { return Object.assign({}, prev, { [item.id]: e.target.value }); }); }}
+                                                    style={{ flex: 1 }} />
+                                            </div>
+                                        );
+                                    })}
                                 </div>
                             )}
-                            {seleccionado.es_sap && seleccionado.estado === 'CERRADO' && seleccionado.sap_data && seleccionado.sap_data.codigo_sap && (
+                            {seleccionado.es_sap && seleccionado.estado === 'CERRADO' && seleccionado.sap_data && seleccionado.sap_data.length > 0 && (
                                 <div className="detalle-campo" style={{ marginTop: 10 }}>
-                                    <span className="detalle-label">Código SAP</span>
-                                    <span className="detalle-valor">{seleccionado.sap_data.codigo_sap}</span>
+                                    <span className="detalle-label">Código(s) SAP</span>
+                                    {seleccionado.sap_data.map(function (item, idx) {
+                                        if (!item.codigo_sap) return null;
+                                        var label = item.tipo === 'articulo' ? 'Artículo' : item.tipo === 'servicio' ? 'Servicio' : 'Socio';
+                                        return (
+                                            <div key={item.id || idx} style={{ marginTop: 4 }}>
+                                                <span className="detalle-valor">{label} #{idx + 1}: {item.codigo_sap}</span>
+                                            </div>
+                                        );
+                                    })}
                                 </div>
                             )}
 

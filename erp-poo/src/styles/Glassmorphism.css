@@ -2339,6 +2339,58 @@ body.glass-off .user-dropdown {
   box-shadow: 0 4px 12px rgba(0,0,0,0.1);
 }
 
+/* ── Glass-off + Dark mode: diferenciar tarjetas del fondo ── */
+body.dark-mode.glass-off .white-card,
+body.dark-mode.glass-off .mi-panel-card,
+body.dark-mode.glass-off .doc-gen-card,
+body.dark-mode.glass-off .doc-card,
+body.dark-mode.glass-off .eqa-card,
+body.dark-mode.glass-off .chip-card,
+body.dark-mode.glass-off .tarjeta-personal,
+body.dark-mode.glass-off .tarjeta-empleado,
+body.dark-mode.glass-off .donut-card,
+body.dark-mode.glass-off .asistg-stat-card,
+body.dark-mode.glass-off .permisos-card,
+body.dark-mode.glass-off .horario-card,
+body.dark-mode.glass-off .detalle-tarjeta,
+body.dark-mode.glass-off .ticket-vigente-card,
+body.dark-mode.glass-off .dashboard-card {
+  background: var(--bg-card, #1e2640) !important;
+  border: 1px solid var(--border-color, #2e3650) !important;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.25) !important;
+}
+
+body.dark-mode.glass-off .stat-card,
+body.dark-mode.glass-off .chip-stat,
+body.dark-mode.glass-off .eqa-stat,
+body.dark-mode.glass-off .eq-stat-card {
+  background: var(--bg-card, #1e2640) !important;
+  border: 1px solid var(--border-color, #2e3650) !important;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.22) !important;
+}
+
+body.dark-mode.glass-off .erp-header {
+  background: var(--bg-card, #1e2640) !important;
+  border-bottom: 1px solid var(--border-color, #2e3650) !important;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+}
+
+body.dark-mode.glass-off .sidebar {
+  background: var(--bg-card, #1e2640) !important;
+  border-right: 1px solid var(--border-color, #2e3650) !important;
+  box-shadow: 2px 0 8px rgba(0,0,0,0.25);
+}
+
+body.dark-mode.glass-off .aside-right-panel {
+  background: var(--bg-card, #1e2640) !important;
+  border-left: 1px solid var(--border-color, #2e3650) !important;
+  box-shadow: -2px 0 8px rgba(0,0,0,0.25);
+}
+
+body.dark-mode.glass-off .workspace-area {
+  background: var(--bg-page, #0e1017) !important;
+}
+
 body.glass-off .workspace-area {
   background: var(--bg-page, #f5f7fa) !important;
 }

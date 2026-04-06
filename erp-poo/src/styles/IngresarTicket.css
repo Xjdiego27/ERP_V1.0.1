@@ -664,6 +664,67 @@
     padding: 8px 12px;
 }
 
+/* ── SAP multi-item bloques ── */
+.sap-item-bloque {
+    padding: 14px 16px;
+    border: 1px solid var(--borde, #e2e8f0);
+    border-radius: 8px;
+    background: color-mix(in srgb, var(--color-primario, #3b82f6) 2%, var(--fondo-card, #fff));
+    position: relative;
+}
+.sap-item-bloque + .sap-item-bloque {
+    margin-top: 6px;
+}
+.sap-item-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 10px;
+    padding-bottom: 6px;
+    border-bottom: 1px dashed var(--borde, #e2e8f0);
+}
+.sap-item-num {
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: var(--color-primario, #3b82f6);
+}
+.sap-item-quitar {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    border: none;
+    background: #ef4444;
+    color: #fff;
+    font-size: 0.75rem;
+    font-weight: 700;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.2s, transform 0.15s;
+}
+.sap-item-quitar:hover {
+    background: #dc2626;
+    transform: scale(1.1);
+}
+.sap-btn-agregar {
+    align-self: center;
+    padding: 8px 20px;
+    border: 1.5px dashed var(--color-primario, #3b82f6);
+    border-radius: 8px;
+    background: transparent;
+    color: var(--color-primario, #3b82f6);
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s, color 0.2s;
+    margin-top: 4px;
+}
+.sap-btn-agregar:hover {
+    background: var(--color-primario, #3b82f6);
+    color: #fff;
+}
+
 /* ── Informe PDF bar ── */
 .informe-pdf-bar {
     display: flex;

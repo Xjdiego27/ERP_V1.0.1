@@ -42,7 +42,7 @@ export default function IngresarTicket() {
 
     // SAP catalogs
     var [sapCatalogos, setSapCatalogos] = useState(null);
-    var [sapForm, setSapForm] = useState({});
+    var [sapItems, setSapItems] = useState([{}]);
 
     // Cargar catálogos y tickets del usuario
     useEffect(function () {
@@ -91,17 +91,30 @@ export default function IngresarTicket() {
             var nuevo = Object.assign({}, prev, { [campo]: valor });
             if (campo === 'id_categoria') {
                 nuevo.id_subcategoria = '';
-                setSapForm({});
+                setSapItems([{}]);
             }
             if (campo === 'id_subcategoria') {
-                setSapForm({});
+                setSapItems([{}]);
             }
             return nuevo;
         });
     }
 
-    function handleSapChange(campo, valor) {
-        setSapForm(function (prev) { return Object.assign({}, prev, { [campo]: valor }); });
+    function handleSapChange(index, campo, valor) {
+        setSapItems(function (prev) {
+            return prev.map(function (item, i) {
+                if (i !== index) return item;
+                return Object.assign({}, item, { [campo]: valor });
+            });
+        });
+    }
+
+    function agregarSapItem() {
+        setSapItems(function (prev) { return prev.concat([{}]); });
+    }
+
+    function quitarSapItem(index) {
+        setSapItems(function (prev) { return prev.filter(function (_, i) { return i !== index; }); });
     }
 
     function handleFoto(e) {
@@ -118,10 +131,8 @@ export default function IngresarTicket() {
         ? subcategorias.filter(function (s) { return String(s.id_categoria) === String(form.id_categoria); })
         : [];
 
-    // Subfamilias filtradas por familia seleccionada (para SAP artículos)
-    var subfsFiltradas = sapCatalogos && sapForm.id_famsap
-        ? sapCatalogos.subfamilias.filter(function (sf) { return String(sf.id_familia) === String(sapForm.id_famsap); })
-        : [];
+    // Subfamilias filtradas por familia seleccionada (para SAP artículos) — ya no global, se calcula por item
+    // var subfsFiltradas = ... (movido dentro del render)
 
     // Determinar tipo SAP por subcategoría
     var subId = parseInt(form.id_subcategoria);
@@ -150,18 +161,21 @@ export default function IngresarTicket() {
             var data = await resp.json();
             if (!resp.ok) throw new Error(data.detail || 'Error al crear ticket');
 
-            // Si es SAP, guardar datos extra vinculados al ticket
+            // Si es SAP, guardar datos extra vinculados al ticket (múltiples items)
             if (esSAP && form.id_subcategoria) {
-                var sapData = Object.assign({}, sapForm);
-                if (subId === SUB_ARTICULO) sapData.tipo = 'articulo';
-                else if (subId === SUB_SERVICIO) sapData.tipo = 'servicio';
-                else if (subId === SUB_SOCIO) sapData.tipo = 'socio';
+                var tipoSap = '';
+                if (subId === SUB_ARTICULO) tipoSap = 'articulo';
+                else if (subId === SUB_SERVICIO) tipoSap = 'servicio';
+                else if (subId === SUB_SOCIO) tipoSap = 'socio';
 
-                if (sapData.tipo) {
+                if (tipoSap) {
+                    var itemsToSend = sapItems.map(function (item) {
+                        return Object.assign({}, item, { tipo: tipoSap });
+                    });
                     await fetch(API_URL + '/tickets/' + data.id_ticket + '/sap', {
                         method: 'POST',
                         headers: headersConToken(),
-                        body: JSON.stringify(sapData),
+                        body: JSON.stringify({ items: itemsToSend }),
                     });
                 }
             }
@@ -170,7 +184,7 @@ export default function IngresarTicket() {
             setTicketCreado(data);
             setMensaje('¡Ticket creado exitosamente!');
             setForm({ asunto: '', id_categoria: '', id_subcategoria: '', prioridad: 'MEDIA', descripcion: '' });
-            setSapForm({});
+            setSapItems([{}]);
             setFoto(null);
             setFotoPreview(null);
             cargarMisTickets();
@@ -205,158 +219,172 @@ export default function IngresarTicket() {
         return idx >= 0 ? idx : 0;
     }
 
-    // ── Render campos SAP dinámicos ──
+    // ── Render campos SAP dinámicos (multi-item) ──
     function renderCamposSAP() {
         if (!esSAP || !form.id_subcategoria || !sapCatalogos) return null;
         var cats = sapCatalogos;
+        var tipoLabel = subId === SUB_ARTICULO ? 'Artículo' : subId === SUB_SERVICIO ? 'Servicio' : subId === SUB_SOCIO ? 'Socio de Negocio' : '';
 
-        // CREAR ARTICULO
-        if (subId === SUB_ARTICULO) {
-            // Filtrar grupos: solo los que tienen cod_serv_art === 1 (artículos)
-            var gruposArticulo = cats.grupos_articulos.filter(function (g) { return g.cod_serv_art === 1; });
-            return (
-                <div className="sap-campos-extra">
-                    <div className="sap-seccion-titulo">Datos del Artículo SAP</div>
-                    <div className="form-fila">
-                        <div className="form-grupo">
-                            <label>Grupo de artículos *</label>
-                            <select value={sapForm.id_grp_art || ''} onChange={function (e) { handleSapChange('id_grp_art', e.target.value); }}>
-                                <option value="">Seleccionar grupo</option>
-                                {gruposArticulo.map(function (g) { return <option key={g.id} value={g.id}>{g.nombre}</option>; })}
-                            </select>
-                        </div>
-                        <div className="form-grupo">
-                            <label>Lista de precios</label>
-                            <select value={sapForm.id_lista || 'NINGUNO'} onChange={function (e) { handleSapChange('id_lista', e.target.value); }}>
-                                <option value="NINGUNO">NINGUNO</option>
-                                <option value="SERIE">SERIE</option>
-                                <option value="LOTE">LOTE</option>
-                            </select>
-                        </div>
-                    </div>
-                    <div className="form-grupo">
-                        <label>Nombre del artículo *</label>
-                        <input type="text" value={sapForm.articulo_sap || ''} placeholder="Nombre del artículo SAP"
-                            onChange={function (e) { handleSapChange('articulo_sap', e.target.value); }} />
-                    </div>
-                    <div className="form-fila">
-                        <div className="form-grupo">
-                            <label>Familia</label>
-                            <select value={sapForm.id_famsap || ''} onChange={function (e) { handleSapChange('id_famsap', e.target.value); handleSapChange('id_sbfamsap', ''); }}>
-                                <option value="">Seleccionar familia</option>
-                                {cats.familias.map(function (f) { return <option key={f.id} value={f.id}>{f.nombre}</option>; })}
-                            </select>
-                        </div>
-                        <div className="form-grupo">
-                            <label>Subfamilia</label>
-                            <select value={sapForm.id_sbfamsap || ''} onChange={function (e) { handleSapChange('id_sbfamsap', e.target.value); }}
-                                disabled={subfsFiltradas.length === 0}>
-                                <option value="">Seleccionar subfamilia</option>
-                                {subfsFiltradas.map(function (sf) { return <option key={sf.id} value={sf.id}>{sf.nombre}</option>; })}
-                            </select>
-                        </div>
-                    </div>
-                    <div className="form-fila">
-                        <div className="form-grupo">
-                            <label>Marca</label>
-                            <select value={sapForm.id_marcasap || ''} onChange={function (e) { handleSapChange('id_marcasap', e.target.value); }}>
-                                <option value="">Seleccionar marca</option>
-                                {cats.marcas.map(function (m) { return <option key={m.id} value={m.id}>{m.nombre}</option>; })}
-                            </select>
-                        </div>
-                        <div className="form-grupo">
-                            <label>O escribir marca</label>
-                            <input type="text" value={sapForm.marca_descrip || ''} placeholder="Marca (si no está en lista)"
-                                onChange={function (e) { handleSapChange('marca_descrip', e.target.value); }} />
-                        </div>
-                    </div>
-                    <div className="form-fila">
-                        <div className="form-grupo">
-                            <label>Modelo</label>
-                            <select value={sapForm.id_modelosap || ''} onChange={function (e) { handleSapChange('id_modelosap', e.target.value); }}>
-                                <option value="">Seleccionar modelo</option>
-                                {cats.modelos.map(function (m) { return <option key={m.id} value={m.id}>{m.nombre}</option>; })}
-                            </select>
-                        </div>
-                        <div className="form-grupo">
-                            <label>O escribir modelo</label>
-                            <input type="text" value={sapForm.modelo_descrip || ''} placeholder="Modelo (si no está en lista)"
-                                onChange={function (e) { handleSapChange('modelo_descrip', e.target.value); }} />
-                        </div>
-                    </div>
-                    <div className="form-grupo">
-                        <label>Unidad de medida *</label>
-                        <select value={sapForm.id_unidad || ''} onChange={function (e) { handleSapChange('id_unidad', e.target.value); }}>
-                            <option value="">Seleccionar unidad</option>
-                            {cats.tipos_unidad.map(function (u) { return <option key={u.id} value={u.id}>{u.nombre}</option>; })}
-                        </select>
-                    </div>
-                </div>
-            );
-        }
+        return (
+            <div className="sap-campos-extra">
+                <div className="sap-seccion-titulo">Datos SAP — {tipoLabel}(s)</div>
+                {sapItems.map(function (sapForm, idx) {
+                    var subfsFiltradas = sapForm.id_famsap
+                        ? cats.subfamilias.filter(function (sf) { return String(sf.id_familia) === String(sapForm.id_famsap); })
+                        : [];
 
-        // CREAR SERVICIO
-        if (subId === SUB_SERVICIO) {
-            // Filtrar grupos: solo los que tienen cod_serv_art === 0 (servicios)
-            var gruposServicio = cats.grupos_articulos.filter(function (g) { return g.cod_serv_art === 0; });
-            return (
-                <div className="sap-campos-extra">
-                    <div className="sap-seccion-titulo">Datos del Servicio SAP</div>
-                    <div className="form-grupo">
-                        <label>Grupo de artículos *</label>
-                        <select value={sapForm.id_grp_art || ''} onChange={function (e) { handleSapChange('id_grp_art', e.target.value); }}>
-                            <option value="">Seleccionar grupo</option>
-                            {gruposServicio.map(function (g) { return <option key={g.id} value={g.id}>{g.nombre}</option>; })}
-                        </select>
-                    </div>
-                    <div className="form-grupo">
-                        <label>Nombre del servicio *</label>
-                        <input type="text" value={sapForm.servicio_sap || ''} placeholder="Nombre del servicio SAP"
-                            onChange={function (e) { handleSapChange('servicio_sap', e.target.value); }} />
-                    </div>
-                    <div className="form-grupo">
-                        <label>Unidad de medida *</label>
-                        <select value={sapForm.id_unidad || ''} onChange={function (e) { handleSapChange('id_unidad', e.target.value); }}>
-                            <option value="">Seleccionar unidad</option>
-                            {cats.tipos_unidad.map(function (u) { return <option key={u.id} value={u.id}>{u.nombre}</option>; })}
-                        </select>
-                    </div>
-                </div>
-            );
-        }
+                    return (
+                        <div key={idx} className="sap-item-bloque">
+                            {sapItems.length > 1 && (
+                                <div className="sap-item-header">
+                                    <span className="sap-item-num">{tipoLabel} #{idx + 1}</span>
+                                    <button type="button" className="sap-item-quitar" onClick={function () { quitarSapItem(idx); }}>✕</button>
+                                </div>
+                            )}
 
-        // CREAR SOCIO DE NEGOCIO
-        if (subId === SUB_SOCIO) {
-            return (
-                <div className="sap-campos-extra">
-                    <div className="sap-seccion-titulo">Datos del Socio de Negocio</div>
-                    <div className="form-grupo">
-                        <label>Tipo de socio *</label>
-                        <select value={sapForm.id_tsocio || ''} onChange={function (e) { handleSapChange('id_tsocio', e.target.value); }}>
-                            <option value="">Seleccionar tipo</option>
-                            {cats.tipos_socio.map(function (ts) { return <option key={ts.id} value={ts.id}>{ts.nombre}</option>; })}
-                        </select>
-                    </div>
-                    <div className="form-grupo">
-                        <label>Razón social *</label>
-                        <input type="text" value={sapForm.razon_social || ''} placeholder="Nombre o razón social"
-                            onChange={function (e) { handleSapChange('razon_social', e.target.value); }} />
-                    </div>
-                    <div className="form-grupo">
-                        <label>RUC</label>
-                        <input type="text" value={sapForm.ruc || ''} placeholder="Número de RUC"
-                            onChange={function (e) { handleSapChange('ruc', e.target.value); }} />
-                    </div>
-                    <div className="form-grupo">
-                        <label>Dirección</label>
-                        <input type="text" value={sapForm.direccion || ''} placeholder="Dirección del socio"
-                            onChange={function (e) { handleSapChange('direccion', e.target.value); }} />
-                    </div>
-                </div>
-            );
-        }
+                            {subId === SUB_ARTICULO && (function () {
+                                var gruposArticulo = cats.grupos_articulos.filter(function (g) { return g.cod_serv_art === 1; });
+                                return (
+                                    <>
+                                        <div className="form-fila">
+                                            <div className="form-grupo">
+                                                <label>Grupo de artículos *</label>
+                                                <select value={sapForm.id_grp_art || ''} onChange={function (e) { handleSapChange(idx, 'id_grp_art', e.target.value); }}>
+                                                    <option value="">Seleccionar grupo</option>
+                                                    {gruposArticulo.map(function (g) { return <option key={g.id} value={g.id}>{g.nombre}</option>; })}
+                                                </select>
+                                            </div>
+                                            <div className="form-grupo">
+                                                <label>Lista de precios</label>
+                                                <select value={sapForm.id_lista || 'NINGUNO'} onChange={function (e) { handleSapChange(idx, 'id_lista', e.target.value); }}>
+                                                    <option value="NINGUNO">NINGUNO</option>
+                                                    <option value="SERIE">SERIE</option>
+                                                    <option value="LOTE">LOTE</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <div className="form-grupo">
+                                            <label>Nombre del artículo *</label>
+                                            <input type="text" value={sapForm.articulo_sap || ''} placeholder="Nombre del artículo SAP"
+                                                onChange={function (e) { handleSapChange(idx, 'articulo_sap', e.target.value); }} />
+                                        </div>
+                                        <div className="form-fila">
+                                            <div className="form-grupo">
+                                                <label>Familia</label>
+                                                <select value={sapForm.id_famsap || ''} onChange={function (e) { handleSapChange(idx, 'id_famsap', e.target.value); handleSapChange(idx, 'id_sbfamsap', ''); }}>
+                                                    <option value="">Seleccionar familia</option>
+                                                    {cats.familias.map(function (f) { return <option key={f.id} value={f.id}>{f.nombre}</option>; })}
+                                                </select>
+                                            </div>
+                                            <div className="form-grupo">
+                                                <label>Subfamilia</label>
+                                                <select value={sapForm.id_sbfamsap || ''} onChange={function (e) { handleSapChange(idx, 'id_sbfamsap', e.target.value); }}
+                                                    disabled={subfsFiltradas.length === 0}>
+                                                    <option value="">Seleccionar subfamilia</option>
+                                                    {subfsFiltradas.map(function (sf) { return <option key={sf.id} value={sf.id}>{sf.nombre}</option>; })}
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <div className="form-fila">
+                                            <div className="form-grupo">
+                                                <label>Marca</label>
+                                                <select value={sapForm.id_marcasap || ''} onChange={function (e) { handleSapChange(idx, 'id_marcasap', e.target.value); }}>
+                                                    <option value="">Seleccionar marca</option>
+                                                    {cats.marcas.map(function (m) { return <option key={m.id} value={m.id}>{m.nombre}</option>; })}
+                                                </select>
+                                            </div>
+                                            <div className="form-grupo">
+                                                <label>O escribir marca</label>
+                                                <input type="text" value={sapForm.marca_descrip || ''} placeholder="Marca (si no está en lista)"
+                                                    onChange={function (e) { handleSapChange(idx, 'marca_descrip', e.target.value); }} />
+                                            </div>
+                                        </div>
+                                        <div className="form-fila">
+                                            <div className="form-grupo">
+                                                <label>Modelo</label>
+                                                <select value={sapForm.id_modelosap || ''} onChange={function (e) { handleSapChange(idx, 'id_modelosap', e.target.value); }}>
+                                                    <option value="">Seleccionar modelo</option>
+                                                    {cats.modelos.map(function (m) { return <option key={m.id} value={m.id}>{m.nombre}</option>; })}
+                                                </select>
+                                            </div>
+                                            <div className="form-grupo">
+                                                <label>O escribir modelo</label>
+                                                <input type="text" value={sapForm.modelo_descrip || ''} placeholder="Modelo (si no está en lista)"
+                                                    onChange={function (e) { handleSapChange(idx, 'modelo_descrip', e.target.value); }} />
+                                            </div>
+                                        </div>
+                                        <div className="form-grupo">
+                                            <label>Unidad de medida *</label>
+                                            <select value={sapForm.id_unidad || ''} onChange={function (e) { handleSapChange(idx, 'id_unidad', e.target.value); }}>
+                                                <option value="">Seleccionar unidad</option>
+                                                {cats.tipos_unidad.map(function (u) { return <option key={u.id} value={u.id}>{u.nombre}</option>; })}
+                                            </select>
+                                        </div>
+                                    </>
+                                );
+                            })()}
 
-        return null;
+                            {subId === SUB_SERVICIO && (function () {
+                                var gruposServicio = cats.grupos_articulos.filter(function (g) { return g.cod_serv_art === 0; });
+                                return (
+                                    <>
+                                        <div className="form-grupo">
+                                            <label>Grupo de artículos *</label>
+                                            <select value={sapForm.id_grp_art || ''} onChange={function (e) { handleSapChange(idx, 'id_grp_art', e.target.value); }}>
+                                                <option value="">Seleccionar grupo</option>
+                                                {gruposServicio.map(function (g) { return <option key={g.id} value={g.id}>{g.nombre}</option>; })}
+                                            </select>
+                                        </div>
+                                        <div className="form-grupo">
+                                            <label>Nombre del servicio *</label>
+                                            <input type="text" value={sapForm.servicio_sap || ''} placeholder="Nombre del servicio SAP"
+                                                onChange={function (e) { handleSapChange(idx, 'servicio_sap', e.target.value); }} />
+                                        </div>
+                                        <div className="form-grupo">
+                                            <label>Unidad de medida *</label>
+                                            <select value={sapForm.id_unidad || ''} onChange={function (e) { handleSapChange(idx, 'id_unidad', e.target.value); }}>
+                                                <option value="">Seleccionar unidad</option>
+                                                {cats.tipos_unidad.map(function (u) { return <option key={u.id} value={u.id}>{u.nombre}</option>; })}
+                                            </select>
+                                        </div>
+                                    </>
+                                );
+                            })()}
+
+                            {subId === SUB_SOCIO && (
+                                <>
+                                    <div className="form-grupo">
+                                        <label>Tipo de socio *</label>
+                                        <select value={sapForm.id_tsocio || ''} onChange={function (e) { handleSapChange(idx, 'id_tsocio', e.target.value); }}>
+                                            <option value="">Seleccionar tipo</option>
+                                            {cats.tipos_socio.map(function (ts) { return <option key={ts.id} value={ts.id}>{ts.nombre}</option>; })}
+                                        </select>
+                                    </div>
+                                    <div className="form-grupo">
+                                        <label>Razón social *</label>
+                                        <input type="text" value={sapForm.razon_social || ''} placeholder="Nombre o razón social"
+                                            onChange={function (e) { handleSapChange(idx, 'razon_social', e.target.value); }} />
+                                    </div>
+                                    <div className="form-grupo">
+                                        <label>RUC</label>
+                                        <input type="text" value={sapForm.ruc || ''} placeholder="Número de RUC"
+                                            onChange={function (e) { handleSapChange(idx, 'ruc', e.target.value); }} />
+                                    </div>
+                                    <div className="form-grupo">
+                                        <label>Dirección</label>
+                                        <input type="text" value={sapForm.direccion || ''} placeholder="Dirección del socio"
+                                            onChange={function (e) { handleSapChange(idx, 'direccion', e.target.value); }} />
+                                    </div>
+                                </>
+                            )}
+                        </div>
+                    );
+                })}
+                <button type="button" className="sap-btn-agregar" onClick={agregarSapItem}>
+                    + Agregar otro {tipoLabel.toLowerCase()}
+                </button>
+            </div>
+        );
     }
 
     return (

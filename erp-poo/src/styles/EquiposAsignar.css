@@ -71,6 +71,15 @@
 .eqa-stat.activo { border-color: var(--primario, #4361ee); background: rgba(67, 97, 238, 0.06); }
 .eqa-stat.disponible.activo { border-color: #16a34a; background: rgba(22, 163, 74, 0.06); }
 .eqa-stat.asignado.activo { border-color: #2563eb; background: rgba(37, 99, 235, 0.06); }
+.eqa-stat.gama.activo { border-color: #8b5cf6; background: rgba(139, 92, 246, 0.06); }
+
+.eqa-stats-sep {
+    width: 1px;
+    height: 36px;
+    background: var(--border-color, #e2e8f0);
+    align-self: center;
+    margin: 0 4px;
+}
 
 .eqa-stat-num {
     font-size: 1.6rem;
@@ -361,7 +370,7 @@
     .eqa-busqueda { max-width: 100%; }
     .eqa-stats { justify-content: center; }
     .eqa-stat { flex: 1; min-width: 80px; padding: 10px 14px; }
-    .eqa-edit-grid { grid-template-columns: 1fr !important; }
+    .eqa-edit-grid { grid-template-columns: 1fr 1fr !important; }
 }
 
 @media (max-width: 480px) {
@@ -370,6 +379,7 @@
     }
     .eqa-card { padding: 14px; }
     .eqa-stat-num { font-size: 1.3rem; }
+    .eqa-edit-grid { grid-template-columns: 1fr !important; }
 }
 
 /* ── Storage detallado ── */
@@ -423,16 +433,18 @@
 .eqa-card.editando {
     border-color: var(--primario, #4361ee);
     box-shadow: 0 0 0 2px rgba(67, 97, 238, 0.12);
+    grid-column: 1 / -1;
 }
 .eqa-edit-form {
     display: flex;
     flex-direction: column;
     gap: 10px;
     animation: eqaSlide 0.25s ease;
+    max-width: 700px;
 }
 .eqa-edit-grid {
     display: grid;
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: 1fr 1fr 1fr;
     gap: 8px;
 }
 .eqa-edit-campo {

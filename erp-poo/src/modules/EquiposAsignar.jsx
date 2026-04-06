@@ -34,6 +34,7 @@ export default function EquiposAsignar() {
     var [filtro, setFiltro] = useState('');
     var [filtroEstado, setFiltroEstado] = useState('');
     var [filtroTipo, setFiltroTipo] = useState('');
+    var [filtroGama, setFiltroGama] = useState('');
     var [mensaje, setMensaje] = useState('');
     var [exito, setExito] = useState(false);
     var [cargando, setCargando] = useState(true);
@@ -87,6 +88,16 @@ export default function EquiposAsignar() {
     equipos.forEach(function (eq) {
         if (eq.tipo && tiposUnicos.indexOf(eq.tipo) < 0) tiposUnicos.push(eq.tipo);
     });
+    var gamasUnicas = [];
+    equipos.forEach(function (eq) {
+        if (eq.gama && gamasUnicas.indexOf(eq.gama) < 0) gamasUnicas.push(eq.gama);
+    });
+    // Conteo por gama
+    var conteoPorGama = {};
+    equipos.forEach(function (eq) {
+        var g = eq.gama || 'Sin gama';
+        conteoPorGama[g] = (conteoPorGama[g] || 0) + 1;
+    });
 
     // Filtrado
     var equiposFiltrados = equipos.filter(function (eq) {
@@ -102,8 +113,9 @@ export default function EquiposAsignar() {
 
         var coincideEstado = !filtroEstado || (eq.estado || '').toUpperCase() === filtroEstado;
         var coincideTipo = !filtroTipo || eq.tipo === filtroTipo;
+        var coincideGama = !filtroGama || (eq.gama || '') === filtroGama;
 
-        return coincideTexto && coincideEstado && coincideTipo;
+        return coincideTexto && coincideEstado && coincideTipo && coincideGama;
     });
 
     // Asignar equipo
@@ -292,6 +304,15 @@ export default function EquiposAsignar() {
                         <span className="eqa-stat-num">{equiposAsignados}</span>
                         <span className="eqa-stat-label">Asignados</span>
                     </div>
+                    <div className="eqa-stats-sep"></div>
+                    {gamasUnicas.map(function (g) {
+                        return (
+                            <div key={g} className={'eqa-stat gama' + (filtroGama === g ? ' activo' : '')} onClick={function () { setFiltroGama(filtroGama === g ? '' : g); }}>
+                                <span className="eqa-stat-num">{conteoPorGama[g] || 0}</span>
+                                <span className="eqa-stat-label">{g}</span>
+                            </div>
+                        );
+                    })}
                 </div>
 
                 {/* Toolbar */}
@@ -305,10 +326,14 @@ export default function EquiposAsignar() {
                         <option value="">Todos los tipos</option>
                         {tiposUnicos.map(function (t) { return <option key={t} value={t}>{t}</option>; })}
                     </select>
+                    <select className="eqa-filtro-tipo" value={filtroGama} onChange={function (e) { setFiltroGama(e.target.value); }}>
+                        <option value="">Todas las gamas</option>
+                        {gamasUnicas.map(function (g) { return <option key={g} value={g}>{g}</option>; })}
+                    </select>
                 </div>
 
                 {/* Filtros activos */}
-                {(filtroEstado || filtroTipo) && (
+                {(filtroEstado || filtroTipo || filtroGama) && (
                     <div className="eqa-filtros-activos">
                         {filtroEstado && (
                             <span className="eqa-filtro-badge">
@@ -318,6 +343,11 @@ export default function EquiposAsignar() {
                         {filtroTipo && (
                             <span className="eqa-filtro-badge">
                                 {filtroTipo} <button onClick={function () { setFiltroTipo(''); }}><IconoFa icono={faXmark} /></button>
+                            </span>
+                        )}
+                        {filtroGama && (
+                            <span className="eqa-filtro-badge">
+                                {filtroGama} <button onClick={function () { setFiltroGama(''); }}><IconoFa icono={faXmark} /></button>
                             </span>
                         )}
                     </div>

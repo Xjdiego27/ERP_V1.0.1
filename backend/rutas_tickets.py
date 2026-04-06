@@ -205,23 +205,20 @@ def _serializar_ticket(db: Session, t):
     # Equipo asignado al creador
     equipo = _equipo_asignado(db, t.ID_PERSONAL) if persona else None
 
-    # SAP data
+    # SAP data — retornar todos los ítems asociados
     es_sap = False
-    sap_data = None
+    sap_data = []
     if cat and cat.DESCRIP and cat.DESCRIP.upper() == 'SAP':
         es_sap = True
         if SapArticulo:
-            sa = db.query(SapArticulo).filter(SapArticulo.ID_TICKET == t.ID_TICKET).first()
-            if sa:
-                sap_data = {"tipo": "articulo", "codigo_sap": sa.CODIGO_SAP}
-        if not sap_data and SapServicio:
-            ss = db.query(SapServicio).filter(SapServicio.ID_TICKET == t.ID_TICKET).first()
-            if ss:
-                sap_data = {"tipo": "servicio", "codigo_sap": ss.CODIGO_SAP}
-        if not sap_data and SapSocioNegocio:
-            sn = db.query(SapSocioNegocio).filter(SapSocioNegocio.ID_TICKET == t.ID_TICKET).first()
-            if sn:
-                sap_data = {"tipo": "socio", "codigo_sap": sn.CODIGO_SAP}
+            for sa in db.query(SapArticulo).filter(SapArticulo.ID_TICKET == t.ID_TICKET).all():
+                sap_data.append({"tipo": "articulo", "codigo_sap": sa.CODIGO_SAP, "id": sa.ID_SAP_ARTICULO})
+        if SapServicio:
+            for ss in db.query(SapServicio).filter(SapServicio.ID_TICKET == t.ID_TICKET).all():
+                sap_data.append({"tipo": "servicio", "codigo_sap": ss.CODIGO_SAP, "id": ss.ID_SAP_SERVICIO})
+        if SapSocioNegocio:
+            for sn in db.query(SapSocioNegocio).filter(SapSocioNegocio.ID_TICKET == t.ID_TICKET).all():
+                sap_data.append({"tipo": "socio", "codigo_sap": sn.CODIGO_SAP, "id": sn.ID_SAP_SOCIO})
 
     return {
         "id_ticket": t.ID_TICKET,
@@ -945,7 +942,8 @@ def guardar_datos_sap(
     db: Session = Depends(get_db),
     token: dict = Depends(verificar_token),
 ):
-    """Guarda datos SAP extras vinculados a un ticket (artículo, servicio o socio de negocio)."""
+    """Guarda datos SAP extras vinculados a un ticket (artículo, servicio o socio de negocio).
+       Acepta {"items": [{...}, ...]} con múltiples ítems o formato legacy {tipo, ...} con uno solo."""
     if not Ticket:
         raise HTTPException(status_code=500, detail="Módulo no disponible")
 
@@ -953,58 +951,64 @@ def guardar_datos_sap(
     if not t:
         raise HTTPException(status_code=404, detail="Ticket no encontrado")
 
-    tipo = datos.get("tipo")  # "articulo", "servicio", "socio"
+    # Soportar formato multi-item o legacy single-item
+    items = datos.get("items") or [datos]
 
-    if tipo == "articulo" and SapArticulo:
-        nuevo = SapArticulo()
-        nuevo.ID_TICKET = id_ticket
-        nuevo.ID_GRP_ART = datos.get("id_grp_art")
-        nuevo.ID_LISTA = datos.get("id_lista", "NINGUNO")
-        nuevo.ARTICULO_SAP = datos.get("articulo_sap", "")
-        nuevo.ID_FAMSAP = datos.get("id_famsap")
-        nuevo.ID_SBFAMSAP = datos.get("id_sbfamsap")
-        nuevo.ID_MARCASAP = datos.get("id_marcasap")
-        nuevo.MARCA_DESCRIP = datos.get("marca_descrip")
-        nuevo.ID_MODELOSAP = datos.get("id_modelosap")
-        nuevo.MODELO_DESCRIP = datos.get("modelo_descrip")
-        nuevo.ID_UNIDAD = datos.get("id_unidad")
-        nuevo.CODIGO_SAP = datos.get("codigo_sap")
-        db.add(nuevo)
+    for item in items:
+        tipo = item.get("tipo")  # "articulo", "servicio", "socio"
 
-    elif tipo == "servicio" and SapServicio:
-        nuevo = SapServicio()
-        nuevo.ID_TICKET = id_ticket
-        nuevo.ID_GRP_ART = datos.get("id_grp_art")
-        nuevo.SERVICIO_SAP = datos.get("servicio_sap", "")
-        nuevo.ID_UNIDAD = datos.get("id_unidad")
-        nuevo.CODIGO_SAP = datos.get("codigo_sap")
-        db.add(nuevo)
+        if tipo == "articulo" and SapArticulo:
+            nuevo = SapArticulo()
+            nuevo.ID_TICKET = id_ticket
+            nuevo.ID_GRP_ART = item.get("id_grp_art")
+            nuevo.ID_LISTA = item.get("id_lista", "NINGUNO")
+            nuevo.ARTICULO_SAP = item.get("articulo_sap", "")
+            nuevo.ID_FAMSAP = item.get("id_famsap")
+            nuevo.ID_SBFAMSAP = item.get("id_sbfamsap")
+            nuevo.ID_MARCASAP = item.get("id_marcasap")
+            nuevo.MARCA_DESCRIP = item.get("marca_descrip")
+            nuevo.ID_MODELOSAP = item.get("id_modelosap")
+            nuevo.MODELO_DESCRIP = item.get("modelo_descrip")
+            nuevo.ID_UNIDAD = item.get("id_unidad")
+            nuevo.CODIGO_SAP = item.get("codigo_sap")
+            db.add(nuevo)
 
-    elif tipo == "socio" and SapSocioNegocio:
-        nuevo = SapSocioNegocio()
-        nuevo.ID_TICKET = id_ticket
-        nuevo.ID_TSOCIO = datos.get("id_tsocio")
-        nuevo.RAZON_SOCIAL = datos.get("razon_social", "")
-        nuevo.RUC = datos.get("ruc")
-        nuevo.DIRECCION = datos.get("direccion")
-        nuevo.CODIGO_SAP = datos.get("codigo_sap")
-        db.add(nuevo)
+        elif tipo == "servicio" and SapServicio:
+            nuevo = SapServicio()
+            nuevo.ID_TICKET = id_ticket
+            nuevo.ID_GRP_ART = item.get("id_grp_art")
+            nuevo.SERVICIO_SAP = item.get("servicio_sap", "")
+            nuevo.ID_UNIDAD = item.get("id_unidad")
+            nuevo.CODIGO_SAP = item.get("codigo_sap")
+            db.add(nuevo)
 
-    else:
-        raise HTTPException(status_code=400, detail="Tipo SAP no válido")
+        elif tipo == "socio" and SapSocioNegocio:
+            nuevo = SapSocioNegocio()
+            nuevo.ID_TICKET = id_ticket
+            nuevo.ID_TSOCIO = item.get("id_tsocio")
+            nuevo.RAZON_SOCIAL = item.get("razon_social", "")
+            nuevo.RUC = item.get("ruc")
+            nuevo.DIRECCION = item.get("direccion")
+            nuevo.CODIGO_SAP = item.get("codigo_sap")
+            db.add(nuevo)
+
+        else:
+            raise HTTPException(status_code=400, detail="Tipo SAP no válido")
 
     db.commit()
-    return {"mensaje": "Datos SAP guardados correctamente"}
+    return {"mensaje": "Datos SAP guardados correctamente", "items_guardados": len(items)}
 
 
 @router.put("/tickets/{id_ticket}/sap/codigo")
 async def actualizar_codigo_sap(
     id_ticket: int,
-    codigo_sap: str,
+    datos: dict,
     db: Session = Depends(get_db),
     token: dict = Depends(verificar_token),
 ):
-    """TI actualiza el código SAP antes de cerrar el ticket."""
+    """TI actualiza los códigos SAP antes de cerrar el ticket.
+       Acepta {"codigos": [{"id": X, "tipo": "articulo", "codigo_sap": "..."},  ...]}
+       o formato legacy {"codigo_sap": "..."} para un solo item."""
     if not _es_ti(token):
         raise HTTPException(status_code=403, detail="Sin permisos")
 
@@ -1012,28 +1016,49 @@ async def actualizar_codigo_sap(
     if not t:
         raise HTTPException(status_code=404, detail="Ticket no encontrado")
 
-    actualizado = False
-    if SapArticulo:
-        sa = db.query(SapArticulo).filter(SapArticulo.ID_TICKET == id_ticket).first()
-        if sa:
-            sa.CODIGO_SAP = codigo_sap
-            actualizado = True
-    if not actualizado and SapServicio:
-        ss = db.query(SapServicio).filter(SapServicio.ID_TICKET == id_ticket).first()
-        if ss:
-            ss.CODIGO_SAP = codigo_sap
-            actualizado = True
-    if not actualizado and SapSocioNegocio:
-        sn = db.query(SapSocioNegocio).filter(SapSocioNegocio.ID_TICKET == id_ticket).first()
-        if sn:
-            sn.CODIGO_SAP = codigo_sap
-            actualizado = True
-
-    if not actualizado:
-        raise HTTPException(status_code=404, detail="No se encontraron datos SAP para este ticket")
+    codigos = datos.get("codigos")
+    if codigos:
+        # Multi-item update
+        for c in codigos:
+            tipo = c.get("tipo")
+            item_id = c.get("id")
+            codigo = c.get("codigo_sap", "")
+            if tipo == "articulo" and SapArticulo and item_id:
+                sa = db.query(SapArticulo).filter(SapArticulo.ID_SAP_ARTICULO == item_id).first()
+                if sa:
+                    sa.CODIGO_SAP = codigo
+            elif tipo == "servicio" and SapServicio and item_id:
+                ss = db.query(SapServicio).filter(SapServicio.ID_SAP_SERVICIO == item_id).first()
+                if ss:
+                    ss.CODIGO_SAP = codigo
+            elif tipo == "socio" and SapSocioNegocio and item_id:
+                sn = db.query(SapSocioNegocio).filter(SapSocioNegocio.ID_SAP_SOCIO == item_id).first()
+                if sn:
+                    sn.CODIGO_SAP = codigo
+    else:
+        # Legacy single-item update
+        codigo_sap = datos.get("codigo_sap", "")
+        actualizado = False
+        if SapArticulo:
+            sa = db.query(SapArticulo).filter(SapArticulo.ID_TICKET == id_ticket).first()
+            if sa:
+                sa.CODIGO_SAP = codigo_sap
+                actualizado = True
+        if not actualizado and SapServicio:
+            ss = db.query(SapServicio).filter(SapServicio.ID_TICKET == id_ticket).first()
+            if ss:
+                ss.CODIGO_SAP = codigo_sap
+                actualizado = True
+        if not actualizado and SapSocioNegocio:
+            sn = db.query(SapSocioNegocio).filter(SapSocioNegocio.ID_TICKET == id_ticket).first()
+            if sn:
+                sn.CODIGO_SAP = codigo_sap
+                actualizado = True
+        if not actualizado:
+            raise HTTPException(status_code=404, detail="No se encontraron datos SAP para este ticket")
 
     db.commit()
-    return {"mensaje": "Código SAP actualizado"}
+    return {"mensaje": "Código(s) SAP actualizado(s)"}
 
 
 @router.put("/tickets/{id_ticket}/asignar")
