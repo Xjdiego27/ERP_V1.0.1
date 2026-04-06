@@ -33,6 +33,7 @@ from rutas_permisos import router as rutas_permisos
 from rutas_chip import router as rutas_chip
 from rutas_saludos_cumpleanos import router as rutas_saludos_cumpleanos
 from rutas_plantillas import router as rutas_plantillas
+from rutas_dashboard import router as rutas_dashboard
 from rutas_saludos_cumpleanos import tarea_limpieza_periodica
 
 app = FastAPI()
@@ -87,6 +88,7 @@ app.include_router(rutas_permisos)
 app.include_router(rutas_chip)
 app.include_router(rutas_saludos_cumpleanos)
 app.include_router(rutas_plantillas)
+app.include_router(rutas_dashboard)
 
 
 # ── Tarea en background: limpieza automática de saludos vencidos ──

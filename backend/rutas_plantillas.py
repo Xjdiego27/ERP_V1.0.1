@@ -9,7 +9,7 @@ import re
 from io import BytesIO
 from datetime import datetime
 from fastapi import APIRouter, Depends, HTTPException, Query
-from fastapi.responses import StreamingResponse
+from fastapi.responses import StreamingResponse, FileResponse
 from sqlalchemy.orm import Session
 from pydantic import BaseModel
 from typing import Dict, Optional
@@ -24,6 +24,10 @@ router = APIRouter()
 
 # Carpeta de plantillas DOCX
 TEMPLATES_DIR = os.path.join(os.path.dirname(__file__), "templates")
+
+# Carpeta raíz para documentos generados (organizados por apellido)
+DOCS_GENERADOS_DIR = os.path.join(os.path.dirname(__file__), "documentos_generados")
+os.makedirs(DOCS_GENERADOS_DIR, exist_ok=True)
 
 
 # ─── HELPERS ────────────────────────────────────
@@ -397,6 +401,10 @@ def generar_documento(
 
     nombre_descarga = os.path.splitext(nombre_archivo)[0]
 
+    # ── Guardar copia en carpeta del empleado (por apellidos) ──
+    _guardar_documento_empleado(id_personal, nombre_descarga, formato, buffer, db)
+    buffer.seek(0)  # re-posicionar después de guardar
+
     if formato == 'pdf':
         try:
             import tempfile
@@ -425,6 +433,10 @@ def generar_documento(
             if os.path.isfile(tmp_pdf):
                 with open(tmp_pdf, 'rb') as f:
                     pdf_bytes = f.read()
+
+                # Guardar copia PDF en carpeta del empleado
+                _guardar_documento_empleado(id_personal, nombre_descarga, 'pdf', BytesIO(pdf_bytes), db)
+
                 # Limpiar temporales
                 try:
                     os.remove(tmp_docx)
@@ -455,3 +467,149 @@ def generar_documento(
             "Content-Disposition": f'attachment; filename="{nombre_descarga}.docx"'
         }
     )
+
+
+# ═══════════════════════════════════════════════════════
+# GUARDAR DOCUMENTOS EN CARPETA POR APELLIDO DEL EMPLEADO
+# ═══════════════════════════════════════════════════════
+
+def _normalizar_nombre_carpeta(texto: str) -> str:
+    """Normaliza un texto para usarlo como nombre de carpeta seguro."""
+    import unicodedata
+    # Quitar acentos
+    nfkd = unicodedata.normalize('NFKD', texto)
+    sin_acentos = ''.join(c for c in nfkd if not unicodedata.combining(c))
+    # Solo alfanuméricos, espacios y guiones
+    limpio = re.sub(r'[^\w\s-]', '', sin_acentos).strip()
+    # Reemplazar espacios por guión bajo
+    limpio = re.sub(r'\s+', '_', limpio)
+    return limpio.upper() or 'SIN_NOMBRE'
+
+
+def _obtener_carpeta_empleado(id_personal: int, db: Session) -> str:
+    """Retorna la ruta de la carpeta del empleado organizada por apellidos.
+    Formato: DOCS_GENERADOS_DIR / APE_PATERNO_APE_MATERNO_NOMBRES /
+    Si el empleado ya tiene una carpeta (puede que cambiaron de nombre), la reutiliza."""
+
+    persona = db.query(Personal).filter(Personal.ID_PERSONAL == id_personal).first()
+    if not persona:
+        return os.path.join(DOCS_GENERADOS_DIR, f"empleado_{id_personal}")
+
+    ape_pat = (persona.APE_PATERNO or '').strip()
+    ape_mat = (persona.APE_MATERNO or '').strip()
+    nombres = (persona.NOMBRES or '').strip()
+
+    nombre_carpeta = _normalizar_nombre_carpeta(f"{ape_pat} {ape_mat}, {nombres}")
+    carpeta = os.path.join(DOCS_GENERADOS_DIR, nombre_carpeta)
+    os.makedirs(carpeta, exist_ok=True)
+    return carpeta
+
+
+def _guardar_documento_empleado(id_personal: int, nombre_doc: str, formato: str, buffer: BytesIO, db: Session):
+    """Guarda una copia del documento generado en la carpeta del empleado.
+    Si ya existe un archivo con el mismo nombre, lo sobrescribe (actualiza)."""
+    try:
+        carpeta = _obtener_carpeta_empleado(id_personal, db)
+        # Nombre con timestamp para evitar confusiones
+        fecha_str = datetime.now().strftime('%Y%m%d_%H%M%S')
+        nombre_archivo = f"{nombre_doc}_{fecha_str}.{formato}"
+        ruta_destino = os.path.join(carpeta, nombre_archivo)
+
+        pos_actual = buffer.tell()
+        buffer.seek(0)
+        with open(ruta_destino, 'wb') as f:
+            f.write(buffer.read())
+        buffer.seek(pos_actual)
+    except Exception:
+        # No fallar la generación si el guardado falla
+        pass
+
+
+# ═══════════════════════════════════════════════════════
+# ENDPOINTS PARA DOCUMENTOS GENERADOS (guardados)
+# ═══════════════════════════════════════════════════════
+
+@router.get("/plantillas/generados/{id_personal}")
+def listar_documentos_generados(
+    id_personal: int,
+    db: Session = Depends(get_db),
+    token: dict = Depends(verificar_token)
+):
+    """Lista los documentos generados y guardados para un empleado."""
+    carpeta = _obtener_carpeta_empleado(id_personal, db)
+
+    if not os.path.isdir(carpeta):
+        return []
+
+    archivos = []
+    for f in sorted(os.listdir(carpeta), reverse=True):
+        ruta = os.path.join(carpeta, f)
+        if not os.path.isfile(ruta):
+            continue
+        ext = os.path.splitext(f)[1].lower()
+        if ext not in ('.docx', '.pdf'):
+            continue
+        stat = os.stat(ruta)
+        archivos.append({
+            'nombre': f,
+            'formato': ext.replace('.', ''),
+            'tamano': stat.st_size,
+            'fecha': datetime.fromtimestamp(stat.st_mtime).strftime('%Y-%m-%d %H:%M'),
+        })
+
+    return archivos
+
+
+@router.get("/plantillas/generados/{id_personal}/descargar")
+def descargar_documento_generado(
+    id_personal: int,
+    archivo: str = Query(...),
+    db: Session = Depends(get_db),
+    token: dict = Depends(verificar_token)
+):
+    """Descarga un documento generado previamente guardado."""
+    carpeta = _obtener_carpeta_empleado(id_personal, db)
+    ruta = os.path.join(carpeta, archivo)
+
+    # Seguridad: evitar path traversal
+    ruta_real = os.path.realpath(ruta)
+    carpeta_real = os.path.realpath(carpeta)
+    if not ruta_real.startswith(carpeta_real):
+        raise HTTPException(status_code=400, detail="Ruta no válida")
+
+    if not os.path.isfile(ruta):
+        raise HTTPException(status_code=404, detail="Archivo no encontrado")
+
+    ext = os.path.splitext(archivo)[1].lower()
+    media = "application/pdf" if ext == '.pdf' else \
+            "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+
+    return FileResponse(
+        ruta,
+        media_type=media,
+        filename=archivo,
+    )
+
+
+@router.delete("/plantillas/generados/{id_personal}")
+def eliminar_documento_generado(
+    id_personal: int,
+    archivo: str = Query(...),
+    db: Session = Depends(get_db),
+    token: dict = Depends(verificar_token)
+):
+    """Elimina un documento generado guardado."""
+    carpeta = _obtener_carpeta_empleado(id_personal, db)
+    ruta = os.path.join(carpeta, archivo)
+
+    # Seguridad: evitar path traversal
+    ruta_real = os.path.realpath(ruta)
+    carpeta_real = os.path.realpath(carpeta)
+    if not ruta_real.startswith(carpeta_real):
+        raise HTTPException(status_code=400, detail="Ruta no válida")
+
+    if not os.path.isfile(ruta):
+        raise HTTPException(status_code=404, detail="Archivo no encontrado")
+
+    os.remove(ruta)
+    return {"ok": True, "mensaje": "Documento eliminado"}

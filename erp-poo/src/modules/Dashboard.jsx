@@ -64,6 +64,14 @@ export default function Dashboard() {
             document.body.classList.add('empresa-' + idEmp);
         }
 
+        // Restaurar preferencia de glass (vidrios ON/OFF)
+        var glassOff = localStorage.getItem('erp-glass-off');
+        if (glassOff === '1') {
+            document.body.classList.add('glass-off');
+        } else {
+            document.body.classList.remove('glass-off');
+        }
+
         // Verificar token y refrescar datos del usuario desde la BD
         fetch(API_URL + '/auth/verificar', {
             headers: { 'Authorization': 'Bearer ' + session.access_token }

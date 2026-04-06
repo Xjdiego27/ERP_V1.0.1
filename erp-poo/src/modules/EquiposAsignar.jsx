@@ -6,7 +6,8 @@ import {
     faLaptop, faSearch, faUserPlus, faRotateLeft, faCheckCircle,
     faDesktop, faServer, faMobileScreen, faTabletScreenButton,
     faHardDrive, faMemory, faMicrochip, faBarcode,
-    faUser, faXmark
+    faUser, faXmark, faPen, faFloppyDisk, faPlus, faTrash,
+    faCalendarDays, faShieldHalved
 } from '@fortawesome/free-solid-svg-icons';
 import '../styles/EquiposAsignar.css';
 
@@ -29,6 +30,7 @@ export default function EquiposAsignar() {
     var [equipos, setEquipos] = useState([]);
     var [asignaciones, setAsignaciones] = useState([]);
     var [empleados, setEmpleados] = useState([]);
+    var [catalogos, setCatalogos] = useState(null);
     var [filtro, setFiltro] = useState('');
     var [filtroEstado, setFiltroEstado] = useState('');
     var [filtroTipo, setFiltroTipo] = useState('');
@@ -37,6 +39,8 @@ export default function EquiposAsignar() {
     var [cargando, setCargando] = useState(true);
     var [asignandoId, setAsignandoId] = useState(null);
     var [personalSeleccionado, setPersonalSeleccionado] = useState('');
+    var [editandoId, setEditandoId] = useState(null);
+    var [formEdit, setFormEdit] = useState({});
 
     function cargarDatos() {
         setCargando(true);
@@ -47,10 +51,12 @@ export default function EquiposAsignar() {
             }),
             fetch(API_URL + '/equipos/asignaciones', { headers: headersConToken() }).then(function (r) { return r.json(); }),
             fetch(API_URL + '/equipos/empleados-activos', { headers: headersConToken() }).then(function (r) { return r.json(); }),
+            fetch(API_URL + '/equipos/catalogos', { headers: headersConToken() }).then(function (r) { return r.json(); }),
         ]).then(function (data) {
             setEquipos(Array.isArray(data[0]) ? data[0] : []);
             setAsignaciones(Array.isArray(data[1]) ? data[1] : []);
             setEmpleados(Array.isArray(data[2]) ? data[2] : []);
+            setCatalogos(data[3] || null);
         }).catch(function () {
             mostrarMensaje('Error cargando datos', false);
         }).finally(function () {
@@ -138,6 +144,130 @@ export default function EquiposAsignar() {
         .catch(function (err) { mostrarMensaje(err.message, false); });
     }
 
+    // Abrir edición de un equipo
+    function abrirEditar(eq) {
+        setEditandoId(eq.id_equipo);
+        setAsignandoId(null);
+        // Buscar IDs reales desde catálogos
+        var marcaId = '';
+        var modeloId = '';
+        var procesadorId = '';
+        var tipoRamId = '';
+        var ramId = '';
+        var gamaId = '';
+        if (catalogos) {
+            var m = (catalogos.marcas || []).find(function (c) { return c.nombre === eq.marca; });
+            if (m) marcaId = m.id;
+            var mo = (catalogos.modelos || []).find(function (c) { return c.nombre === eq.modelo; });
+            if (mo) modeloId = mo.id;
+            var pr = (catalogos.procesadores || []).find(function (c) { return c.nombre === eq.procesador; });
+            if (pr) procesadorId = pr.id;
+            var tr = (catalogos.tipos_ram || []).find(function (c) { return c.nombre === eq.tipo_ram; });
+            if (tr) tipoRamId = tr.id;
+            var ra = (catalogos.rams || []).find(function (c) { return c.nombre === eq.ram; });
+            if (ra) ramId = ra.id;
+            var ga = (catalogos.gamas || []).find(function (c) { return c.nombre === eq.gama; });
+            if (ga) gamaId = ga.id;
+        }
+        setFormEdit({
+            serie: eq.serie || '',
+            codigoe: eq.codigoe || '',
+            fech_compra: eq.fech_compra || '',
+            garantia: eq.garantia || '',
+            id_gama: gamaId,
+            id_marca: marcaId,
+            id_modelo: modeloId,
+            id_procesador: procesadorId,
+            id_tipo_ram: tipoRamId,
+            id_ram: ramId,
+            almacenamiento: (eq.almacenamiento || []).map(function (a) {
+                return { id_disco: a.id_disco || '', descrip: a.descrip || '' };
+            })
+        });
+    }
+
+    function cambiarFormEdit(campo, valor) {
+        setFormEdit(function (prev) {
+            var nuevo = Object.assign({}, prev);
+            nuevo[campo] = valor;
+            // Limpiar modelo al cambiar marca
+            if (campo === 'id_marca') nuevo.id_modelo = '';
+            return nuevo;
+        });
+    }
+
+    function agregarDisco() {
+        setFormEdit(function (prev) {
+            var nuevo = Object.assign({}, prev);
+            nuevo.almacenamiento = (prev.almacenamiento || []).concat([{ id_disco: '', descrip: '' }]);
+            return nuevo;
+        });
+    }
+
+    function quitarDisco(index) {
+        setFormEdit(function (prev) {
+            var nuevo = Object.assign({}, prev);
+            nuevo.almacenamiento = prev.almacenamiento.filter(function (_, i) { return i !== index; });
+            return nuevo;
+        });
+    }
+
+    function cambiarDisco(index, campo, valor) {
+        setFormEdit(function (prev) {
+            var nuevo = Object.assign({}, prev);
+            nuevo.almacenamiento = prev.almacenamiento.map(function (d, i) {
+                if (i === index) {
+                    var copia = Object.assign({}, d);
+                    copia[campo] = valor;
+                    return copia;
+                }
+                return d;
+            });
+            return nuevo;
+        });
+    }
+
+    // Guardar edición
+    function guardarEdicion(id_equipo) {
+        var body = {
+            serie: formEdit.serie,
+            codigoe: formEdit.codigoe,
+            fech_compra: formEdit.fech_compra || null,
+            garantia: formEdit.garantia ? parseInt(formEdit.garantia) : 0,
+            id_gama: formEdit.id_gama || null,
+            id_marca: formEdit.id_marca || null,
+            id_modelo: formEdit.id_modelo || null,
+            id_procesador: formEdit.id_procesador || null,
+            id_tipo_ram: formEdit.id_tipo_ram || null,
+            id_ram: formEdit.id_ram || null,
+            almacenamiento: (formEdit.almacenamiento || []).filter(function (a) { return a.id_disco; }).map(function (a) {
+                return { id_disco: parseInt(a.id_disco), descrip: a.descrip || '' };
+            })
+        };
+
+        fetch(API_URL + '/equipos/' + id_equipo, {
+            method: 'PUT',
+            headers: headersConToken(),
+            body: JSON.stringify(body)
+        })
+        .then(function (r) { return r.json().then(function (d) { return { ok: r.ok, data: d }; }); })
+        .then(function (res) {
+            if (!res.ok) throw new Error(res.data.detail || 'Error al guardar');
+            mostrarMensaje('Equipo actualizado correctamente', true);
+            setEditandoId(null);
+            cargarDatos();
+        })
+        .catch(function (err) { mostrarMensaje(err.message, false); });
+    }
+
+    // Modelos filtrados por marca seleccionada
+    function modelosFiltrados() {
+        if (!catalogos || !formEdit.id_marca) return catalogos ? catalogos.modelos || [] : [];
+        return (catalogos.modelos || []).filter(function (m) {
+            return m.id_marca === parseInt(formEdit.id_marca);
+        });
+    }
+
     if (cargando) return <PageContent><p className="eqa-loading">Cargando inventario...</p></PageContent>;
 
     return (
@@ -204,9 +334,10 @@ export default function EquiposAsignar() {
                         var estadoEstilo = ESTADO_ESTILOS[estadoKey] || { bg: '#f1f5f9', color: '#64748b', label: eq.estado || '—' };
                         var iconoTipo = ICONOS_TIPO[(eq.tipo || '').toUpperCase()] || faHardDrive;
                         var abrirAsignar = asignandoId === eq.id_equipo;
+                        var editando = editandoId === eq.id_equipo;
 
                         return (
-                            <div key={eq.id_equipo} className={'eqa-card' + (asig ? ' asignado' : '') + (abrirAsignar ? ' asignando' : '')}>
+                            <div key={eq.id_equipo} className={'eqa-card' + (asig ? ' asignado' : '') + (abrirAsignar ? ' asignando' : '') + (editando ? ' editando' : '')}>
                                 {/* Header */}
                                 <div className="eqa-card-header">
                                     <div className="eqa-card-icono">
@@ -221,71 +352,190 @@ export default function EquiposAsignar() {
                                     </span>
                                 </div>
 
-                                {/* Specs */}
-                                <div className="eqa-card-specs">
-                                    {eq.serie && (
-                                        <div className="eqa-spec"><IconoFa icono={faBarcode} /><span>S/N: {eq.serie}</span></div>
-                                    )}
-                                    {eq.codigoe && (
-                                        <div className="eqa-spec"><IconoFa icono={faBarcode} /><span>Cód: {eq.codigoe}</span></div>
-                                    )}
-                                    {eq.procesador && (
-                                        <div className="eqa-spec"><IconoFa icono={faMicrochip} /><span>{eq.procesador}</span></div>
-                                    )}
-                                    {eq.ram && (
-                                        <div className="eqa-spec"><IconoFa icono={faMemory} /><span>{eq.tipo_ram ? eq.tipo_ram + ' ' : ''}{eq.ram}</span></div>
-                                    )}
-                                    {eq.almacenamiento && eq.almacenamiento.length > 0 && (
-                                        <div className="eqa-spec"><IconoFa icono={faHardDrive} /><span>{eq.almacenamiento.map(function (a) { return a.tipo_disco + ' ' + a.capacidad; }).join(', ')}</span></div>
-                                    )}
-                                    {eq.gama && (
-                                        <div className="eqa-spec"><span className="eqa-gama-badge">{eq.gama}</span></div>
-                                    )}
-                                </div>
-
-                                {/* Asignación actual */}
-                                {asig && (
-                                    <div className="eqa-card-asignacion">
-                                        <div className="eqa-asig-avatar"><IconoFa icono={faUser} /></div>
-                                        <div className="eqa-asig-info">
-                                            <span className="eqa-asig-nombre">{asig.empleado}</span>
-                                            <span className="eqa-asig-fecha">Desde: {asig.fecha_asig}</span>
+                                {/* Modo edición */}
+                                {editando && catalogos ? (
+                                    <div className="eqa-edit-form">
+                                        <div className="eqa-edit-grid">
+                                            <div className="eqa-edit-campo">
+                                                <label>Serie</label>
+                                                <input type="text" value={formEdit.serie || ''} onChange={function (e) { cambiarFormEdit('serie', e.target.value); }} />
+                                            </div>
+                                            <div className="eqa-edit-campo">
+                                                <label>Código</label>
+                                                <input type="text" value={formEdit.codigoe || ''} onChange={function (e) { cambiarFormEdit('codigoe', e.target.value); }} />
+                                            </div>
+                                            <div className="eqa-edit-campo">
+                                                <label>Fecha Compra</label>
+                                                <input type="date" value={formEdit.fech_compra || ''} onChange={function (e) { cambiarFormEdit('fech_compra', e.target.value); }} />
+                                            </div>
+                                            <div className="eqa-edit-campo">
+                                                <label>Garantía (meses)</label>
+                                                <input type="number" value={formEdit.garantia || ''} onChange={function (e) { cambiarFormEdit('garantia', e.target.value); }} />
+                                            </div>
+                                            <div className="eqa-edit-campo">
+                                                <label>Gama</label>
+                                                <select value={formEdit.id_gama || ''} onChange={function (e) { cambiarFormEdit('id_gama', e.target.value); }}>
+                                                    <option value="">— Gama —</option>
+                                                    {(catalogos.gamas || []).map(function (g) { return <option key={g.id} value={g.id}>{g.nombre}</option>; })}
+                                                </select>
+                                            </div>
+                                            <div className="eqa-edit-campo">
+                                                <label>Marca</label>
+                                                <select value={formEdit.id_marca || ''} onChange={function (e) { cambiarFormEdit('id_marca', e.target.value); }}>
+                                                    <option value="">— Marca —</option>
+                                                    {(catalogos.marcas || []).map(function (m) { return <option key={m.id} value={m.id}>{m.nombre}</option>; })}
+                                                </select>
+                                            </div>
+                                            <div className="eqa-edit-campo">
+                                                <label>Modelo</label>
+                                                <select value={formEdit.id_modelo || ''} onChange={function (e) { cambiarFormEdit('id_modelo', e.target.value); }}>
+                                                    <option value="">— Modelo —</option>
+                                                    {modelosFiltrados().map(function (m) { return <option key={m.id} value={m.id}>{m.nombre}</option>; })}
+                                                </select>
+                                            </div>
+                                            <div className="eqa-edit-campo">
+                                                <label>Procesador</label>
+                                                <select value={formEdit.id_procesador || ''} onChange={function (e) { cambiarFormEdit('id_procesador', e.target.value); }}>
+                                                    <option value="">— Procesador —</option>
+                                                    {(catalogos.procesadores || []).map(function (p) { return <option key={p.id} value={p.id}>{p.nombre}</option>; })}
+                                                </select>
+                                            </div>
+                                            <div className="eqa-edit-campo">
+                                                <label>Tipo RAM</label>
+                                                <select value={formEdit.id_tipo_ram || ''} onChange={function (e) { cambiarFormEdit('id_tipo_ram', e.target.value); }}>
+                                                    <option value="">— Tipo RAM —</option>
+                                                    {(catalogos.tipos_ram || []).map(function (t) { return <option key={t.id} value={t.id}>{t.nombre}</option>; })}
+                                                </select>
+                                            </div>
+                                            <div className="eqa-edit-campo">
+                                                <label>RAM</label>
+                                                <select value={formEdit.id_ram || ''} onChange={function (e) { cambiarFormEdit('id_ram', e.target.value); }}>
+                                                    <option value="">— RAM —</option>
+                                                    {(catalogos.rams || []).map(function (r) { return <option key={r.id} value={r.id}>{r.nombre}</option>; })}
+                                                </select>
+                                            </div>
                                         </div>
-                                    </div>
-                                )}
 
-                                {/* Acciones */}
-                                <div className="eqa-card-acciones">
-                                    {!asig && estadoKey === 'DISPONIBLE' && !abrirAsignar && (
-                                        <button className="eqa-btn-card asignar" onClick={function () { setAsignandoId(eq.id_equipo); setPersonalSeleccionado(''); }}>
-                                            <IconoFa icono={faUserPlus} /> Asignar
-                                        </button>
-                                    )}
-                                    {asig && (
-                                        <button className="eqa-btn-card devolver" onClick={function () { handleDevolver(asig.id_asig); }}>
-                                            <IconoFa icono={faRotateLeft} /> Devolver
-                                        </button>
-                                    )}
-                                </div>
-
-                                {/* Form inline asignar */}
-                                {abrirAsignar && (
-                                    <div className="eqa-card-form">
-                                        <select value={personalSeleccionado} onChange={function (e) { setPersonalSeleccionado(e.target.value); }}>
-                                            <option value="">— Seleccionar empleado —</option>
-                                            {empleados.map(function (emp) {
-                                                return <option key={emp.id_personal} value={emp.id_personal}>{emp.nombre}</option>;
+                                        {/* Almacenamiento editable */}
+                                        <div className="eqa-edit-almc">
+                                            <div className="eqa-edit-almc-header">
+                                                <label><IconoFa icono={faHardDrive} /> Almacenamiento</label>
+                                                <button type="button" className="eqa-btn-mini add" onClick={agregarDisco}><IconoFa icono={faPlus} /></button>
+                                            </div>
+                                            {(formEdit.almacenamiento || []).map(function (disco, idx) {
+                                                return (
+                                                    <div key={idx} className="eqa-edit-disco-row">
+                                                        <select value={disco.id_disco || ''} onChange={function (e) { cambiarDisco(idx, 'id_disco', e.target.value); }}>
+                                                            <option value="">— Disco —</option>
+                                                            {(catalogos.discos || []).map(function (d) { return <option key={d.id} value={d.id}>{d.nombre}</option>; })}
+                                                        </select>
+                                                        <input type="text" placeholder="Nota" value={disco.descrip || ''} onChange={function (e) { cambiarDisco(idx, 'descrip', e.target.value); }} />
+                                                        <button type="button" className="eqa-btn-mini del" onClick={function () { quitarDisco(idx); }}><IconoFa icono={faTrash} /></button>
+                                                    </div>
+                                                );
                                             })}
-                                        </select>
-                                        <div className="eqa-card-form-btns">
-                                            <button className="eqa-btn-card confirmar" onClick={function () { handleAsignar(eq.id_equipo); }}>
-                                                <IconoFa icono={faCheckCircle} /> Confirmar
+                                        </div>
+
+                                        <div className="eqa-edit-btns">
+                                            <button className="eqa-btn-card confirmar" onClick={function () { guardarEdicion(eq.id_equipo); }}>
+                                                <IconoFa icono={faFloppyDisk} /> Guardar
                                             </button>
-                                            <button className="eqa-btn-card cancelar" onClick={function () { setAsignandoId(null); }}>
-                                                <IconoFa icono={faXmark} />
+                                            <button className="eqa-btn-card cancelar" onClick={function () { setEditandoId(null); }}>
+                                                <IconoFa icono={faXmark} /> Cancelar
                                             </button>
                                         </div>
                                     </div>
+                                ) : (
+                                    <>
+                                        {/* Specs */}
+                                        <div className="eqa-card-specs">
+                                            {eq.serie && (
+                                                <div className="eqa-spec"><IconoFa icono={faBarcode} /><span>S/N: {eq.serie}</span></div>
+                                            )}
+                                            {eq.codigoe && (
+                                                <div className="eqa-spec"><IconoFa icono={faBarcode} /><span>Cód: {eq.codigoe}</span></div>
+                                            )}
+                                            {eq.procesador && (
+                                                <div className="eqa-spec"><IconoFa icono={faMicrochip} /><span>{eq.procesador}</span></div>
+                                            )}
+                                            {eq.ram && (
+                                                <div className="eqa-spec"><IconoFa icono={faMemory} /><span>{eq.tipo_ram ? eq.tipo_ram + ' ' : ''}{eq.ram}</span></div>
+                                            )}
+                                            {eq.fech_compra && (
+                                                <div className="eqa-spec"><IconoFa icono={faCalendarDays} /><span>Compra: {eq.fech_compra}</span></div>
+                                            )}
+                                            {eq.garantia ? (
+                                                <div className="eqa-spec"><IconoFa icono={faShieldHalved} /><span>Garantía: {eq.garantia} meses</span></div>
+                                            ) : null}
+                                            {eq.gama && (
+                                                <div className="eqa-spec"><span className="eqa-gama-badge">{eq.gama}</span></div>
+                                            )}
+                                        </div>
+
+                                        {/* Almacenamiento detallado */}
+                                        {eq.almacenamiento && eq.almacenamiento.length > 0 && (
+                                            <div className="eqa-card-storage">
+                                                <span className="eqa-storage-label"><IconoFa icono={faHardDrive} /> Almacenamiento</span>
+                                                {eq.almacenamiento.map(function (a, i) {
+                                                    return (
+                                                        <div key={i} className="eqa-storage-item">
+                                                            <span className="eqa-storage-tipo">{a.tipo_disco}</span>
+                                                            <span className="eqa-storage-cap">{a.capacidad}</span>
+                                                            {a.descrip && <span className="eqa-storage-nota">{a.descrip}</span>}
+                                                        </div>
+                                                    );
+                                                })}
+                                            </div>
+                                        )}
+
+                                        {/* Asignación actual */}
+                                        {asig && (
+                                            <div className="eqa-card-asignacion">
+                                                <div className="eqa-asig-avatar"><IconoFa icono={faUser} /></div>
+                                                <div className="eqa-asig-info">
+                                                    <span className="eqa-asig-nombre">{asig.empleado}</span>
+                                                    <span className="eqa-asig-fecha">Desde: {asig.fecha_asig}</span>
+                                                </div>
+                                            </div>
+                                        )}
+
+                                        {/* Acciones */}
+                                        <div className="eqa-card-acciones">
+                                            <button className="eqa-btn-card editar" onClick={function () { abrirEditar(eq); }}>
+                                                <IconoFa icono={faPen} /> Editar
+                                            </button>
+                                            {!asig && estadoKey === 'DISPONIBLE' && !abrirAsignar && (
+                                                <button className="eqa-btn-card asignar" onClick={function () { setAsignandoId(eq.id_equipo); setEditandoId(null); setPersonalSeleccionado(''); }}>
+                                                    <IconoFa icono={faUserPlus} /> Asignar
+                                                </button>
+                                            )}
+                                            {asig && (
+                                                <button className="eqa-btn-card devolver" onClick={function () { handleDevolver(asig.id_asig); }}>
+                                                    <IconoFa icono={faRotateLeft} /> Devolver
+                                                </button>
+                                            )}
+                                        </div>
+
+                                        {/* Form inline asignar */}
+                                        {abrirAsignar && (
+                                            <div className="eqa-card-form">
+                                                <select value={personalSeleccionado} onChange={function (e) { setPersonalSeleccionado(e.target.value); }}>
+                                                    <option value="">— Seleccionar empleado —</option>
+                                                    {empleados.map(function (emp) {
+                                                        return <option key={emp.id_personal} value={emp.id_personal}>{emp.nombre}</option>;
+                                                    })}
+                                                </select>
+                                                <div className="eqa-card-form-btns">
+                                                    <button className="eqa-btn-card confirmar" onClick={function () { handleAsignar(eq.id_equipo); }}>
+                                                        <IconoFa icono={faCheckCircle} /> Confirmar
+                                                    </button>
+                                                    <button className="eqa-btn-card cancelar" onClick={function () { setAsignandoId(null); }}>
+                                                        <IconoFa icono={faXmark} />
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        )}
+                                    </>
                                 )}
                             </div>
                         );

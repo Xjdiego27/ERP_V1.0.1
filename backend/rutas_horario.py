@@ -9,11 +9,14 @@ from sqlalchemy.orm import Session
 from sqlalchemy import text
 from pydantic import BaseModel
 from typing import Optional, List
+from datetime import datetime
 from database import (
     get_db, Personal, Acceso, Contrato, Cargo,
     Horario, HorarioDetalle
 )
+from mongodb import coleccion_justificaciones
 from auth_token import verificar_token
+from auditoria import registrar_accion
 
 router = APIRouter()
 
@@ -204,6 +207,69 @@ def asignar_masivo(data: AsignarMasivo, db: Session = Depends(get_db), token: di
 
     db.commit()
     return {"ok": True, "mensaje": f"Horario asignado a {count} trabajador(es)"}
+
+
+# ─── FERIADO PARA TODOS ──────────────────────────
+# Marca un día como FERIADO (catg 14) en justificaciones MongoDB para TODOS los empleados activos
+# (DEBE ir ANTES de /horarios/{id_horario} para evitar conflicto de rutas)
+
+class FeriadoData(BaseModel):
+    fecha: str  # formato YYYY-MM-DD
+    obsv: Optional[str] = "Feriado"
+
+@router.post("/horarios/feriado")
+async def marcar_feriado(data: FeriadoData, db: Session = Depends(get_db), token: dict = Depends(verificar_token)):
+    """Marca una fecha como FERIADO para todos los trabajadores activos de la empresa."""
+    id_empresa = token.get("id_emp")
+    usuario = token.get("sub", "desconocido")
+
+    # Obtener todos los empleados activos de la empresa
+    registros = db.query(Personal).join(
+        Acceso, Acceso.ID_ACCS == Personal.ID_ACCS
+    ).outerjoin(
+        Contrato, Contrato.ID_PERSONAL == Personal.ID_PERSONAL
+    ).outerjoin(
+        Cargo, Cargo.ID_CARGO == Contrato.ID_CARGO
+    ).filter(
+        Cargo.ID_EMP == id_empresa,
+        Contrato.ID_ESTADO_CONTRATO == 1
+    ).all()
+
+    if not registros:
+        raise HTTPException(status_code=400, detail="No se encontraron empleados activos")
+
+    ID_CATGA_FERIADO = 14
+    total = 0
+
+    for p in registros:
+        doc = {
+            "id_personal": p.ID_PERSONAL,
+            "fecha": data.fecha,
+            "id_catga": ID_CATGA_FERIADO,
+            "hora_e": None,
+            "hora_s": None,
+            "obsv": data.obsv or "Feriado",
+            "modificado_por": usuario,
+            "fc": datetime.now().isoformat()
+        }
+        await coleccion_justificaciones.update_one(
+            {"id_personal": p.ID_PERSONAL, "fecha": data.fecha},
+            {"$set": doc},
+            upsert=True
+        )
+        total += 1
+
+    # Auditoría
+    await registrar_accion(
+        usuario=usuario,
+        accion="FERIADO_MASIVO",
+        modulo="HORARIOS",
+        id_afectado=0,
+        nombre_afectado=f"{total} empleados",
+        datos_nuevos={"fecha": data.fecha, "obsv": data.obsv or "Feriado", "total": total}
+    )
+
+    return {"ok": True, "mensaje": f"Feriado aplicado a {total} trabajador(es) para {data.fecha}"}
 
 
 # ─── EDITAR HORARIO ─────────────────────────────

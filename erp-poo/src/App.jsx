@@ -17,6 +17,7 @@ import GestionPermisos from './modules/GestionPermisos';
 import Chips from './modules/Chips';
 import SaludosCumpleanos from './modules/SaludosCumpleanos';
 import './styles/DarkMode.css';
+import './styles/Glassmorphism.css';
 import './styles/TemaEmpresa1.css';
 import './styles/TemaEmpresa2.css';
 import './styles/TemaEmpresa3.css';

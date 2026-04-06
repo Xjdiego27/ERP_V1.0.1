@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { faClock, faMagnifyingGlass, faPlus, faPen, faFloppyDisk, faXmark, faUsers, faCheck, faUser } from '@fortawesome/free-solid-svg-icons';
+import { faClock, faMagnifyingGlass, faPlus, faPen, faFloppyDisk, faXmark, faUsers, faCheck, faUser, faUmbrellaBeach } from '@fortawesome/free-solid-svg-icons';
 import IconoFa from '../components/IconoFa';
 import { headersAuth, API_URL } from '../auth';
 import '../styles/HorariosRRHH.css';
@@ -22,6 +22,13 @@ export default function HorariosRRHH() {
   // Selección múltiple para asignación masiva
   var [seleccionados, setSeleccionados] = useState([]);
   var [horarioMasivo, setHorarioMasivo] = useState('');
+
+  // Feriado
+  var [mostrarFeriado, setMostrarFeriado] = useState(false);
+  var [fechaFeriado, setFechaFeriado] = useState('');
+  var [obsvFeriado, setObsvFeriado] = useState('');
+  var [feriadoMsg, setFeriadoMsg] = useState('');
+  var [feriadoCargando, setFeriadoCargando] = useState(false);
 
   function diasVacios() {
     return [1, 2, 3, 4, 5, 6, 7].map(function (d) {
@@ -183,6 +190,28 @@ export default function HorariosRRHH() {
     return h.length > 5 ? h.substring(0, 5) : h;
   }
 
+  function aplicarFeriado() {
+    if (!fechaFeriado) return;
+    if (!confirm('¿Marcar ' + fechaFeriado + ' como FERIADO para TODOS los empleados?')) return;
+    setFeriadoCargando(true);
+    setFeriadoMsg('');
+    fetch(API_URL + '/horarios/feriado', {
+      method: 'POST',
+      headers: { ...headersAuth(), 'Content-Type': 'application/json' },
+      body: JSON.stringify({ fecha: fechaFeriado, obsv: obsvFeriado || 'Feriado' })
+    })
+      .then(function (r) { return r.json().then(function (d) { return { ok: r.ok, data: d }; }); })
+      .then(function (res) {
+        if (!res.ok) throw new Error(res.data.detail || 'Error');
+        setFeriadoMsg(res.data.mensaje);
+        setFechaFeriado('');
+        setObsvFeriado('');
+        setTimeout(function () { setFeriadoMsg(''); setMostrarFeriado(false); }, 3000);
+      })
+      .catch(function (err) { setFeriadoMsg('Error: ' + err.message); })
+      .finally(function () { setFeriadoCargando(false); });
+  }
+
   return (
     <div className="horarios-pagina">
 
@@ -191,10 +220,40 @@ export default function HorariosRRHH() {
         <h2 className="horarios-titulo">
           <IconoFa icono={faClock} /> HORARIOS
         </h2>
-        <button className="horarios-btn-crear" onClick={abrirCrear}>
-          <IconoFa icono={faPlus} /> Nuevo Horario
-        </button>
+        <div className="horarios-cabecera-btns">
+          <button className="horarios-btn-feriado" onClick={function () { setMostrarFeriado(!mostrarFeriado); }}>
+            <IconoFa icono={faUmbrellaBeach} /> Feriado
+          </button>
+          <button className="horarios-btn-crear" onClick={abrirCrear}>
+            <IconoFa icono={faPlus} /> Nuevo Horario
+          </button>
+        </div>
       </div>
+
+      {/* Panel feriado */}
+      {mostrarFeriado && (
+        <div className="feriado-panel">
+          <div className="feriado-panel-header">
+            <h3><IconoFa icono={faUmbrellaBeach} /> Feriado para todos</h3>
+            <button className="feriado-cerrar" onClick={function () { setMostrarFeriado(false); }}><IconoFa icono={faXmark} /></button>
+          </div>
+          <p className="feriado-desc">Marca un día como feriado para todos los empleados activos de la empresa.</p>
+          <div className="feriado-form">
+            <div className="feriado-campo">
+              <label>Fecha</label>
+              <input type="date" value={fechaFeriado} onChange={function (e) { setFechaFeriado(e.target.value); }} />
+            </div>
+            <div className="feriado-campo">
+              <label>Motivo (opcional)</label>
+              <input type="text" placeholder="Ej: Día de la Independencia" value={obsvFeriado} onChange={function (e) { setObsvFeriado(e.target.value); }} />
+            </div>
+            <button className="feriado-btn-aplicar" onClick={aplicarFeriado} disabled={!fechaFeriado || feriadoCargando}>
+              <IconoFa icono={faCheck} /> {feriadoCargando ? 'Aplicando...' : 'Aplicar Feriado'}
+            </button>
+          </div>
+          {feriadoMsg && <p className={'feriado-msg ' + (feriadoMsg.indexOf('Error') >= 0 ? 'error' : 'exito')}>{feriadoMsg}</p>}
+        </div>
+      )}
 
       {/* HORARIOS EXISTENTES */}
       <div className="horarios-lista">

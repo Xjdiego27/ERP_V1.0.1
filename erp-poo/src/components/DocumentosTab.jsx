@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { faPen, faFloppyDisk, faXmark, faPlus, faTrash, faFileContract, faFileLines, faFileSignature, faHandshake, faFileInvoiceDollar, faFolder, faFilePdf, faFileWord, faWandMagicSparkles, faDownload, faSpinner } from '@fortawesome/free-solid-svg-icons';
+import { faPen, faFloppyDisk, faXmark, faPlus, faTrash, faFileContract, faFileLines, faFileSignature, faHandshake, faFileInvoiceDollar, faFolder, faFilePdf, faFileWord, faWandMagicSparkles, faDownload, faSpinner, faFolderOpen, faClock } from '@fortawesome/free-solid-svg-icons';
 import IconoFa from './IconoFa';
 import { headersConToken, headersAuth, API_URL } from '../auth';
 
@@ -34,6 +34,10 @@ export default function DocumentosTab(props) {
   var [generando, setGenerando] = useState(false);
   var [cargandoCampos, setCargandoCampos] = useState(false);
 
+  // ── Documentos generados (guardados en carpeta por apellido) ──
+  var [docsGenerados, setDocsGenerados] = useState([]);
+  var [cargandoGenerados, setCargandoGenerados] = useState(false);
+
   // Iconos según tipo de documento
   var ICONOS_TIPO = {
     'CONTRATO': faFileContract,
@@ -61,8 +65,46 @@ export default function DocumentosTab(props) {
       .finally(function () { setCargando(false); });
   }
 
+  function cargarDocsGenerados() {
+    setCargandoGenerados(true);
+    fetch(API_URL + '/plantillas/generados/' + idPersonal, { headers: headersAuth() })
+      .then(function (r) { return r.ok ? r.json() : []; })
+      .then(function (d) { setDocsGenerados(d || []); })
+      .catch(function () { setDocsGenerados([]); })
+      .finally(function () { setCargandoGenerados(false); });
+  }
+
+  function descargarDocGenerado(nombre) {
+    var url = API_URL + '/plantillas/generados/' + idPersonal + '/descargar?archivo=' + encodeURIComponent(nombre);
+    fetch(url, { headers: headersAuth() })
+      .then(function (r) {
+        if (!r.ok) throw new Error('Error al descargar');
+        return r.blob();
+      })
+      .then(function (blob) {
+        var a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = nombre;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(a.href);
+      })
+      .catch(function (err) { alert('Error: ' + err.message); });
+  }
+
+  function eliminarDocGenerado(nombre) {
+    if (!confirm('¿Eliminar el documento "' + nombre + '"?')) return;
+    fetch(API_URL + '/plantillas/generados/' + idPersonal + '?archivo=' + encodeURIComponent(nombre), {
+      method: 'DELETE', headers: headersAuth()
+    })
+      .then(function () { cargarDocsGenerados(); })
+      .catch(function (err) { alert('Error: ' + err.message); });
+  }
+
   useEffect(function () {
     cargarDocumentos();
+    cargarDocsGenerados();
     fetch(API_URL + '/documentos/tipos', { headers: headersAuth() })
       .then(function (r) { return r.json(); })
       .then(function (d) { setTiposDoc(d || []); })
@@ -208,6 +250,8 @@ export default function DocumentosTab(props) {
         a.click();
         document.body.removeChild(a);
         URL.revokeObjectURL(a.href);
+        // Recargar lista de documentos generados (se guardó en servidor)
+        cargarDocsGenerados();
       })
       .catch(function (err) { alert('Error: ' + err.message); })
       .finally(function () { setGenerando(false); });
@@ -602,6 +646,46 @@ export default function DocumentosTab(props) {
                 </div>
               </>
             )}
+          </div>
+        </div>
+      )}
+
+      {/* ═══ Sección: Documentos Generados (guardados en servidor) ═══ */}
+      {docsGenerados.length > 0 && (
+        <div className="doc-generados-seccion">
+          <div className="doc-header" style={{ marginTop: 24 }}>
+            <h3><IconoFa icono={faFolderOpen} /> Documentos Generados</h3>
+          </div>
+          <div className="doc-gen-grid">
+            {docsGenerados.map(function (dg) {
+              var esPdf = dg.formato === 'pdf';
+              return (
+                <div className="doc-gen-card" key={dg.nombre}
+                  onClick={function () { descargarDocGenerado(dg.nombre); }}>
+                  <div className={'doc-gen-icono ' + (esPdf ? 'pdf' : 'docx')}>
+                    <IconoFa icono={esPdf ? faFilePdf : faFileWord} />
+                  </div>
+                  <div className="doc-gen-info">
+                    <div className="doc-gen-nombre" title={dg.nombre}>
+                      {dg.nombre.replace(/\.\w+$/, '')}
+                    </div>
+                    <div className="doc-gen-fecha">
+                      <IconoFa icono={faClock} /> {dg.fecha}
+                    </div>
+                  </div>
+                  {!esMiPerfil && (
+                    <button className="doc-btn-accion doc-btn-eliminar"
+                      title="Eliminar"
+                      onClick={function (e) { e.stopPropagation(); eliminarDocGenerado(dg.nombre); }}>
+                      <IconoFa icono={faTrash} />
+                    </button>
+                  )}
+                  <span className="doc-gen-descargar">
+                    <IconoFa icono={faDownload} />
+                  </span>
+                </div>
+              );
+            })}
           </div>
         </div>
       )}

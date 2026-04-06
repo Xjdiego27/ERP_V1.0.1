@@ -22,6 +22,16 @@ body.empresa-2 {
     --bg-subtle: #f0f2ff;
     --bg-header: #edf0ff;
 
+    /* Glass con tinte azul corporativo */
+    --glass-bg: rgba(237, 240, 255, 0.45);
+    --glass-border: rgba(64, 89, 255, 0.14);
+    --glass-shadow: 0 8px 32px rgba(64, 89, 255, 0.08);
+    --glass-hover: rgba(240, 242, 255, 0.65);
+    --glass-card-bg: rgba(238, 240, 255, 0.38);
+    --glass-stat-bg: rgba(237, 240, 255, 0.33);
+    --glass-input-bg: rgba(244, 246, 255, 0.42);
+    --glass-inset-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.40);
+
     --bg-page: #f4f6fc;
     --bg-card: #ffffff;
     --bg-input: #f0f2fa;
@@ -56,6 +66,16 @@ body.dark-mode.empresa-2 {
     --border-row: #1e2035;
     --bg-subtle: #1a1d30;
     --bg-header: #1e2035;
+
+    /* Glass oscuro con tinte azul */
+    --glass-bg: rgba(22, 24, 42, 0.58);
+    --glass-border: rgba(64, 89, 255, 0.09);
+    --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.30);
+    --glass-hover: rgba(28, 30, 52, 0.70);
+    --glass-card-bg: rgba(24, 26, 45, 0.55);
+    --glass-stat-bg: rgba(24, 26, 45, 0.48);
+    --glass-input-bg: rgba(30, 32, 50, 0.52);
+    --glass-inset-shadow: inset 0 1px 0 rgba(64, 89, 255, 0.04);
 
     --bg-page: #0e1017;
     --bg-card: #181c28;

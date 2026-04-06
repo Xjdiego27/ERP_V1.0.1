@@ -730,3 +730,153 @@ body.dark-mode .masivo-select option {
   background: var(--bg-card);
   color: var(--text-primary);
 }
+
+/* ═══════════════════════════════════════════
+   FERIADO PANEL
+   ═══════════════════════════════════════════ */
+.horarios-cabecera-btns {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.horarios-btn-feriado {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 10px;
+  background: linear-gradient(135deg, #f59e0b, #d97706);
+  color: #fff;
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+  transition: transform 0.15s, box-shadow 0.2s;
+}
+.horarios-btn-feriado:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(245,158,11,0.35);
+}
+
+.feriado-panel {
+  background: var(--bg-card, #fff);
+  border: 1px solid var(--border-card, #e8ecf1);
+  border-radius: 12px;
+  padding: 18px 20px;
+  margin-bottom: 20px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+  animation: feriadoSlide 0.25s ease;
+}
+
+@keyframes feriadoSlide {
+  from { opacity: 0; transform: translateY(-10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.feriado-panel-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+.feriado-panel-header h3 {
+  margin: 0;
+  font-size: 16px;
+  color: var(--text-primary, #2c3e50);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.feriado-panel-header h3 svg { color: #f59e0b; }
+.feriado-cerrar {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 6px;
+  color: var(--text-secondary, #aaa);
+  font-size: 14px;
+}
+.feriado-cerrar:hover { background: var(--bg-hover, #f0f2f5); }
+
+.feriado-desc {
+  font-size: 13px;
+  color: var(--text-secondary, #7f8c8d);
+  margin: 0 0 12px;
+}
+
+.feriado-form {
+  display: flex;
+  align-items: flex-end;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.feriado-campo {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.feriado-campo label {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-secondary, #7f8c8d);
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+.feriado-campo input {
+  padding: 8px 12px;
+  border: 1px solid var(--border-card, #dde1e6);
+  border-radius: 8px;
+  font-size: 14px;
+  background: var(--bg-input, #fff);
+  color: var(--text-primary, #2c3e50);
+}
+.feriado-campo input:focus {
+  border-color: #f59e0b;
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(245,158,11,0.15);
+}
+
+.feriado-btn-aplicar {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 18px;
+  border: none;
+  border-radius: 8px;
+  background: linear-gradient(135deg, #f59e0b, #d97706);
+  color: #fff;
+  font-weight: 600;
+  font-size: 13px;
+  cursor: pointer;
+  transition: opacity 0.15s;
+  white-space: nowrap;
+}
+.feriado-btn-aplicar:hover { opacity: 0.9; }
+.feriado-btn-aplicar:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.feriado-msg {
+  margin-top: 10px;
+  padding: 8px 14px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 500;
+}
+.feriado-msg.exito { background: #d4edda; color: #155724; }
+.feriado-msg.error { background: #f8d7da; color: #721c24; }
+
+/* Dark mode */
+body.dark-mode .feriado-panel {
+  background: var(--bg-card, #1e2330);
+  border-color: var(--border-color, #2e3440);
+}
+body.dark-mode .feriado-campo input {
+  background: var(--bg-input, #2c3038);
+  border-color: var(--border-color, #3a3f48);
+  color: var(--text-primary, #e0e4ea);
+}
+body.dark-mode .feriado-msg.exito { background: #1e4620; color: #8fd99a; }
+body.dark-mode .feriado-msg.error { background: #4a1c1c; color: #f09090; }

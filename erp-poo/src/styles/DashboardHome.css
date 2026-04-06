@@ -1,63 +1,101 @@
+/* ═══════════════════════════════════════════
+   DashboardHome — Inicio con contenido glass
+   ═══════════════════════════════════════════ */
+
 .home-container {
   width: 100%;
   height: 100%;
   display: flex;
+  flex-direction: column;
   box-sizing: border-box;
 }
 
-.home-banner {
-  position: relative;
-  width: 100%;
-  height: 100%;
-  overflow: hidden;
-}
-
-.home-banner-img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  display: block;
-  filter: blur(8px);
-}
-
-.home-banner-overlay {
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(to top, rgba(0, 0, 0, 0.65) 0%, rgba(0, 0, 0, 0.15) 60%, transparent 100%);
+/* Contenido principal */
+.home-content {
+  padding: 30px 20px;
   display: flex;
   flex-direction: column;
-  align-items: center;
-  justify-content: flex-end;
-  padding: 40px 30px;
+  gap: 28px;
+  flex: 1;
+  overflow-y: auto;
+}
+
+/* Card de bienvenida tipo glass */
+.home-welcome-card {
+  background: var(--glass-card-bg);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--glass-radius, 18px);
+  padding: 52px 40px;
+  text-align: center;
+  box-shadow: var(--glass-shadow), var(--glass-inset-shadow);
 }
 
 .home-titulo {
   margin: 0;
-  font-size: 28px;
-  font-weight: 700;
-  color: #ffffff;
-  text-align: center;
-  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+  font-size: 36px;
+  font-weight: 800;
+  color: var(--text-primary);
+  letter-spacing: -0.5px;
 }
 
 .home-subtitulo {
-  margin: 8px 0 0;
-  font-size: 15px;
-  color: rgba(255, 255, 255, 0.85);
-  text-align: center;
-  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
+  margin: 12px 0 0;
+  font-size: 16px;
+  color: var(--text-secondary);
+  font-weight: 400;
 }
 
+/* Wrapper para secciones de equipos/teléfonos */
+.mi-panel-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+}
+
+/* ═══ Glass-off: foto solo en inicio ═══ */
+body.glass-off .home-container {
+  background-image: url('/oficinas.webp');
+  background-size: cover;
+  background-position: center;
+  background-attachment: fixed;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+body.glass-off .home-welcome-card {
+  background: var(--bg-card, #ffffff);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  border: 1px solid var(--border-color, #ddd);
+  box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+}
+
+body.glass-off .home-welcome-card .home-titulo {
+  color: var(--text-primary, #333);
+}
+
+body.glass-off .home-welcome-card .home-subtitulo {
+  color: var(--text-secondary, #666);
+}
+
+/* ═══ Responsive ═══ */
 @media (max-width: 768px) {
+  .home-content {
+    padding: 20px 14px;
+    gap: 20px;
+  }
+
+  .home-welcome-card {
+    padding: 36px 20px;
+  }
+
   .home-titulo {
-    font-size: 22px;
+    font-size: 26px;
   }
 
   .home-subtitulo {
-    font-size: 13px;
-  }
-
-  .home-banner-overlay {
-    padding: 24px 16px;
+    font-size: 14px;
   }
 }

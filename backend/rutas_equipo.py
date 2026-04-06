@@ -359,6 +359,83 @@ def crear_equipo(datos: dict, db: Session = Depends(get_db), _=Depends(verificar
 
 
 # ═══════════════════════════════════════════
+#  EDITAR ESPECIFICACIONES DE UN EQUIPO
+# ═══════════════════════════════════════════
+@router.put("/equipos/{id_equipo}")
+def editar_equipo(id_equipo: int, datos: dict, db: Session = Depends(get_db), _=Depends(verificar_token)):
+    """Edita las especificaciones técnicas de un equipo y gestiona almacenamiento."""
+    if not Equipo or not EspecificacionesTec:
+        raise HTTPException(status_code=500, detail="Tablas no disponibles")
+
+    eq = db.query(Equipo).filter(Equipo.ID_EQUIPO == id_equipo).first()
+    if not eq:
+        raise HTTPException(status_code=404, detail="Equipo no encontrado")
+
+    # Actualizar serie si viene
+    serie = datos.get("serie")
+    if serie is not None:
+        eq.SERIE_EQUIPO = serie.strip().upper()
+
+    # Actualizar estado
+    id_est = datos.get("id_est_equipo")
+    if id_est is not None:
+        eq.ID_EST_EQUIPO = int(id_est)
+
+    # Actualizar tipo equipo
+    id_tequipo = datos.get("id_tequipo")
+    if id_tequipo is not None:
+        eq.ID_TEQUIPO = int(id_tequipo)
+
+    # Especificaciones técnicas
+    espec = None
+    if eq.ID_ESPEC:
+        espec = db.query(EspecificacionesTec).filter(EspecificacionesTec.ID_ESPEC == eq.ID_ESPEC).first()
+
+    if not espec:
+        espec = EspecificacionesTec()
+        db.add(espec)
+        db.flush()
+        eq.ID_ESPEC = espec.ID_ESPEC
+
+    # Actualizar campos de especificaciones
+    campos_espec = {
+        "codigoe": "CODIGOE", "garantia": "GARANTIA",
+        "id_gama": "ID_GAMA", "id_marca": "ID_MARCA", "id_modelo": "ID_MODELO",
+        "id_procesador": "ID_PROCESADOR", "id_tipo_ram": "ID_TIPO_RAM", "id_ram": "ID_RAM"
+    }
+    for key_json, col_db in campos_espec.items():
+        val = datos.get(key_json)
+        if val is not None:
+            setattr(espec, col_db, int(val) if key_json.startswith("id_") else val)
+
+    fech = datos.get("fech_compra")
+    if fech is not None:
+        espec.FECH_COMPRA = date.fromisoformat(fech) if fech else None
+
+    # Almacenamiento — sincronizar lista de discos
+    almacenamiento_nuevo = datos.get("almacenamiento")
+    if almacenamiento_nuevo is not None:
+        # Borrar los existentes
+        if Almacenamiento:
+            db.query(Almacenamiento).filter(Almacenamiento.ID_EQUIPO == id_equipo).delete()
+        # Crear los nuevos
+        for almc in almacenamiento_nuevo:
+            nuevo_almc = Almacenamiento()
+            nuevo_almc.ID_EQUIPO = id_equipo
+            nuevo_almc.ID_DISCO = almc.get("id_disco")
+            nuevo_almc.DESCRIP = almc.get("descrip", "")
+            db.add(nuevo_almc)
+
+    try:
+        db.commit()
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=400, detail=f"Error al actualizar: {str(e)}")
+
+    return {"status": "ok", "mensaje": "Equipo actualizado correctamente"}
+
+
+# ═══════════════════════════════════════════
 #  SUBIR FOTO DE EQUIPO
 # ═══════════════════════════════════════════
 @router.post("/equipos/{id_equipo}/foto")

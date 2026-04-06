@@ -21,6 +21,16 @@ body.empresa-3 {
     --bg-subtle: #fef5f5;
     --bg-header: #fdf0f0;
 
+    /* Glass con tinte rojo elegante */
+    --glass-bg: rgba(255, 240, 240, 0.45);
+    --glass-border: rgba(224, 27, 29, 0.12);
+    --glass-shadow: 0 8px 32px rgba(224, 27, 29, 0.07);
+    --glass-hover: rgba(255, 245, 245, 0.65);
+    --glass-card-bg: rgba(255, 242, 242, 0.38);
+    --glass-stat-bg: rgba(255, 240, 240, 0.33);
+    --glass-input-bg: rgba(255, 248, 248, 0.42);
+    --glass-inset-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.40);
+
     --bg-page: #f7f5f5;
     --bg-card: #ffffff;
     --bg-input: #f8f6f6;
@@ -55,6 +65,16 @@ body.dark-mode.empresa-3 {
     --border-row: #2e1515;
     --bg-subtle: #2a1212;
     --bg-header: #2e1515;
+
+    /* Glass oscuro con tinte rojo */
+    --glass-bg: rgba(42, 18, 18, 0.58);
+    --glass-border: rgba(224, 27, 29, 0.09);
+    --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.30);
+    --glass-hover: rgba(50, 22, 22, 0.70);
+    --glass-card-bg: rgba(44, 20, 20, 0.55);
+    --glass-stat-bg: rgba(44, 20, 20, 0.48);
+    --glass-input-bg: rgba(50, 24, 24, 0.52);
+    --glass-inset-shadow: inset 0 1px 0 rgba(224, 27, 29, 0.04);
 
    
     --bg-page: #161616;
