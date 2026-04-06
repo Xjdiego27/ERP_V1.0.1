@@ -38,7 +38,7 @@ html, body {
 .workspace-area {
     flex-grow: 1;
     overflow-y: auto;
-    overflow-x: hidden;
+    overflow-x: auto;
     padding: 20px;
     min-width: 0;
     position: relative;

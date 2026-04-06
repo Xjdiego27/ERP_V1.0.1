@@ -8,7 +8,7 @@ from database import (
     get_db, Equipo, TipoEquipo, EstadoEquipo, Gama, Marca, Modelo,
     Procesador, TipoRam, Ram, TipoDisco, CapacidadDisco, Disco,
     EspecificacionesTec, Almacenamiento, Personal, Contrato, Acceso,
-    AsignacionEquipo
+    AsignacionEquipo, Licencia, AsignacionLicencia
 )
 from auth_token import verificar_token
 
@@ -269,6 +269,20 @@ def listar_equipos(db: Session = Depends(get_db), _=Depends(verificar_token)):
         for a in db.query(Almacenamiento).filter(Almacenamiento.ID_EQUIPO.in_(eq_ids)).all():
             almc_map.setdefault(a.ID_EQUIPO, []).append(a)
 
+    # Precargar licencias asignadas a equipos
+    lic_asig_map = {}
+    lic_map = {}
+    if AsignacionLicencia and Licencia and eq_ids:
+        for al in db.query(AsignacionLicencia).filter(AsignacionLicencia.ID_EQUIPO.in_(eq_ids)).all():
+            lic_asig_map.setdefault(al.ID_EQUIPO, []).append(al)
+        lic_ids = set()
+        for lista in lic_asig_map.values():
+            for al in lista:
+                lic_ids.add(al.ID_LICENCIA)
+        if lic_ids:
+            for l in db.query(Licencia).filter(Licencia.ID_LICENCIA.in_(list(lic_ids))).all():
+                lic_map[l.ID_LICENCIA] = l
+
     resultado = []
     for eq in equipos:
         espec = espec_map.get(eq.ID_ESPEC)
@@ -307,6 +321,19 @@ def listar_equipos(db: Session = Depends(get_db), _=Depends(verificar_token)):
                 "id_disco": almc.ID_DISCO,
             })
         info["almacenamiento"] = almacenes
+
+        # Licencias asignadas
+        licencias_eq = []
+        for al in lic_asig_map.get(eq.ID_EQUIPO, []):
+            l = lic_map.get(al.ID_LICENCIA)
+            if l:
+                licencias_eq.append({
+                    "id_asiglicenc": al.ID_ASIGLICENC,
+                    "id_licencia": l.ID_LICENCIA,
+                    "descripcion": l.DESCRIP,
+                    "serie_keys": l.SERIE_KEYS,
+                })
+        info["licencias"] = licencias_eq
 
         resultado.append(info)
 

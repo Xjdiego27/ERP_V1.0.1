@@ -133,7 +133,7 @@ body.dark-mode {
 .tickets-tabla-wrap {
   border: 1px solid var(--glass-border) !important;
   border-radius: var(--glass-radius-sm) !important;
-  overflow: hidden;
+  overflow-x: auto;
   background: var(--glass-card-bg) !important;
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
@@ -1122,7 +1122,7 @@ body.dark-mode .doc-gen-icono.pdf {
   -webkit-backdrop-filter: blur(10px);
   border: 1px solid var(--glass-border) !important;
   border-radius: var(--glass-radius-sm) !important;
-  overflow: hidden;
+  overflow-x: auto;
 }
 
 .permisos-info-banner {
@@ -1161,7 +1161,7 @@ body.dark-mode .doc-gen-icono.pdf {
   -webkit-backdrop-filter: blur(10px);
   border: 1px solid var(--glass-border) !important;
   border-radius: var(--glass-radius-sm) !important;
-  overflow: hidden;
+  overflow-x: auto;
 }
 
 .modal-horario {
@@ -1214,7 +1214,7 @@ body.dark-mode .doc-gen-icono.pdf {
   -webkit-backdrop-filter: blur(10px);
   border: 1px solid var(--glass-border) !important;
   border-radius: var(--glass-radius-sm) !important;
-  overflow: hidden;
+  overflow-x: auto;
 }
 
 

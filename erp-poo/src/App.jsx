@@ -16,6 +16,7 @@ import Tickets from './modules/Tickets';
 import GestionPermisos from './modules/GestionPermisos';
 import Chips from './modules/Chips';
 import SaludosCumpleanos from './modules/SaludosCumpleanos';
+import Licencias from './modules/Licencias';
 import './styles/DarkMode.css';
 import './styles/Glassmorphism.css';
 import './styles/TemaEmpresa1.css';
@@ -41,6 +42,7 @@ function App() {
                         <Route path="horarios" element={<HorariosRRHH />} />
                         <Route path="equipos/crear" element={<EquiposCrear />} />
                         <Route path="equipos/asignacion" element={<EquiposAsignar />} />
+                        <Route path="equipos/licencias" element={<Licencias />} />
                         <Route path="tickets" element={<Tickets />} />
                         <Route path="tickets/nuevo" element={<IngresarTicket />} />
                         <Route path="permisos" element={<GestionPermisos />} />

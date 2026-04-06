@@ -209,7 +209,7 @@
 .horarios-tabla-wrapper {
   background: var(--bg-card, #fff);
   border-radius: 12px;
-  overflow: hidden;
+  overflow-x: auto;
   box-shadow: 0 2px 8px rgba(0,0,0,0.06);
   border: 1px solid var(--border-card, #e8ecf1);
 }
@@ -265,7 +265,7 @@
   font-size: 16px;
 }
 
-.td-nombre { font-weight: 600; }
+.td-nombre { font-weight: 600; white-space: nowrap; }
 
 .badge-horario {
   display: inline-block;

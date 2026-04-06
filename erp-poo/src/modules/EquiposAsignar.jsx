@@ -7,7 +7,7 @@ import {
     faDesktop, faServer, faMobileScreen, faTabletScreenButton,
     faHardDrive, faMemory, faMicrochip, faBarcode,
     faUser, faXmark, faPen, faFloppyDisk, faPlus, faTrash,
-    faCalendarDays, faShieldHalved
+    faCalendarDays, faShieldHalved, faKey
 } from '@fortawesome/free-solid-svg-icons';
 import '../styles/EquiposAsignar.css';
 
@@ -42,6 +42,7 @@ export default function EquiposAsignar() {
     var [personalSeleccionado, setPersonalSeleccionado] = useState('');
     var [editandoId, setEditandoId] = useState(null);
     var [formEdit, setFormEdit] = useState({});
+    var [licenciasDisp, setLicenciasDisp] = useState([]);
 
     function cargarDatos() {
         setCargando(true);
@@ -53,11 +54,13 @@ export default function EquiposAsignar() {
             fetch(API_URL + '/equipos/asignaciones', { headers: headersConToken() }).then(function (r) { return r.json(); }),
             fetch(API_URL + '/equipos/empleados-activos', { headers: headersConToken() }).then(function (r) { return r.json(); }),
             fetch(API_URL + '/equipos/catalogos', { headers: headersConToken() }).then(function (r) { return r.json(); }),
+            fetch(API_URL + '/licencias/disponibles', { headers: headersConToken() }).then(function (r) { return r.json(); }),
         ]).then(function (data) {
             setEquipos(Array.isArray(data[0]) ? data[0] : []);
             setAsignaciones(Array.isArray(data[1]) ? data[1] : []);
             setEmpleados(Array.isArray(data[2]) ? data[2] : []);
             setCatalogos(data[3] || null);
+            setLicenciasDisp(Array.isArray(data[4]) ? data[4] : []);
         }).catch(function () {
             mostrarMensaje('Error cargando datos', false);
         }).finally(function () {
@@ -192,6 +195,7 @@ export default function EquiposAsignar() {
             id_procesador: procesadorId,
             id_tipo_ram: tipoRamId,
             id_ram: ramId,
+            id_licencia: '',
             almacenamiento: (eq.almacenamiento || []).map(function (a) {
                 return { id_disco: a.id_disco || '', descrip: a.descrip || '' };
             })
@@ -265,7 +269,19 @@ export default function EquiposAsignar() {
         .then(function (r) { return r.json().then(function (d) { return { ok: r.ok, data: d }; }); })
         .then(function (res) {
             if (!res.ok) throw new Error(res.data.detail || 'Error al guardar');
+            // Asignar licencia si se seleccionó una nueva
+            if (formEdit.id_licencia) {
+                return fetch(API_URL + '/licencias/asignar', {
+                    method: 'POST',
+                    headers: headersConToken(),
+                    body: JSON.stringify({ id_licencia: parseInt(formEdit.id_licencia), id_equipo: id_equipo })
+                }).then(function (r2) { return r2.json(); }).then(function () {
+                    mostrarMensaje('Equipo actualizado y licencia asignada', true);
+                });
+            }
             mostrarMensaje('Equipo actualizado correctamente', true);
+        })
+        .then(function () {
             setEditandoId(null);
             cargarDatos();
         })
@@ -444,6 +460,15 @@ export default function EquiposAsignar() {
                                                     {(catalogos.rams || []).map(function (r) { return <option key={r.id} value={r.id}>{r.nombre}</option>; })}
                                                 </select>
                                             </div>
+                                            <div className="eqa-edit-campo">
+                                                <label><IconoFa icono={faKey} /> Licencia</label>
+                                                <select value={formEdit.id_licencia || ''} onChange={function (e) { cambiarFormEdit('id_licencia', e.target.value); }}>
+                                                    <option value="">— Asignar licencia —</option>
+                                                    {licenciasDisp.filter(function (l) { return l.disponibles > 0; }).map(function (l) {
+                                                        return <option key={l.id_licencia} value={l.id_licencia}>{l.descripcion} ({l.disponibles} disp.)</option>;
+                                                    })}
+                                                </select>
+                                            </div>
                                         </div>
 
                                         {/* Almacenamiento editable */}
@@ -500,6 +525,11 @@ export default function EquiposAsignar() {
                                             {eq.gama && (
                                                 <div className="eqa-spec"><span className="eqa-gama-badge">{eq.gama}</span></div>
                                             )}
+                                            {eq.licencias && eq.licencias.length > 0 && eq.licencias.map(function (lic) {
+                                                return (
+                                                    <div key={lic.id_asiglicenc} className="eqa-spec"><IconoFa icono={faKey} /><span>{lic.descripcion}</span></div>
+                                                );
+                                            })}
                                         </div>
 
                                         {/* Almacenamiento detallado */}

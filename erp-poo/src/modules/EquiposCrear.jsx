@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { API_URL, headersConToken, headersAuth } from '../auth';
 import IconoFa from '../components/IconoFa';
-import { faPlus, faTrash, faCamera, faSave, faPen } from '@fortawesome/free-solid-svg-icons';
+import { faPlus, faTrash, faCamera, faSave, faPen, faKey } from '@fortawesome/free-solid-svg-icons';
 import '../styles/EquiposCrear.css';
 
 export default function EquiposCrear() {
@@ -19,13 +19,19 @@ export default function EquiposCrear() {
     var [exito, setExito] = useState(false);
     var [guardando, setGuardando] = useState(false);
     var fotoInput = useRef(null);
+    var [licenciasDisp, setLicenciasDisp] = useState([]);
+    var [licenciaSeleccionada, setLicenciaSeleccionada] = useState('');
 
-    // Cargar catálogos
+    // Cargar catálogos y licencias disponibles
     useEffect(function () {
         fetch(API_URL + '/equipos/catalogos', { headers: headersConToken() })
             .then(function (r) { return r.json(); })
             .then(function (data) { setCatalogos(data); })
             .catch(function () { setMensaje('Error cargando catálogos'); });
+        fetch(API_URL + '/licencias/disponibles', { headers: headersConToken() })
+            .then(function (r) { return r.json(); })
+            .then(function (data) { setLicenciasDisp(Array.isArray(data) ? data : []); })
+            .catch(function () { /* silencioso */ });
     }, []);
 
     function handleChange(campo, valor) {
@@ -221,6 +227,15 @@ export default function EquiposCrear() {
                 });
             }
 
+            // Asignar licencia si se seleccionó una
+            if (licenciaSeleccionada && data.id_equipo) {
+                await fetch(API_URL + '/licencias/asignar', {
+                    method: 'POST',
+                    headers: headersConToken(),
+                    body: JSON.stringify({ id_licencia: parseInt(licenciaSeleccionada), id_equipo: data.id_equipo })
+                });
+            }
+
             setExito(true);
             setMensaje('¡Equipo creado correctamente!');
             // Reset
@@ -234,6 +249,7 @@ export default function EquiposCrear() {
                 setAlmacenamiento([]);
                 setFoto(null);
                 setFotoPreview(null);
+                setLicenciaSeleccionada('');
                 setExito(false);
                 setMensaje('');
             }, 2000);
@@ -324,6 +340,19 @@ export default function EquiposCrear() {
                     {renderSelect('PROCESADOR:', 'id_procesador', catalogos.procesadores, 'procesador')}
                     {renderSelect('TIPO RAM:', 'id_tipo_ram', catalogos.tipos_ram, 'tipo_ram')}
                     {renderSelect('RAM:', 'id_ram', catalogos.rams, 'ram')}
+
+                    {/* Licencia */}
+                    <div className="eq-campo">
+                        <label><IconoFa icono={faKey} /> LICENCIA:</label>
+                        <div className="eq-campo-row">
+                            <select value={licenciaSeleccionada} onChange={function (e) { setLicenciaSeleccionada(e.target.value); }}>
+                                <option value="">— Sin licencia —</option>
+                                {licenciasDisp.filter(function (l) { return l.disponibles > 0; }).map(function (l) {
+                                    return <option key={l.id_licencia} value={l.id_licencia}>{l.descripcion} ({l.disponibles} disp.)</option>;
+                                })}
+                            </select>
+                        </div>
+                    </div>
                 </div>
 
                 {/* Columna derecha: Estado, Foto y Almacenamiento */}
