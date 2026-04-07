@@ -3,12 +3,14 @@
 // Se usa en todos los fetch() que necesitan autenticación.
 
 // URL base de la API — dinámica para acceso LAN
+// window.location.origin incluye protocolo + host + puerto (ej: http://intraneteq:3000)
+// En dev (Vite :3000) el proxy de Vite reenvía /api/ → backend:4000
+// En producción (Nginx :80) /api/ → backend:4000
 function getApiUrl() {
   if (typeof window !== 'undefined') {
     const host = window.location.hostname;
     if (host !== 'localhost' && host !== '127.0.0.1') {
-      // Producción: va por Nginx /api/ → backend:4000
-      return `${window.location.protocol}//${host}/api`;
+      return window.location.origin + '/api';
     }
   }
   return import.meta.env.VITE_API_URL || 'http://localhost:4000';
@@ -19,8 +21,7 @@ function getChatUrl() {
   if (typeof window !== 'undefined') {
     const host = window.location.hostname;
     if (host !== 'localhost' && host !== '127.0.0.1') {
-      // Producción: va por Nginx /chat/ → chat:4001
-      return `${window.location.protocol}//${host}/chat`;
+      return window.location.origin + '/chat';
     }
   }
   return import.meta.env.VITE_CHAT_URL || 'http://localhost:4001';
@@ -31,8 +32,7 @@ function getChatSocketUrl() {
   if (typeof window !== 'undefined') {
     const host = window.location.hostname;
     if (host !== 'localhost' && host !== '127.0.0.1') {
-      // Producción: Socket.IO via Nginx puerto 80 (/socket.io/ proxied)
-      return `${window.location.protocol}//${host}`;
+      return window.location.origin;
     }
   }
   return import.meta.env.VITE_CHAT_URL || 'http://localhost:4001';
