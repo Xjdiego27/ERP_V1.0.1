@@ -100,8 +100,8 @@
     display: flex; align-items: center; justify-content: center; font-size: 1rem; flex-shrink: 0;
 }
 .lic-card-info { flex: 1; display: flex; flex-direction: column; gap: 2px; overflow: hidden; }
-.lic-card-nombre { font-size: 0.92rem; font-weight: 700; color: var(--texto-primario, #1e293b); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.lic-card-serial { font-size: 0.75rem; color: var(--texto-secundario, #64748b); font-family: 'Courier New', monospace; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.lic-card-nombre { font-size: 0.92rem; font-weight: 700; color: var(--texto-primario, #1e293b); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-family: 'Courier New', monospace; letter-spacing: 0.02em; }
+.lic-card-serial { font-size: 0.75rem; color: var(--texto-secundario, #64748b); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .lic-card-conteo { text-align: center; flex-shrink: 0; }
 .lic-card-disp { font-size: 1.1rem; font-weight: 800; display: block; }
 .lic-card-disp-label { font-size: 0.65rem; text-transform: uppercase; color: var(--texto-secundario, #64748b); font-weight: 600; }

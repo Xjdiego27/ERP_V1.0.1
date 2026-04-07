@@ -273,6 +273,9 @@
 }
 
 /* Asignación actual */
+.eqa-asig-bloque:has(.eqa-historial) .eqa-card-asignacion {
+    border-radius: 8px 8px 0 0;
+}
 .eqa-card-asignacion {
     display: flex;
     align-items: center;
@@ -297,6 +300,7 @@
 .eqa-asig-info {
     display: flex;
     flex-direction: column;
+    flex: 1;
 }
 .eqa-asig-nombre {
     font-size: 0.82rem;
@@ -306,6 +310,95 @@
 .eqa-asig-fecha {
     font-size: 0.7rem;
     color: #3b82f6;
+}
+
+/* ── History toggle & accordion ── */
+.eqa-asig-bloque {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+}
+.eqa-hist-toggle {
+    width: 28px;
+    height: 28px;
+    border: 1px solid #bfdbfe;
+    border-radius: 50%;
+    background: #dbeafe;
+    color: #2563eb;
+    font-size: 0.7rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.25s;
+    flex-shrink: 0;
+}
+.eqa-hist-toggle:hover {
+    background: #2563eb;
+    color: #fff;
+}
+.eqa-hist-toggle.abierto {
+    transform: rotate(180deg);
+    background: #2563eb;
+    color: #fff;
+}
+.eqa-historial {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: 8px 10px 6px;
+    margin-top: -1px;
+    background: #f0f6ff;
+    border: 1px solid #bfdbfe;
+    border-top: none;
+    border-radius: 0 0 8px 8px;
+    animation: eqaSlide 0.25s ease;
+}
+.eqa-hist-titulo {
+    font-size: 0.68rem;
+    font-weight: 700;
+    color: #64748b;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    margin-bottom: 4px;
+}
+.eqa-hist-titulo svg { font-size: 0.6rem; }
+.eqa-hist-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 5px 8px;
+    background: rgba(255,255,255,0.7);
+    border-radius: 6px;
+    border: 1px solid #e0eaff;
+}
+.eqa-hist-avatar {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: #e0eaff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #3b82f6;
+    font-size: 0.65rem;
+    flex-shrink: 0;
+}
+.eqa-hist-info {
+    display: flex;
+    flex-direction: column;
+}
+.eqa-hist-nombre {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #334155;
+}
+.eqa-hist-fechas {
+    font-size: 0.65rem;
+    color: #64748b;
 }
 
 /* Acciones */
@@ -643,4 +736,37 @@ body.dark-mode .eqa-btn-card.editar {
     background: var(--bg-subtle, #252a36);
     color: var(--primario, #6d8df7);
     border-color: var(--border-color, #3a4050);
+}
+
+/* ── Dark Mode: History accordion ── */
+body.dark-mode .eqa-hist-toggle {
+    background: #1e3a5f;
+    border-color: #334155;
+    color: #60a5fa;
+}
+body.dark-mode .eqa-hist-toggle:hover,
+body.dark-mode .eqa-hist-toggle.abierto {
+    background: #2563eb;
+    color: #fff;
+}
+body.dark-mode .eqa-historial {
+    background: #1a2332;
+    border-color: #334155;
+}
+body.dark-mode .eqa-hist-titulo {
+    color: #7a8494;
+}
+body.dark-mode .eqa-hist-row {
+    background: rgba(255,255,255,0.04);
+    border-color: #2e3440;
+}
+body.dark-mode .eqa-hist-avatar {
+    background: #1e3a5f;
+    color: #60a5fa;
+}
+body.dark-mode .eqa-hist-nombre {
+    color: #93bbfc;
+}
+body.dark-mode .eqa-hist-fechas {
+    color: #7a8494;
 }

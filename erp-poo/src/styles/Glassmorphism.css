@@ -302,6 +302,7 @@ body.dark-mode {
 .tickets-tabla th {
   background: var(--glass-stat-bg) !important;
   backdrop-filter: blur(8px);
+  color: var(--text-secondary) !important;
 }
 
 .ticket-detalle-panel {
@@ -1972,6 +1973,10 @@ body.dark-mode .doc-gen-icono.pdf {
 /* ═══════════════════════════════════════════
    PERMISOS — tabla hover, badges, misc
    ═══════════════════════════════════════════ */
+.permisos-tabla thead th {
+  color: var(--text-secondary) !important;
+}
+
 .permisos-tabla tbody tr:hover {
   background: var(--glass-hover) !important;
 }

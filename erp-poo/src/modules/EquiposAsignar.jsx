@@ -7,7 +7,8 @@ import {
     faDesktop, faServer, faMobileScreen, faTabletScreenButton,
     faHardDrive, faMemory, faMicrochip, faBarcode,
     faUser, faXmark, faPen, faFloppyDisk, faPlus, faTrash,
-    faCalendarDays, faShieldHalved, faKey
+    faCalendarDays, faShieldHalved, faKey,
+    faChevronDown, faClockRotateLeft
 } from '@fortawesome/free-solid-svg-icons';
 import '../styles/EquiposAsignar.css';
 
@@ -43,6 +44,7 @@ export default function EquiposAsignar() {
     var [editandoId, setEditandoId] = useState(null);
     var [formEdit, setFormEdit] = useState({});
     var [licenciasDisp, setLicenciasDisp] = useState([]);
+    var [historialAbierto, setHistorialAbierto] = useState(null);
 
     function cargarDatos() {
         setCargando(true);
@@ -81,6 +83,13 @@ export default function EquiposAsignar() {
         return asignaciones.find(function (a) {
             return a.id_equipo === id_equipo && a.activa;
         }) || null;
+    }
+
+    // Obtener historial de asignaciones anteriores (no activas) para un equipo
+    function obtenerHistorial(id_equipo) {
+        return asignaciones.filter(function (a) {
+            return a.id_equipo === id_equipo && !a.activa;
+        });
     }
 
     // Estadísticas
@@ -465,7 +474,7 @@ export default function EquiposAsignar() {
                                                 <select value={formEdit.id_licencia || ''} onChange={function (e) { cambiarFormEdit('id_licencia', e.target.value); }}>
                                                     <option value="">— Asignar licencia —</option>
                                                     {licenciasDisp.filter(function (l) { return l.disponibles > 0; }).map(function (l) {
-                                                        return <option key={l.id_licencia} value={l.id_licencia}>{l.descripcion} ({l.disponibles} disp.)</option>;
+                                                        return <option key={l.id_licencia} value={l.id_licencia}>{l.serie_keys} ({l.disponibles} disp.)</option>;
                                                     })}
                                                 </select>
                                             </div>
@@ -549,15 +558,48 @@ export default function EquiposAsignar() {
                                         )}
 
                                         {/* Asignación actual */}
-                                        {asig && (
-                                            <div className="eqa-card-asignacion">
-                                                <div className="eqa-asig-avatar"><IconoFa icono={faUser} /></div>
-                                                <div className="eqa-asig-info">
-                                                    <span className="eqa-asig-nombre">{asig.empleado}</span>
-                                                    <span className="eqa-asig-fecha">Desde: {asig.fecha_asig}</span>
+                                        {asig && (function () {
+                                            var historial = obtenerHistorial(eq.id_equipo);
+                                            var histAbierto = historialAbierto === eq.id_equipo;
+                                            return (
+                                                <div className="eqa-asig-bloque">
+                                                    <div className="eqa-card-asignacion">
+                                                        <div className="eqa-asig-avatar"><IconoFa icono={faUser} /></div>
+                                                        <div className="eqa-asig-info">
+                                                            <span className="eqa-asig-nombre">{asig.empleado}</span>
+                                                            <span className="eqa-asig-fecha">Desde: {asig.fecha_asig}</span>
+                                                        </div>
+                                                        {historial.length > 0 && (
+                                                            <button className={'eqa-hist-toggle' + (histAbierto ? ' abierto' : '')}
+                                                                onClick={function () { setHistorialAbierto(histAbierto ? null : eq.id_equipo); }}
+                                                                title="Ver historial de asignaciones">
+                                                                <IconoFa icono={faChevronDown} />
+                                                            </button>
+                                                        )}
+                                                    </div>
+                                                    {histAbierto && historial.length > 0 && (
+                                                        <div className="eqa-historial">
+                                                            <span className="eqa-hist-titulo">
+                                                                <IconoFa icono={faClockRotateLeft} /> Asignaciones anteriores
+                                                            </span>
+                                                            {historial.map(function (h) {
+                                                                return (
+                                                                    <div key={h.id_asig} className="eqa-hist-row">
+                                                                        <div className="eqa-hist-avatar"><IconoFa icono={faUser} /></div>
+                                                                        <div className="eqa-hist-info">
+                                                                            <span className="eqa-hist-nombre">{h.empleado}</span>
+                                                                            <span className="eqa-hist-fechas">
+                                                                                {h.fecha_asig} → {h.fecha_devol || '—'}
+                                                                            </span>
+                                                                        </div>
+                                                                    </div>
+                                                                );
+                                                            })}
+                                                        </div>
+                                                    )}
                                                 </div>
-                                            </div>
-                                        )}
+                                            );
+                                        })()}
 
                                         {/* Acciones */}
                                         <div className="eqa-card-acciones">

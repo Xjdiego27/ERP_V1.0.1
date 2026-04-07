@@ -240,8 +240,8 @@ export default function Licencias() {
                                 <div className="lic-card-header" onClick={function () { toggleExpandir(lic.id_licencia); }}>
                                     <div className="lic-card-icono"><IconoFa icono={faKey} /></div>
                                     <div className="lic-card-info">
-                                        <span className="lic-card-nombre">{lic.descripcion}</span>
-                                        <span className="lic-card-serial">{lic.serie_keys}</span>
+                                        <span className="lic-card-nombre">{lic.serie_keys}</span>
+                                        <span className="lic-card-serial">{lic.descripcion}</span>
                                     </div>
                                     <div className="lic-card-conteo">
                                         <span className="lic-card-disp" style={{ color: barColor }}>
