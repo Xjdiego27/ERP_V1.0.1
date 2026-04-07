@@ -1523,6 +1523,22 @@ body.dark-mode .doc-gen-icono.pdf {
 .chat-msg.mio .chat-msg-hora {
   color: rgba(255,255,255,0.7) !important;
 }
+/* Visto checks — glass overrides */
+.chat-msg.mio .chat-visto { color: rgba(255,255,255,0.45) !important; }
+.chat-msg.mio .chat-visto-leido { color: #60cfff !important; }
+.chat-visto-panel {
+  background: var(--glass-card-bg) !important;
+  border-color: var(--glass-border) !important;
+  backdrop-filter: blur(var(--glass-blur)) !important;
+}
+.chat-visto-panel-header {
+  background: rgba(255,255,255,0.06) !important;
+  border-color: var(--glass-border) !important;
+  color: var(--color-primario) !important;
+}
+.chat-visto-panel-nombre { color: var(--text-primary) !important; }
+.chat-visto-panel-hora { color: var(--text-muted) !important; }
+.chat-visto-panel-item { border-color: var(--glass-border) !important; }
 
 .chat-ventana-header {
   border-bottom: 1px solid var(--glass-border) !important;

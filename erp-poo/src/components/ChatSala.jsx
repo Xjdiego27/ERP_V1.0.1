@@ -2,7 +2,7 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import IconoFa from './IconoFa';
 import StickerPicker from './StickerPicker';
 import ModalImagen from './ModalImagen';
-import { faTimes, faPaperPlane, faMinus, faExpand, faFaceSmile, faGlobe, faUsers, faPaperclip } from '@fortawesome/free-solid-svg-icons';
+import { faTimes, faPaperPlane, faMinus, faExpand, faFaceSmile, faGlobe, faUsers, faPaperclip, faCheck, faCheckDouble, faEye } from '@fortawesome/free-solid-svg-icons';
 import { CHAT_URL, obtenerToken } from '../auth';
 import { getSession } from '../utils/session';
 import { formatHora, subirArchivo, renderContenidoMensaje } from '../utils/chatUtils';
@@ -30,6 +30,7 @@ export default function ChatSala({ tipo = 'general', grupo, socket, onCerrar, po
     const [pickerAbierto, setPickerAbierto] = useState(false);
     const [arrastrando, setArrastrando] = useState(false);
     const [imagenExpandida, setImagenExpandida] = useState(null);
+    const [vistoPanel, setVistoPanel] = useState(null);  // msg id para panel de lectores
     const chatBodyRef = useRef(null);
     const inputRef = useRef(null);
     const fileInputRef = useRef(null);
@@ -63,9 +64,16 @@ export default function ChatSala({ tipo = 'general', grupo, socket, onCerrar, po
             : CHAT_URL + `/grupos/${salaId}/mensajes?limite=80`;
         fetch(url, { headers: { 'Authorization': 'Bearer ' + token } })
             .then(r => r.ok ? r.json() : [])
-            .then(data => { setMensajes(data); setCargando(false); })
+            .then(data => {
+                setMensajes(data);
+                setCargando(false);
+                // Marcar como visto en grupos
+                if (!esGeneral && socket && salaId) {
+                    socket.emit('marcar_visto_grupo', { grupo_id: salaId });
+                }
+            })
             .catch(() => setCargando(false));
-    }, [esGeneral, salaId]);
+    }, [esGeneral, salaId, socket]);
 
     useEffect(() => { cargarHistorial(); }, [cargarHistorial]);
 
@@ -90,10 +98,35 @@ export default function ChatSala({ tipo = 'general', grupo, socket, onCerrar, po
             if (esGeneral || msg.remitente_id !== miIdPersonal) {
                 sonidoMensaje.currentTime = 0;
                 sonidoMensaje.play().catch(() => {});
+                // Marcar como visto si es grupo y no es mío
+                if (!esGeneral && salaId) {
+                    socket.emit('marcar_visto_grupo', { grupo_id: salaId });
+                }
             }
         }
+        function onVistoGrupo(data) {
+            if (esGeneral || data.grupo_id !== salaId) return;
+            // Agregar lector a leido_por de todos los mensajes que no son suyos
+            setMensajes(prev => prev.map(m => {
+                if (m.remitente_id === data.lector_id) return m;
+                var ya = (m.leido_por || []).some(lp => lp.id_personal === data.lector_id);
+                if (ya) return m;
+                return {
+                    ...m,
+                    leido_por: [...(m.leido_por || []), {
+                        id_personal: data.lector_id,
+                        nombre: data.lector_nombre,
+                        fecha: new Date().toISOString(),
+                    }],
+                };
+            }));
+        }
         socket.on(eventoListen, onMsg);
-        return () => { socket.off(eventoListen, onMsg); };
+        if (!esGeneral) socket.on('msg_grupo_visto', onVistoGrupo);
+        return () => {
+            socket.off(eventoListen, onMsg);
+            if (!esGeneral) socket.off('msg_grupo_visto', onVistoGrupo);
+        };
     }, [socket, esGeneral, salaId, miIdPersonal, eventoListen]);
 
     // ── Auto-scroll ──
@@ -258,6 +291,8 @@ export default function ChatSala({ tipo = 'general', grupo, socket, onCerrar, po
                             mensajes.map((m, idx) => {
                                 const esMio = m.remitente_id === miIdPersonal;
                                 const esSticker = !!parseStickerToken(m.contenido);
+                                var leidoPor = m.leido_por || [];
+                                var cantLectores = leidoPor.length;
                                 return (
                                     <div key={m.id || idx} className={'chat-msg ' + (esMio ? 'mio' : 'suyo')}>
                                         {!esMio && (
@@ -269,8 +304,37 @@ export default function ChatSala({ tipo = 'general', grupo, socket, onCerrar, po
                                             {!esMio && <strong className="chat-msg-nombre">{(m.nombre_remitente || '').split(' ')[0]}</strong>}
                                             <div className={'chat-msg-burbuja' + (esSticker ? ' chat-msg-burbuja-sticker' : '')}>
                                                 {renderContenidoMensaje(m, false, (url) => setImagenExpandida(url))}
-                                                <span className="chat-msg-hora">{formatHora(m.fecha)}</span>
+                                                <span className="chat-msg-hora">
+                                                    {formatHora(m.fecha)}
+                                                    {esMio && !esGeneral && (
+                                                        <span
+                                                            className={'chat-visto' + (cantLectores > 0 ? ' chat-visto-leido' : '')}
+                                                            onClick={() => cantLectores > 0 && setVistoPanel(vistoPanel === m.id ? null : m.id)}
+                                                            style={cantLectores > 0 ? { cursor: 'pointer' } : {}}
+                                                        >
+                                                            <IconoFa icono={cantLectores > 0 ? faCheckDouble : faCheck} />
+                                                            {cantLectores > 0 && <span className="chat-visto-count">{cantLectores}</span>}
+                                                        </span>
+                                                    )}
+                                                </span>
                                             </div>
+                                            {/* Mini-panel de lectores del grupo */}
+                                            {esMio && !esGeneral && vistoPanel === m.id && cantLectores > 0 && (
+                                                <div className="chat-visto-panel">
+                                                    <div className="chat-visto-panel-header">
+                                                        <IconoFa icono={faEye} />
+                                                        <span>Visto por {cantLectores}</span>
+                                                    </div>
+                                                    <div className="chat-visto-panel-lista">
+                                                        {leidoPor.map((lp, li) => (
+                                                            <div key={li} className="chat-visto-panel-item">
+                                                                <span className="chat-visto-panel-nombre">{lp.nombre || 'Usuario'}</span>
+                                                                <span className="chat-visto-panel-hora">{formatHora(lp.fecha)}</span>
+                                                            </div>
+                                                        ))}
+                                                    </div>
+                                                </div>
+                                            )}
                                         </div>
                                     </div>
                                 );

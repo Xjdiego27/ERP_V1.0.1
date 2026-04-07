@@ -2,7 +2,7 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import IconoFa from './IconoFa';
 import StickerPicker from './StickerPicker';
 import ModalImagen from './ModalImagen';
-import { faTimes, faPaperPlane, faCircle, faMinus, faExpand, faFaceSmile, faBolt, faPaperclip } from '@fortawesome/free-solid-svg-icons';
+import { faTimes, faPaperPlane, faCircle, faMinus, faExpand, faFaceSmile, faBolt, faPaperclip, faCheck, faCheckDouble } from '@fortawesome/free-solid-svg-icons';
 import { CHAT_URL, obtenerToken } from '../auth';
 import { getSession } from '../utils/session';
 import { formatHora as formatHoraUtil, subirArchivo as subirArchivoUtil, renderContenidoMensaje } from '../utils/chatUtils';
@@ -75,9 +75,13 @@ export default function ChatVentana({ contacto, socket, onCerrar, posicion, enLi
             .then(data => {
                 setMensajes(data);
                 setCargando(false);
+                // Notificar al remitente que leimos sus mensajes
+                if (socket) {
+                    socket.emit('marcar_visto', { contacto_id: contacto.id_personal });
+                }
             })
             .catch(() => setCargando(false));
-    }, [contacto.id_personal]);
+    }, [contacto.id_personal, socket]);
 
     useEffect(() => {
         cargarHistorial();
@@ -98,14 +102,8 @@ export default function ChatVentana({ contacto, socket, onCerrar, posicion, enLi
                     if (document.hidden) {
                         parpadearTitulo(`${contacto.nombre.split(' ')[0]} te envio un mensaje`);
                     }
-                    // Marcar como leído en el servidor (la ventana está abierta)
-                    const token = obtenerToken();
-                    if (token) {
-                        fetch(CHAT_URL + '/marcar-leidos/' + contacto.id_personal, {
-                            method: 'POST',
-                            headers: { 'Authorization': 'Bearer ' + token },
-                        }).catch(() => {});
-                    }
+                    // Marcar como leído via socket (la ventana está abierta)
+                    socket.emit('marcar_visto', { contacto_id: contacto.id_personal });
                 }
             }
         }
@@ -140,14 +138,28 @@ export default function ChatVentana({ contacto, socket, onCerrar, posicion, enLi
             }
         }
 
+        function onMensajeVisto(data) {
+            // El otro usuario leyó nuestros mensajes
+            if (data.lector_id === contacto.id_personal) {
+                setMensajes(prev => prev.map(m => {
+                    if (m.remitente_id === miIdPersonal && m.destinatario_id === contacto.id_personal) {
+                        return { ...m, leido: true };
+                    }
+                    return m;
+                }));
+            }
+        }
+
         socket.on('mensaje_nuevo', onMensajeNuevo);
         socket.on('escribiendo', onEscribiendo);
         socket.on('zumbido', onZumbido);
+        socket.on('mensaje_visto', onMensajeVisto);
 
         return () => {
             socket.off('mensaje_nuevo', onMensajeNuevo);
             socket.off('escribiendo', onEscribiendo);
             socket.off('zumbido', onZumbido);
+            socket.off('mensaje_visto', onMensajeVisto);
         };
     }, [socket, contacto.id_personal]);
 
@@ -384,7 +396,14 @@ export default function ChatVentana({ contacto, socket, onCerrar, posicion, enLi
                                             {!esMio && <strong className="chat-msg-nombre">{contacto.nombre.split(' ')[0]}</strong>}
                                             <div className={'chat-msg-burbuja' + (esSticker ? ' chat-msg-burbuja-sticker' : '')}>
                                                 {renderContenidoMensaje(m, true, (url) => setImagenExpandida(url))}
-                                                <span className="chat-msg-hora">{formatHora(m.fecha || m.fecha_creacion)}</span>
+                                                <span className="chat-msg-hora">
+                                                    {formatHora(m.fecha || m.fecha_creacion)}
+                                                    {esMio && (
+                                                        <span className={'chat-visto' + (m.leido ? ' chat-visto-leido' : '')}>
+                                                            <IconoFa icono={m.leido ? faCheckDouble : faCheck} />
+                                                        </span>
+                                                    )}
+                                                </span>
                                             </div>
                                         </div>
                                     </div>

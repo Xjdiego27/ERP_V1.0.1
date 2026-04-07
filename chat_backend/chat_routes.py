@@ -276,10 +276,20 @@ async def historial_grupo(
     token: dict = Depends(verificar_token),
 ):
     """Historial de mensajes de un grupo."""
+    id_personal, _ = resolver_id_personal(token)
     cursor = coleccion_msg_grupo.find({'grupo_id': grupo_id}).sort('fecha', -1).limit(limite)
     docs = await cursor.to_list(length=limite)
     resultado = []
     for m in reversed(docs):
+        leido_por_raw = m.get('leido_por', [])
+        leido_por = [
+            {
+                'id_personal': lp['id_personal'],
+                'nombre': lp.get('nombre', ''),
+                'fecha': lp['fecha'].isoformat() if lp.get('fecha') else '',
+            }
+            for lp in leido_por_raw
+        ]
         resultado.append({
             'id': str(m['_id']),
             'grupo_id': m['grupo_id'],
@@ -290,7 +300,23 @@ async def historial_grupo(
             'tipo': m.get('tipo', 'texto'),
             'archivo_url': m.get('archivo_url', ''),
             'archivo_nombre': m.get('archivo_nombre', ''),
+            'leido_por': leido_por,
         })
+
+    # Marcar como leido por el usuario actual (mensajes que no son suyos)
+    if id_personal:
+        nombre_lector = ''
+        for c in resultado:
+            if c['remitente_id'] == id_personal:
+                continue
+            already = any(lp['id_personal'] == id_personal for lp in c['leido_por'])
+            if not already:
+                c['leido_por'].append({
+                    'id_personal': id_personal,
+                    'nombre': nombre_lector,
+                    'fecha': datetime.now().isoformat(),
+                })
+
     return resultado
 
 

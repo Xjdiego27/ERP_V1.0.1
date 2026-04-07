@@ -519,6 +519,133 @@ body.dark-mode .chat-msg-burbuja .chat-msg-sticker {
     opacity: .65;
     white-space: nowrap;
     margin-left: auto;
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+}
+
+/* ── Visto / Read receipts ── */
+.chat-visto {
+    display: inline-flex;
+    align-items: center;
+    gap: 1px;
+    font-size: .6rem;
+    color: rgba(255,255,255,0.5);
+    transition: color .3s;
+}
+.chat-visto svg {
+    font-size: .55rem;
+}
+.chat-visto-leido {
+    color: #60cfff;
+}
+.chat-visto-count {
+    font-size: .55rem;
+    font-weight: 600;
+    margin-left: 1px;
+}
+/* Mensajes recibidos (suyo) — el visto no se muestra, pero por si acaso */
+.chat-msg.suyo .chat-visto {
+    color: rgba(100,116,139,0.5);
+}
+.chat-msg.suyo .chat-visto-leido {
+    color: #2563eb;
+}
+
+/* ── Mini-panel de lectores (grupos) ── */
+.chat-visto-panel {
+    position: relative;
+    background: #fff;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.12);
+    padding: 0;
+    margin-top: 4px;
+    min-width: 180px;
+    max-width: 240px;
+    overflow: hidden;
+    animation: vistoSlide .2s ease-out;
+    z-index: 10;
+}
+@keyframes vistoSlide {
+    from { opacity: 0; transform: translateY(-6px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+.chat-visto-panel-header {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 12px;
+    font-size: .75rem;
+    font-weight: 600;
+    color: #2563eb;
+    border-bottom: 1px solid #f1f5f9;
+    background: #f8fafc;
+}
+.chat-visto-panel-header svg {
+    font-size: .7rem;
+}
+.chat-visto-panel-lista {
+    max-height: 140px;
+    overflow-y: auto;
+}
+.chat-visto-panel-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 6px 12px;
+    gap: 8px;
+    border-bottom: 1px solid #f8fafc;
+}
+.chat-visto-panel-item:last-child {
+    border-bottom: none;
+}
+.chat-visto-panel-nombre {
+    font-size: .72rem;
+    font-weight: 500;
+    color: #334155;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    flex: 1;
+}
+.chat-visto-panel-hora {
+    font-size: .6rem;
+    color: #94a3b8;
+    white-space: nowrap;
+}
+
+/* ── Dark mode visto ── */
+body.dark-mode .chat-visto {
+    color: rgba(255,255,255,0.35);
+}
+body.dark-mode .chat-visto-leido {
+    color: #60cfff;
+}
+body.dark-mode .chat-msg.suyo .chat-visto {
+    color: rgba(148,163,184,0.4);
+}
+body.dark-mode .chat-msg.suyo .chat-visto-leido {
+    color: #38bdf8;
+}
+body.dark-mode .chat-visto-panel {
+    background: #1e293b;
+    border-color: #334155;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.3);
+}
+body.dark-mode .chat-visto-panel-header {
+    background: #0f172a;
+    border-color: #334155;
+    color: #38bdf8;
+}
+body.dark-mode .chat-visto-panel-nombre {
+    color: #e2e8f0;
+}
+body.dark-mode .chat-visto-panel-hora {
+    color: #64748b;
+}
+body.dark-mode .chat-visto-panel-item {
+    border-color: #1e293b;
 }
 
 /* Indicador escribiendo (dots) */

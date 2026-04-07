@@ -159,6 +159,7 @@ async def enviar_mensaje(sid, data):
         'contenido': contenido,
         'nombre_remitente': nombre_remitente,
         'fecha': ahora.isoformat(),
+        'leido': False,
         'tipo': mensaje_doc['tipo'],
         'archivo_url': mensaje_doc['archivo_url'],
         'archivo_nombre': mensaje_doc['archivo_nombre'],
@@ -295,6 +296,7 @@ async def msg_grupo(sid, data):
         'tipo': data.get('tipo', 'texto'),
         'archivo_url': data.get('archivo_url', ''),
         'archivo_nombre': data.get('archivo_nombre', ''),
+        'leido_por': [],
     }
     resultado = await coleccion_msg_grupo.insert_one(doc)
 
@@ -308,6 +310,77 @@ async def msg_grupo(sid, data):
         'tipo': doc['tipo'],
         'archivo_url': doc['archivo_url'],
         'archivo_nombre': doc['archivo_nombre'],
+        'leido_por': [],
     }
     await sio.emit('msg_grupo', msg_emit, room=f'grupo_{grupo_id}', skip_sid=sid)
     return {'ok': True, 'mensaje': msg_emit}
+
+
+# ══════════════════════════════════════════════════════════
+# VISTO / READ RECEIPTS
+# ══════════════════════════════════════════════════════════
+@sio.event
+async def marcar_visto(sid, data):
+    """Marca mensajes individuales como leidos y notifica al remitente."""
+    session = await sio.get_session(sid)
+    if not session:
+        return
+    mi_id = session['id_personal']
+    otro_id = data.get('contacto_id')
+    if not otro_id:
+        return
+    try:
+        otro_id = int(otro_id)
+    except (ValueError, TypeError):
+        return
+
+    result = await coleccion_mensajes.update_many(
+        {"remitente_id": otro_id, "destinatario_id": mi_id, "leido": False},
+        {"$set": {"leido": True}},
+    )
+
+    # Siempre notificar al remitente (el REST pudo haberlos marcado antes)
+    sids_otro = list(usuarios_conectados.get(otro_id, []))
+    for rsid in sids_otro:
+        await sio.emit('mensaje_visto', {
+            'lector_id': mi_id,
+            'contacto_id': otro_id,
+        }, to=rsid)
+
+
+@sio.event
+async def marcar_visto_grupo(sid, data):
+    """Marca mensajes de grupo como leidos por este usuario."""
+    session = await sio.get_session(sid)
+    if not session:
+        return
+    mi_id = session['id_personal']
+    mi_nombre = session.get('nombre', 'Usuario')
+    grupo_id = data.get('grupo_id')
+    if not grupo_id:
+        return
+
+    ahora = datetime.now()
+    result = await coleccion_msg_grupo.update_many(
+        {
+            "grupo_id": grupo_id,
+            "remitente_id": {"$ne": mi_id},
+            "leido_por.id_personal": {"$ne": mi_id},
+        },
+        {
+            "$push": {
+                "leido_por": {
+                    "id_personal": mi_id,
+                    "nombre": mi_nombre,
+                    "fecha": ahora,
+                }
+            }
+        },
+    )
+
+    if result.modified_count > 0:
+        await sio.emit('msg_grupo_visto', {
+            'grupo_id': grupo_id,
+            'lector_id': mi_id,
+            'lector_nombre': mi_nombre.split(' ')[0],
+        }, room=f'grupo_{grupo_id}', skip_sid=sid)
