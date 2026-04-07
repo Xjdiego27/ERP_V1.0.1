@@ -3,7 +3,7 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import IconoFa from './IconoFa'; 
 import PermisoService from '../servicios/PermisoService';
 import { getSession } from '../utils/session';
-import { faBars, faHouse, faBoxArchive, faUsers, faRightFromBracket, faChevronDown, faChevronRight, faPeopleGroup, faUserTie, faCalendarCheck, faClock, faLaptop, faPlus, faArrowsRotate, faTicket, faListCheck, faShieldHalved, faSimCard, faUserCircle, faCakeCandles, faKey } from '@fortawesome/free-solid-svg-icons';
+import { faBars, faHouse, faBoxArchive, faUsers, faRightFromBracket, faChevronDown, faChevronRight, faPeopleGroup, faUserTie, faCalendarCheck, faClock, faLaptop, faPlus, faArrowsRotate, faTicket, faListCheck, faShieldHalved, faSimCard, faUserCircle, faCakeCandles, faKey, faWrench } from '@fortawesome/free-solid-svg-icons';
 import '../styles/Sidebar.css';
 
 export default function Sidebar({ isOpen, onToggleMenu }) {
@@ -94,6 +94,7 @@ export default function Sidebar({ isOpen, onToggleMenu }) {
         { nombre: 'Crear Equipo',  ruta: '/dashboard/equipos/crear',      icono: faPlus,           modulo: 'EQUIPOS_CREAR' },
         { nombre: 'Asignación',    ruta: '/dashboard/equipos/asignacion', icono: faArrowsRotate,   modulo: 'EQUIPOS_ASIGNACION' },
         { nombre: 'Licencias',     ruta: '/dashboard/equipos/licencias',  icono: faKey,            modulo: 'LICENCIAS' },
+        { nombre: 'Mantenimiento', ruta: '/dashboard/equipos/mantenimiento', icono: faWrench,      modulo: 'MANTENIMIENTO' },
     ];
     const subMenuEquipos = subMenuEquiposBase.filter(function (s) { return tieneAcceso(s.modulo); });
 

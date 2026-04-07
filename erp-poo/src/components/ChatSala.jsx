@@ -129,6 +129,22 @@ export default function ChatSala({ tipo = 'general', grupo, socket, onCerrar, po
         };
     }, [socket, esGeneral, salaId, miIdPersonal, eventoListen]);
 
+    // ── Marcar visto inmediatamente al volver a la pestaña / foco ──
+    useEffect(() => {
+        if (!socket || esGeneral || !salaId) return;
+        function marcarAlVolver() {
+            if (!document.hidden) {
+                socket.emit('marcar_visto_grupo', { grupo_id: salaId });
+            }
+        }
+        document.addEventListener('visibilitychange', marcarAlVolver);
+        window.addEventListener('focus', marcarAlVolver);
+        return () => {
+            document.removeEventListener('visibilitychange', marcarAlVolver);
+            window.removeEventListener('focus', marcarAlVolver);
+        };
+    }, [socket, esGeneral, salaId]);
+
     // ── Auto-scroll ──
     useEffect(() => {
         if (chatBodyRef.current) chatBodyRef.current.scrollTop = chatBodyRef.current.scrollHeight;

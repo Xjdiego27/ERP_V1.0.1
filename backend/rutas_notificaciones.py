@@ -7,6 +7,12 @@ try:
     from database import Ticket
 except ImportError:
     Ticket = None
+try:
+    from database import Mantenimiento, Equipo, EspecificacionesTec
+except ImportError:
+    Mantenimiento = None
+    Equipo = None
+    EspecificacionesTec = None
 from mongodb import coleccion_menus, coleccion_eventos, coleccion_asistencia, coleccion_justificaciones, coleccion_notif_tickets, coleccion_saludos_cumple
 from auth_token import verificar_token
 
@@ -334,9 +340,67 @@ async def obtener_notificaciones(db: Session = Depends(get_db), token: dict = De
                 "id_notif": str(nt["_id"]),
             })
 
+    # ── 8. Mantenimientos programados — solo para ADMIN / TI ──
+    if Mantenimiento and (es_admin or rol_usuario in ("SOPORTE",)):
+        hoy_dt = datetime.combine(hoy, datetime.min.time())
+        limite_mant = hoy + timedelta(days=7)
+        from sqlalchemy import and_ as sa_and
+        mants = db.query(Mantenimiento).filter(
+            Mantenimiento.ESTADO.in_(["PENDIENTE", "EN_PROCESO"]),
+            Mantenimiento.FECHA_PROG <= limite_mant,
+        ).order_by(Mantenimiento.FECHA_PROG.asc()).limit(20).all()
+
+        # Precarga equipos para nombres
+        eq_ids = list(set(m.ID_EQUIPO for m in mants if m.ID_EQUIPO))
+        equipo_map_m = {}
+        espec_map_m = {}
+        if eq_ids and Equipo and EspecificacionesTec:
+            for e in db.query(Equipo).filter(Equipo.ID_EQUIPO.in_(eq_ids)).all():
+                equipo_map_m[e.ID_EQUIPO] = e
+            for es in db.query(EspecificacionesTec).all():
+                espec_map_m[es.ID_ESPEC] = es
+
+        # Precarga técnicos
+        tec_ids = list(set(m.ID_TECNICO for m in mants if m.ID_TECNICO))
+        tec_map = {}
+        if tec_ids:
+            for p in db.query(Personal).filter(Personal.ID_PERSONAL.in_(tec_ids)).all():
+                tec_map[p.ID_PERSONAL] = f"{p.NOMBRES} {p.APE_PATERNO}"
+
+        for m in mants:
+            eq = equipo_map_m.get(m.ID_EQUIPO)
+            espec = espec_map_m.get(eq.ID_ESPEC) if eq else None
+            codigo_eq = (espec.CODIGOE if espec else '') or (eq.SERIE_EQUIPO if eq else '')
+            tec_nombre = tec_map.get(m.ID_TECNICO, 'Sin asignar')
+            fecha_prog = m.FECHA_PROG
+            if hasattr(fecha_prog, 'date'):
+                fecha_prog = fecha_prog.date()
+            dias_rest = (fecha_prog - hoy).days
+
+            if dias_rest < 0:
+                texto = f"Mantenimiento vencido: {codigo_eq} ({m.TIPO_MANTENIMIENTO}) — Téc: {tec_nombre}"
+                urgente = True
+            elif dias_rest == 0:
+                texto = f"Mantenimiento HOY: {codigo_eq} ({m.TIPO_MANTENIMIENTO}) — Téc: {tec_nombre}"
+                urgente = True
+            elif dias_rest == 1:
+                texto = f"Mantenimiento mañana: {codigo_eq} ({m.TIPO_MANTENIMIENTO}) — Téc: {tec_nombre}"
+                urgente = True
+            else:
+                texto = f"Mantenimiento en {dias_rest} días: {codigo_eq} ({m.TIPO_MANTENIMIENTO}) — Téc: {tec_nombre}"
+                urgente = dias_rest <= 3
+
+            items.append({
+                "tipo": "mantenimiento",
+                "texto": texto,
+                "icono": "wrench",
+                "fecha": str(fecha_prog),
+                "urgente": urgente,
+            })
+
     # Ordenar: urgentes primero, luego por tipo
-    prioridad = {"contrato": 0, "falta": 1, "saludo_pendiente": 2, "ticket_reabierto": 3, "ticket_creado": 3, "ticket_nuevo": 3, "ticket_estado": 4, "ticket": 5, "cumpleanos": 6, "cumpleanos_proximo": 7, "evento": 8, "menu": 9}
-    items.sort(key=lambda x: (0 if x.get("urgente") else 1, prioridad.get(x["tipo"], 9)))
+    prioridad = {"contrato": 0, "falta": 1, "saludo_pendiente": 2, "mantenimiento": 3, "ticket_reabierto": 4, "ticket_creado": 4, "ticket_nuevo": 4, "ticket_estado": 5, "ticket": 6, "cumpleanos": 7, "cumpleanos_proximo": 8, "evento": 9, "menu": 10}
+    items.sort(key=lambda x: (0 if x.get("urgente") else 1, prioridad.get(x["tipo"], 10)))
 
     return {
         "total": len(items),

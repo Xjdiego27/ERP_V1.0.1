@@ -4,7 +4,7 @@ import { useHeader } from '../hooks/useHeader';
 import { useClickAfuera } from '../hooks/useClickAfuera';
 import Img from './Img'; 
 import IconoFa from './IconoFa';
-import { faBell, faMoon, faSun, faFileContract, faCakeCandles, faUtensils, faCalendarDay, faCircleExclamation, faUserXmark, faTicket } from '@fortawesome/free-solid-svg-icons';
+import { faBell, faMoon, faSun, faFileContract, faCakeCandles, faUtensils, faCalendarDay, faCircleExclamation, faUserXmark, faTicket, faWrench } from '@fortawesome/free-solid-svg-icons';
 import { headersAuth, API_URL } from '../auth';
 import UserDropdown from './UserMenu';
 import '../styles/Header.css';
@@ -99,6 +99,7 @@ export default function Header({ onToggleMenu, onToggleEmpresa, onCambiarPasswor
         if (tipo === 'evento') return faCalendarDay;
         if (tipo === 'falta') return faUserXmark;
         if (tipo === 'ticket' || tipo === 'ticket_nuevo' || tipo === 'ticket_creado' || tipo === 'ticket_estado' || tipo === 'ticket_reabierto') return faTicket;
+        if (tipo === 'mantenimiento') return faWrench;
         return faBell;
     }
 

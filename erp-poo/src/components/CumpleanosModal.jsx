@@ -27,12 +27,40 @@ export default function CumpleanosModal() {
     var sessionData = getSession();
     var miIdPersonal = sessionData && sessionData.usuario ? sessionData.usuario.id_personal : null;
 
+    /* ── Control de apariciones: máximo 2 veces por persona/año ── */
+    var MAX_APARICIONES = 2;
+
+    function claveDismiss(idPersonal) {
+        var anio = new Date().getFullYear();
+        return 'cumple_dismiss_' + idPersonal + '_' + anio;
+    }
+
+    function contarDismiss(idPersonal) {
+        try {
+            var val = localStorage.getItem(claveDismiss(idPersonal));
+            return val ? parseInt(val, 10) : 0;
+        } catch (e) { return 0; }
+    }
+
+    function registrarDismiss(idPersonal) {
+        try {
+            var actual = contarDismiss(idPersonal);
+            localStorage.setItem(claveDismiss(idPersonal), String(actual + 1));
+        } catch (e) {}
+    }
+
     var verificarPendiente = useCallback(function () {
         if (!miIdPersonal) return;
         fetch(API_URL + '/saludos-cumpleanos/pendiente', { headers: headersConToken() })
             .then(function (r) { return r.json(); })
             .then(function (data) {
                 if (data && data.pendiente && data.cumpleanero) {
+                    /* Si ya se descartó 2+ veces, no mostrar más */
+                    if (contarDismiss(data.cumpleanero.id_personal) >= MAX_APARICIONES) {
+                        setModalVisible(false);
+                        setCumpleanero(null);
+                        return;
+                    }
                     setCumpleanero(data.cumpleanero);
                     setModalVisible(true);
                 } else {
@@ -104,6 +132,7 @@ export default function CumpleanosModal() {
                     <button
                         className="cumple-modal-btn-cerrar"
                         onClick={function () {
+                            if (cumpleanero) registrarDismiss(cumpleanero.id_personal);
                             setModalVisible(false);
                             setCumpleanero(null);
                             setMensaje('');

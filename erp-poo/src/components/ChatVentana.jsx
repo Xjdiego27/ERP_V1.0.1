@@ -163,6 +163,22 @@ export default function ChatVentana({ contacto, socket, onCerrar, posicion, enLi
         };
     }, [socket, contacto.id_personal]);
 
+    // ── Marcar visto inmediatamente al volver a la pestaña / foco ──
+    useEffect(() => {
+        if (!socket || !contacto.id_personal) return;
+        function marcarAlVolver() {
+            if (!document.hidden) {
+                socket.emit('marcar_visto', { contacto_id: contacto.id_personal });
+            }
+        }
+        document.addEventListener('visibilitychange', marcarAlVolver);
+        window.addEventListener('focus', marcarAlVolver);
+        return () => {
+            document.removeEventListener('visibilitychange', marcarAlVolver);
+            window.removeEventListener('focus', marcarAlVolver);
+        };
+    }, [socket, contacto.id_personal]);
+
     // ── Auto-scroll al final ──
     useEffect(() => {
         if (chatBodyRef.current) {

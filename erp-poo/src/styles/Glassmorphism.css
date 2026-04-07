@@ -2182,6 +2182,12 @@ body.dark-mode .doc-gen-icono.pdf {
   color: var(--text-primary) !important;
 }
 
+.tarjeta-apellidos {
+  color: var(--text-secondary) !important;
+  font-size: 14px !important;
+  font-weight: 500 !important;
+}
+
 .tarjeta-valor {
   color: var(--text-primary) !important;
 }
@@ -2427,6 +2433,67 @@ body.dark-mode .doc-gen-icono.pdf {
 }
 .lic-btn-desasignar {
   background: rgba(239,68,68,0.12) !important;
+}
+
+
+/* ═══════════════════════════════════════════════════════
+   MANTENIMIENTO — stats, tabla, modal, filtros
+   ═══════════════════════════════════════════════════════ */
+.mnt-stat-card {
+  background: var(--glass-stat-bg) !important;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid var(--glass-border) !important;
+}
+.mnt-tabla-wrap {
+  background: var(--glass-card-bg) !important;
+  backdrop-filter: blur(var(--glass-blur));
+  -webkit-backdrop-filter: blur(var(--glass-blur));
+  border: 1px solid var(--glass-border) !important;
+  box-shadow: var(--glass-shadow);
+}
+.mnt-tabla thead th {
+  background: rgba(255,255,255,0.04) !important;
+}
+.mnt-busqueda {
+  background: var(--glass-input-bg) !important;
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  border: 1px solid var(--glass-border) !important;
+}
+.mnt-filtro-group select {
+  background: var(--glass-input-bg) !important;
+  border: 1px solid var(--glass-border) !important;
+}
+.mnt-btn-limpiar {
+  background: var(--glass-input-bg) !important;
+  border: 1px solid var(--glass-border) !important;
+}
+.mnt-modal {
+  background: var(--glass-card-bg) !important;
+  backdrop-filter: blur(var(--glass-blur));
+  -webkit-backdrop-filter: blur(var(--glass-blur));
+  border: 1px solid var(--glass-border) !important;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.35);
+}
+.mnt-modal-overlay {
+  background: rgba(0,0,0,0.55) !important;
+}
+.mnt-campo input,
+.mnt-campo select,
+.mnt-campo textarea {
+  background: var(--glass-input-bg) !important;
+  border: 1px solid var(--glass-border) !important;
+}
+.mnt-btn-acc {
+  background: var(--glass-input-bg) !important;
+  border: 1px solid var(--glass-border) !important;
+}
+.mnt-msg-ok {
+  background: rgba(34,197,94,0.15) !important;
+}
+.mnt-msg-error {
+  background: rgba(239,68,68,0.15) !important;
 }
 
 
@@ -2890,6 +2957,11 @@ body.glass-off .lic-busqueda,
 body.glass-off .lic-form-panel,
 body.glass-off .lic-card-edit-inline,
 body.glass-off .lic-equipo-row,
+body.glass-off .mnt-stat-card,
+body.glass-off .mnt-tabla-wrap,
+body.glass-off .mnt-busqueda,
+body.glass-off .mnt-modal,
+body.glass-off .mnt-btn-acc,
 body.glass-off .asistg-fila-grupo,
 body.glass-off .chat-panel,
 body.glass-off .chat-ventana,
@@ -2976,6 +3048,9 @@ body.glass-off .permisos-card,
 body.glass-off .horario-card,
 body.glass-off .detalle-tarjeta,
 body.glass-off .ticket-vigente-card,
+body.glass-off .mnt-stat-card,
+body.glass-off .mnt-tabla-wrap,
+body.glass-off .mnt-modal,
 body.glass-off .dashboard-card {
   background: var(--bg-card, #ffffff) !important;
   border: 1px solid var(--border-color, #ddd);
@@ -3272,7 +3347,8 @@ body.dark-mode.glass-off .horarios-tabla tbody tr:hover,
 body.dark-mode.glass-off .asist-tabla tbody tr:hover,
 body.dark-mode.glass-off .asistg-detalle-tabla tbody tr:hover,
 body.dark-mode.glass-off .det-cuentas-tabla tbody tr:hover,
-body.dark-mode.glass-off .permisos-tabla tbody tr:hover {
+body.dark-mode.glass-off .permisos-tabla tbody tr:hover,
+body.dark-mode.glass-off .mnt-tabla tbody tr:hover {
   background: var(--bg-hover, #252d48) !important;
 }
 
@@ -3283,7 +3359,8 @@ body.dark-mode.glass-off .horarios-tabla thead,
 body.dark-mode.glass-off .asist-tabla thead,
 body.dark-mode.glass-off .asistg-detalle-tabla thead,
 body.dark-mode.glass-off .det-cuentas-tabla thead,
-body.dark-mode.glass-off .permisos-tabla thead {
+body.dark-mode.glass-off .permisos-tabla thead,
+body.dark-mode.glass-off .mnt-tabla thead {
   background: var(--bg-subtle, #151a2e) !important;
 }
 
@@ -3291,6 +3368,11 @@ body.dark-mode.glass-off .det-input,
 body.dark-mode.glass-off .det-select,
 body.dark-mode.glass-off .chip-busqueda,
 body.dark-mode.glass-off .lic-busqueda,
+body.dark-mode.glass-off .mnt-busqueda,
+body.dark-mode.glass-off .mnt-filtro-group select,
+body.dark-mode.glass-off .mnt-campo input,
+body.dark-mode.glass-off .mnt-campo select,
+body.dark-mode.glass-off .mnt-campo textarea,
 body.dark-mode.glass-off .tickets-search-box,
 body.dark-mode.glass-off .ticket-form input,
 body.dark-mode.glass-off .ticket-form select,

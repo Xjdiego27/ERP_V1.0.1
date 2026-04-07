@@ -216,7 +216,8 @@
 }
 
 .tarjeta-apellidos {
-  font-size: 13px; color: var(--text-muted, #777); margin: 2px 0 0 0; text-align: center;
+  font-size: 14px; color: var(--text-secondary, #4b5563); margin: 2px 0 0 0; text-align: center;
+  font-weight: 500; letter-spacing: 0.2px;
 }
 
 .tarjeta-separador {
