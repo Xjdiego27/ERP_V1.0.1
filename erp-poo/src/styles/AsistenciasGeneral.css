@@ -239,9 +239,11 @@
 .asistg-tabla-wrapper {
   border-radius: 14px;
   overflow: hidden;
-  background: var(--bg-card, #fff);
+  background: var(--bg-card, #fff) !important;
   box-shadow: 0 1px 6px rgba(0,0,0,0.06);
   transition: background 0.3s;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
 }
 
 /* Cabecera de columnas — mismo grid que las filas */
@@ -273,6 +275,13 @@
 
 .asistg-fila-grupo {
   border-bottom: 1px solid var(--border-color, #f0f0f0);
+  background: var(--bg-card, #fff) !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+body.dark-mode .asistg-fila-grupo {
+  background: var(--bg-card, #1e1e2f) !important;
 }
 
 .asistg-fila-emp {
@@ -335,13 +344,15 @@
   font-size: 11px;
   font-weight: 600;
   color: #2e7d32;
-  background: #e8f5e9;
+  background: #e8f5e9 !important;
   padding: 2px 10px;
   border-radius: 12px;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
   text-align: center;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
 }
 
 body.dark-mode .asistg-emp-horario {

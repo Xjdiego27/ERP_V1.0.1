@@ -204,7 +204,10 @@ export default function EquiposAsignar() {
             id_procesador: procesadorId,
             id_tipo_ram: tipoRamId,
             id_ram: ramId,
-            id_licencia: '',
+            licencias_actuales: (eq.licencias || []).map(function (l) {
+                return { id_asiglicenc: l.id_asiglicenc, id_licencia: l.id_licencia, serie_keys: l.serie_keys, descripcion: l.descripcion };
+            }),
+            licencias_nuevas: [],
             almacenamiento: (eq.almacenamiento || []).map(function (a) {
                 return { id_disco: a.id_disco || '', descrip: a.descrip || '' };
             })
@@ -252,6 +255,53 @@ export default function EquiposAsignar() {
         });
     }
 
+    // ── Licencias multi-row helpers ──
+    function agregarLicenciaNueva() {
+        setFormEdit(function (prev) {
+            var nuevo = Object.assign({}, prev);
+            nuevo.licencias_nuevas = (prev.licencias_nuevas || []).concat([{ id_licencia: '' }]);
+            return nuevo;
+        });
+    }
+
+    function quitarLicenciaNueva(index) {
+        setFormEdit(function (prev) {
+            var nuevo = Object.assign({}, prev);
+            nuevo.licencias_nuevas = prev.licencias_nuevas.filter(function (_, i) { return i !== index; });
+            return nuevo;
+        });
+    }
+
+    function cambiarLicenciaNueva(index, valor) {
+        setFormEdit(function (prev) {
+            var nuevo = Object.assign({}, prev);
+            nuevo.licencias_nuevas = prev.licencias_nuevas.map(function (l, i) {
+                return i === index ? { id_licencia: valor } : l;
+            });
+            return nuevo;
+        });
+    }
+
+    function desasignarLicenciaEdit(id_asiglicenc) {
+        if (!confirm('¿Desasignar esta licencia del equipo?')) return;
+        fetch(API_URL + '/licencias/asignar/' + id_asiglicenc, {
+            method: 'DELETE',
+            headers: headersConToken()
+        })
+        .then(function (r) { return r.json().then(function (d) { return { ok: r.ok, data: d }; }); })
+        .then(function (res) {
+            if (!res.ok) throw new Error(res.data.detail || 'Error');
+            mostrarMensaje('Licencia desasignada', true);
+            // Quitar de la lista local
+            setFormEdit(function (prev) {
+                var nuevo = Object.assign({}, prev);
+                nuevo.licencias_actuales = prev.licencias_actuales.filter(function (l) { return l.id_asiglicenc !== id_asiglicenc; });
+                return nuevo;
+            });
+        })
+        .catch(function (err) { mostrarMensaje(err.message, false); });
+    }
+
     // Guardar edición
     function guardarEdicion(id_equipo) {
         var body = {
@@ -278,14 +328,18 @@ export default function EquiposAsignar() {
         .then(function (r) { return r.json().then(function (d) { return { ok: r.ok, data: d }; }); })
         .then(function (res) {
             if (!res.ok) throw new Error(res.data.detail || 'Error al guardar');
-            // Asignar licencia si se seleccionó una nueva
-            if (formEdit.id_licencia) {
-                return fetch(API_URL + '/licencias/asignar', {
-                    method: 'POST',
-                    headers: headersConToken(),
-                    body: JSON.stringify({ id_licencia: parseInt(formEdit.id_licencia), id_equipo: id_equipo })
-                }).then(function (r2) { return r2.json(); }).then(function () {
-                    mostrarMensaje('Equipo actualizado y licencia asignada', true);
+            // Asignar licencias nuevas si hay
+            var nuevas = (formEdit.licencias_nuevas || []).filter(function (l) { return l.id_licencia; });
+            if (nuevas.length > 0) {
+                var promesas = nuevas.map(function (l) {
+                    return fetch(API_URL + '/licencias/asignar', {
+                        method: 'POST',
+                        headers: headersConToken(),
+                        body: JSON.stringify({ id_licencia: parseInt(l.id_licencia), id_equipo: id_equipo })
+                    }).then(function (r2) { return r2.json(); });
+                });
+                return Promise.all(promesas).then(function () {
+                    mostrarMensaje('Equipo actualizado y licencias asignadas', true);
                 });
             }
             mostrarMensaje('Equipo actualizado correctamente', true);
@@ -469,15 +523,35 @@ export default function EquiposAsignar() {
                                                     {(catalogos.rams || []).map(function (r) { return <option key={r.id} value={r.id}>{r.nombre}</option>; })}
                                                 </select>
                                             </div>
-                                            <div className="eqa-edit-campo">
-                                                <label><IconoFa icono={faKey} /> Licencia</label>
-                                                <select value={formEdit.id_licencia || ''} onChange={function (e) { cambiarFormEdit('id_licencia', e.target.value); }}>
-                                                    <option value="">— Asignar licencia —</option>
-                                                    {licenciasDisp.filter(function (l) { return l.disponibles > 0; }).map(function (l) {
-                                                        return <option key={l.id_licencia} value={l.id_licencia}>{l.serie_keys} ({l.disponibles} disp.)</option>;
-                                                    })}
-                                                </select>
+                                        </div>
+
+                                        {/* Licencias editables */}
+                                        <div className="eqa-edit-almc">
+                                            <div className="eqa-edit-almc-header">
+                                                <label><IconoFa icono={faKey} /> Licencias</label>
+                                                <button type="button" className="eqa-btn-mini add" onClick={agregarLicenciaNueva}><IconoFa icono={faPlus} /></button>
                                             </div>
+                                            {(formEdit.licencias_actuales || []).map(function (lic) {
+                                                return (
+                                                    <div key={lic.id_asiglicenc} className="eqa-edit-disco-row">
+                                                        <span style={{flex: 1, fontSize: '0.85rem'}}><strong>{lic.descripcion}</strong> — <span style={{fontFamily: "'Courier New', monospace"}}>{lic.serie_keys}</span></span>
+                                                        <button type="button" className="eqa-btn-mini del" onClick={function () { desasignarLicenciaEdit(lic.id_asiglicenc); }}><IconoFa icono={faTrash} /></button>
+                                                    </div>
+                                                );
+                                            })}
+                                            {(formEdit.licencias_nuevas || []).map(function (ln, idx) {
+                                                return (
+                                                    <div key={'new-' + idx} className="eqa-edit-disco-row">
+                                                        <select value={ln.id_licencia || ''} onChange={function (e) { cambiarLicenciaNueva(idx, e.target.value); }}>
+                                                            <option value="">— Seleccionar licencia —</option>
+                                                            {licenciasDisp.filter(function (l) { return l.disponibles > 0; }).map(function (l) {
+                                                                return <option key={l.id_licencia} value={l.id_licencia}>{l.descripcion} — {l.serie_keys} ({l.disponibles} disp.)</option>;
+                                                            })}
+                                                        </select>
+                                                        <button type="button" className="eqa-btn-mini del" onClick={function () { quitarLicenciaNueva(idx); }}><IconoFa icono={faTrash} /></button>
+                                                    </div>
+                                                );
+                                            })}
                                         </div>
 
                                         {/* Almacenamiento editable */}
@@ -536,7 +610,7 @@ export default function EquiposAsignar() {
                                             )}
                                             {eq.licencias && eq.licencias.length > 0 && eq.licencias.map(function (lic) {
                                                 return (
-                                                    <div key={lic.id_asiglicenc} className="eqa-spec"><IconoFa icono={faKey} /><span>{lic.descripcion}</span></div>
+                                                    <div key={lic.id_asiglicenc} className="eqa-spec"><IconoFa icono={faKey} /><span>{lic.descripcion} — {lic.serie_keys}</span></div>
                                                 );
                                             })}
                                         </div>

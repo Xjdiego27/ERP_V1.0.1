@@ -69,7 +69,8 @@ export default function Licencias() {
             serie_keys: lic.serie_keys || '',
             cantidad: lic.cantidad || 1,
         });
-        setMostrarForm(true);
+        setMostrarForm(false);
+        setExpandido(lic.id_licencia);
     }
 
     function cancelarForm() {
@@ -234,23 +235,55 @@ export default function Licencias() {
                         var pct = lic.cantidad > 0 ? Math.round((lic.asignadas / lic.cantidad) * 100) : 0;
                         var abierto = expandido === lic.id_licencia;
                         var barColor = pct >= 100 ? '#ef4444' : pct >= 75 ? '#f59e0b' : '#22c55e';
+                        var enEdicion = editandoId === lic.id_licencia;
 
                         return (
                             <div key={lic.id_licencia} className={'lic-card' + (abierto ? ' expandida' : '')}>
-                                <div className="lic-card-header" onClick={function () { toggleExpandir(lic.id_licencia); }}>
-                                    <div className="lic-card-icono"><IconoFa icono={faKey} /></div>
-                                    <div className="lic-card-info">
-                                        <span className="lic-card-nombre">{lic.serie_keys}</span>
-                                        <span className="lic-card-serial">{lic.descripcion}</span>
+                                {/* Header: si está en edición inline, mostrar inputs */}
+                                {enEdicion ? (
+                                    <div className="lic-card-edit-inline">
+                                        <div className="lic-edit-inline-grid">
+                                            <div className="lic-form-campo">
+                                                <label>Descripción *</label>
+                                                <input type="text" value={form.descripcion}
+                                                    onChange={function (e) { handleChange('descripcion', e.target.value); }} />
+                                            </div>
+                                            <div className="lic-form-campo">
+                                                <label>Serial / Key *</label>
+                                                <input type="text" value={form.serie_keys}
+                                                    onChange={function (e) { handleChange('serie_keys', e.target.value); }} />
+                                            </div>
+                                            <div className="lic-form-campo">
+                                                <label>Cantidad *</label>
+                                                <input type="number" min="1" value={form.cantidad}
+                                                    onChange={function (e) { handleChange('cantidad', e.target.value); }} />
+                                            </div>
+                                        </div>
+                                        <div className="lic-form-btns">
+                                            <button className="lic-btn guardar" onClick={guardar}>
+                                                <IconoFa icono={faFloppyDisk} /> Actualizar
+                                            </button>
+                                            <button className="lic-btn cancelar" onClick={cancelarForm}>
+                                                <IconoFa icono={faXmark} /> Cancelar
+                                            </button>
+                                        </div>
                                     </div>
-                                    <div className="lic-card-conteo">
-                                        <span className="lic-card-disp" style={{ color: barColor }}>
-                                            {lic.disponibles} / {lic.cantidad}
-                                        </span>
-                                        <span className="lic-card-disp-label">disponibles</span>
+                                ) : (
+                                    <div className="lic-card-header" onClick={function () { toggleExpandir(lic.id_licencia); }}>
+                                        <div className="lic-card-icono"><IconoFa icono={faKey} /></div>
+                                        <div className="lic-card-info">
+                                            <span className="lic-card-nombre">{lic.serie_keys}</span>
+                                            <span className="lic-card-serial">{lic.descripcion}</span>
+                                        </div>
+                                        <div className="lic-card-conteo">
+                                            <span className="lic-card-disp" style={{ color: barColor }}>
+                                                {lic.disponibles} / {lic.cantidad}
+                                            </span>
+                                            <span className="lic-card-disp-label">disponibles</span>
+                                        </div>
+                                        <IconoFa icono={abierto ? faChevronDown : faChevronRight} clase="lic-card-flecha" />
                                     </div>
-                                    <IconoFa icono={abierto ? faChevronDown : faChevronRight} clase="lic-card-flecha" />
-                                </div>
+                                )}
 
                                 {/* Barra de progreso */}
                                 <div className="lic-barra-wrap">

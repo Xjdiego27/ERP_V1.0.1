@@ -479,6 +479,53 @@ def _generar_pdf_tickets(tickets_data: list, mes: int, anio: int, nombre_usuario
     elementos.append(kpi_table)
     elementos.append(Spacer(1, 6))
 
+    # ── KPI de Calificaciones / Valoraciones ──
+    val_counts = {1: 0, 2: 0, 3: 0}
+    val_total = 0
+    val_sum = 0
+    sin_calificar = 0
+    for t in tickets_data:
+        v = t.get("valoracion")
+        if v and v in (1, 2, 3):
+            val_counts[v] += 1
+            val_total += 1
+            val_sum += v
+        elif t.get("estado") in ("CERRADO", "RESUELTO"):
+            sin_calificar += 1
+    val_promedio = round(val_sum / val_total, 2) if val_total > 0 else 0
+
+    elementos.append(Paragraph("Calificaciones de Servicio", seccion_style))
+
+    estrellas_labels = {
+        1: "\u2605 Malo",
+        2: "\u2605\u2605 Regular",
+        3: "\u2605\u2605\u2605 Bueno",
+    }
+    cal_kpi_data = [
+        [Paragraph(estrellas_labels[1], kpi_label),
+         Paragraph(estrellas_labels[2], kpi_label),
+         Paragraph(estrellas_labels[3], kpi_label),
+         Paragraph("Promedio", kpi_label),
+         Paragraph("Sin calificar", kpi_label)],
+        [Paragraph(str(val_counts[1]), kpi_valor),
+         Paragraph(str(val_counts[2]), kpi_valor),
+         Paragraph(str(val_counts[3]), kpi_valor),
+         Paragraph(f"{val_promedio} \u2605", kpi_valor),
+         Paragraph(str(sin_calificar), kpi_valor)],
+    ]
+    cal_kpi_table = Table(cal_kpi_data, colWidths=[doc.width / 5] * 5)
+    cal_kpi_table.setStyle(TableStyle([
+        ("BACKGROUND", (0, 0), (-1, -1), colors.HexColor("#fffbeb")),
+        ("BOX", (0, 0), (-1, -1), 1, colors.HexColor("#fde68a")),
+        ("INNERGRID", (0, 0), (-1, -1), 0.5, colors.HexColor("#fde68a")),
+        ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
+        ("TOPPADDING", (0, 0), (-1, 0), 8),
+        ("BOTTOMPADDING", (0, 1), (-1, 1), 10),
+        ("ROUNDEDCORNERS", [6, 6, 6, 6]),
+    ]))
+    elementos.append(cal_kpi_table)
+    elementos.append(Spacer(1, 6))
+
     # ── Por Estado ──
     elementos.append(Paragraph("Tickets por Estado", seccion_style))
     estado_rows = [["Estado", "Cantidad", "%"]]
@@ -685,6 +732,7 @@ def informe_tickets_pdf(
             "categoria": cat.DESCRIP if cat else None,
             "fech_creacion": str(t.FECH_CREACION) if t.FECH_CREACION else None,
             "fech_cierre": str(t.FECH_CIERRE) if t.FECH_CIERRE else None,
+            "valoracion": t.VALORACION,
         })
 
     pdf_buf = _generar_pdf_tickets(tickets_data, mes, anio, nombre_usuario)

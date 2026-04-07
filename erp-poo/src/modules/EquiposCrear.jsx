@@ -20,7 +20,7 @@ export default function EquiposCrear() {
     var [guardando, setGuardando] = useState(false);
     var fotoInput = useRef(null);
     var [licenciasDisp, setLicenciasDisp] = useState([]);
-    var [licenciaSeleccionada, setLicenciaSeleccionada] = useState('');
+    var [licenciasSeleccionadas, setLicenciasSeleccionadas] = useState([]);
 
     // Cargar catálogos y licencias disponibles
     useEffect(function () {
@@ -79,6 +79,21 @@ export default function EquiposCrear() {
 
     function eliminarAlmacenamiento(idx) {
         setAlmacenamiento(function (prev) { return prev.filter(function (_, i) { return i !== idx; }); });
+    }
+
+    // Licencias multi-fila
+    function agregarLicencia() {
+        setLicenciasSeleccionadas(function (prev) { return prev.concat([{ id_licencia: '' }]); });
+    }
+    function cambiarLicencia(idx, valor) {
+        setLicenciasSeleccionadas(function (prev) {
+            var copia = prev.slice();
+            copia[idx] = { id_licencia: valor };
+            return copia;
+        });
+    }
+    function eliminarLicencia(idx) {
+        setLicenciasSeleccionadas(function (prev) { return prev.filter(function (_, i) { return i !== idx; }); });
     }
 
     function handleFoto(e) {
@@ -227,12 +242,13 @@ export default function EquiposCrear() {
                 });
             }
 
-            // Asignar licencia si se seleccionó una
-            if (licenciaSeleccionada && data.id_equipo) {
+            // Asignar licencias seleccionadas
+            var licsValidas = licenciasSeleccionadas.filter(function (l) { return l.id_licencia; });
+            for (var li = 0; li < licsValidas.length; li++) {
                 await fetch(API_URL + '/licencias/asignar', {
                     method: 'POST',
                     headers: headersConToken(),
-                    body: JSON.stringify({ id_licencia: parseInt(licenciaSeleccionada), id_equipo: data.id_equipo })
+                    body: JSON.stringify({ id_licencia: parseInt(licsValidas[li].id_licencia), id_equipo: data.id_equipo })
                 });
             }
 
@@ -249,7 +265,7 @@ export default function EquiposCrear() {
                 setAlmacenamiento([]);
                 setFoto(null);
                 setFotoPreview(null);
-                setLicenciaSeleccionada('');
+                setLicenciasSeleccionadas([]);
                 setExito(false);
                 setMensaje('');
             }, 2000);
@@ -341,17 +357,43 @@ export default function EquiposCrear() {
                     {renderSelect('TIPO RAM:', 'id_tipo_ram', catalogos.tipos_ram, 'tipo_ram')}
                     {renderSelect('RAM:', 'id_ram', catalogos.rams, 'ram')}
 
-                    {/* Licencia */}
-                    <div className="eq-campo">
-                        <label><IconoFa icono={faKey} /> LICENCIA:</label>
-                        <div className="eq-campo-row">
-                            <select value={licenciaSeleccionada} onChange={function (e) { setLicenciaSeleccionada(e.target.value); }}>
-                                <option value="">— Sin licencia —</option>
-                                {licenciasDisp.filter(function (l) { return l.disponibles > 0; }).map(function (l) {
-                                    return <option key={l.id_licencia} value={l.id_licencia}>{l.descripcion} ({l.disponibles} disp.)</option>;
-                                })}
-                            </select>
+                    {/* Licencias multi-fila */}
+                    <div className="eq-almc-section" style={{marginTop: '0.5rem'}}>
+                        <div className="eq-almc-header">
+                            <span><IconoFa icono={faKey} /> LICENCIAS</span>
+                            <button type="button" className="eq-btn-add" onClick={agregarLicencia} title="Agregar licencia">
+                                <IconoFa icono={faPlus} />
+                            </button>
                         </div>
+                        <table className="eq-almc-tabla">
+                            <thead>
+                                <tr><th>SERIAL KEY</th><th></th></tr>
+                            </thead>
+                            <tbody>
+                                {licenciasSeleccionadas.map(function (lic, idx) {
+                                    return (
+                                        <tr key={idx}>
+                                            <td>
+                                                <select value={lic.id_licencia || ''} onChange={function (e) { cambiarLicencia(idx, e.target.value); }}>
+                                                    <option value="">— Seleccionar licencia —</option>
+                                                    {licenciasDisp.filter(function (l) { return l.disponibles > 0; }).map(function (l) {
+                                                        return <option key={l.id_licencia} value={l.id_licencia}>{l.descripcion} — {l.serie_keys} ({l.disponibles} disp.)</option>;
+                                                    })}
+                                                </select>
+                                            </td>
+                                            <td>
+                                                <button type="button" className="eq-btn-del" onClick={function () { eliminarLicencia(idx); }}>
+                                                    <IconoFa icono={faTrash} />
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    );
+                                })}
+                                {licenciasSeleccionadas.length === 0 && (
+                                    <tr><td colSpan="2" className="eq-almc-vacio">Sin licencias — click + para agregar</td></tr>
+                                )}
+                            </tbody>
+                        </table>
                     </div>
                 </div>
 

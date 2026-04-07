@@ -143,6 +143,20 @@
 /* Acciones en detalle */
 .lic-card-acciones { display: flex; gap: 8px; padding-top: 10px; border-top: 1px solid var(--borde, #e2e8f0); }
 
+/* Inline editing within card */
+.lic-card-edit-inline {
+    padding: 14px 16px;
+    animation: licFadeIn 0.2s;
+    border-left: 3px solid var(--color-primario, #3b82f6);
+}
+.lic-edit-inline-grid {
+    display: grid; grid-template-columns: 2fr 2fr 1fr; gap: 10px; margin-bottom: 12px;
+}
+
+@media (max-width: 768px) {
+    .lic-edit-inline-grid { grid-template-columns: 1fr; }
+}
+
 /* Responsive */
 @media (max-width: 768px) {
     .lic-form-grid { grid-template-columns: 1fr; }
@@ -188,6 +202,7 @@ body.dark-mode .lic-equipo-row { background: var(--bg-subtle); }
 body.dark-mode .lic-equipo-tipo { color: var(--text-primary); }
 body.dark-mode .lic-equipo-serie { color: var(--text-secondary); }
 body.dark-mode .lic-card-acciones { border-color: var(--border-color); }
+body.dark-mode .lic-card-edit-inline { border-left-color: var(--active-color); }
 body.dark-mode .lic-sin-equipos { color: var(--text-secondary); }
 body.dark-mode .lic-equipos-titulo { color: var(--text-secondary); }
 body.dark-mode .lic-vacio { color: var(--text-secondary); }

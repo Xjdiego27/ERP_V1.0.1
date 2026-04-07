@@ -408,9 +408,9 @@ def generar_documento(
     if formato == 'pdf':
         try:
             import tempfile
-            import subprocess
-            import sys
             import uuid as _uuid
+            import pythoncom
+            import win32com.client
 
             tmp_dir = tempfile.gettempdir()
             uid = _uuid.uuid4().hex[:8]
@@ -421,14 +421,18 @@ def generar_documento(
             with open(tmp_docx, 'wb') as f:
                 f.write(buffer.getvalue())
 
-            # Convertir en subproceso aislado (evita problemas COM en threads)
-            resultado_conv = subprocess.run(
-                [sys.executable, '-c',
-                 f'from docx2pdf import convert; convert(r"{tmp_docx}", r"{tmp_pdf}")'],
-                capture_output=True, text=True, timeout=120
-            )
-            if resultado_conv.returncode != 0:
-                raise RuntimeError(resultado_conv.stderr or 'Error en conversión PDF')
+            # Convertir usando COM directamente con CoInitialize
+            pythoncom.CoInitialize()
+            try:
+                word = win32com.client.Dispatch("Word.Application")
+                word.Visible = False
+                word.DisplayAlerts = False
+                doc_w = word.Documents.Open(os.path.abspath(tmp_docx))
+                doc_w.SaveAs(os.path.abspath(tmp_pdf), FileFormat=17)  # 17 = wdFormatPDF
+                doc_w.Close(False)
+                word.Quit()
+            finally:
+                pythoncom.CoUninitialize()
 
             if os.path.isfile(tmp_pdf):
                 with open(tmp_pdf, 'rb') as f:
