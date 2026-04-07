@@ -713,19 +713,117 @@ body.dark-mode .mi-panel-card-icono.telefono {
    CUMPLEAÑOS — panel lateral y cards
    ═══════════════════════════════════════════ */
 .saludos-cumple-card {
+  background: var(--glass-card-bg) !important;
   border-radius: var(--glass-radius-sm) !important;
   backdrop-filter: blur(6px);
   border: 1px solid var(--glass-border) !important;
 }
 
 .saludos-detalle {
+  background: var(--glass-card-bg) !important;
   border-radius: var(--glass-radius-sm) !important;
   backdrop-filter: blur(8px);
   border: 1px solid var(--glass-border) !important;
 }
 
 .saludo-card {
+  background: var(--glass-stat-bg) !important;
+  backdrop-filter: blur(6px);
+  border: 1px solid var(--glass-border) !important;
   border-radius: var(--glass-radius-xs) !important;
+}
+
+/* Cumpleaños — textos legibles en glass */
+.saludos-titulo {
+  color: var(--text-primary) !important;
+}
+.saludos-header-icono {
+  color: #f59e0b !important;
+  filter: drop-shadow(0 0 4px rgba(245,158,11,0.3));
+}
+.saludos-cumple-nombre {
+  color: var(--text-primary) !important;
+}
+.saludos-cumple-progreso {
+  color: var(--text-secondary) !important;
+}
+.saludos-cumple-etiqueta {
+  color: #f59e0b !important;
+}
+.saludos-cargando,
+.saludos-vacio {
+  color: var(--text-secondary) !important;
+}
+.saludos-vacio-sub {
+  color: var(--text-muted) !important;
+}
+.saludos-tab {
+  color: var(--text-secondary) !important;
+}
+.saludos-tab:hover {
+  color: var(--text-primary) !important;
+  background: var(--glass-stat-bg) !important;
+}
+.saludos-tab.activo {
+  color: #f59e0b !important;
+}
+.saludos-tabs {
+  border-bottom-color: var(--glass-border) !important;
+}
+.saludo-card-nombre {
+  color: var(--text-primary) !important;
+}
+.saludo-card-mensaje {
+  color: var(--text-secondary) !important;
+}
+.saludo-copiar-btn {
+  background: var(--glass-input-bg) !important;
+  border-color: var(--glass-border) !important;
+  color: var(--text-secondary) !important;
+}
+.saludos-grid-vacio {
+  color: var(--text-secondary) !important;
+}
+.faltante-item {
+  background: var(--glass-input-bg) !important;
+  border: 1px solid var(--glass-border) !important;
+  border-radius: var(--glass-radius-xs) !important;
+  backdrop-filter: blur(4px);
+}
+.faltante-nombre {
+  color: var(--text-primary) !important;
+}
+
+/* Cumpleaños modal — glass */
+.cumple-modal {
+  background: var(--glass-bg) !important;
+  backdrop-filter: blur(20px);
+  border: 1px solid var(--glass-border) !important;
+}
+.cumple-modal-titulo {
+  color: var(--text-primary) !important;
+}
+.cumple-modal-desc {
+  color: var(--text-secondary) !important;
+}
+.cumple-modal-textarea {
+  background: var(--glass-input-bg) !important;
+  border-color: var(--glass-border) !important;
+  color: var(--text-primary) !important;
+}
+.cumple-modal-chars {
+  color: var(--text-muted) !important;
+}
+.cumple-modal-sticker-btn {
+  color: var(--text-secondary) !important;
+  border-color: var(--glass-border) !important;
+}
+.cumple-modal-sticker-preview {
+  background: var(--glass-stat-bg) !important;
+  border-color: var(--glass-border) !important;
+}
+.cumple-modal-btn-cerrar {
+  color: var(--text-secondary) !important;
 }
 
 
@@ -1270,6 +1368,33 @@ body.dark-mode .doc-gen-icono.pdf {
   border-radius: var(--glass-radius-xs) !important;
 }
 
+/* Equipos Crear — textos y labels legibles en glass */
+.eq-campo label,
+.eq-estado-label {
+  color: var(--text-primary) !important;
+  text-shadow: 0 0 6px rgba(0,0,0,0.08);
+}
+.eq-subtitulo {
+  color: var(--text-secondary) !important;
+}
+.eq-almc-header {
+  color: var(--text-primary) !important;
+}
+.eq-foto-placeholder {
+  color: var(--text-secondary) !important;
+}
+.eq-almc-vacio {
+  color: var(--text-secondary) !important;
+}
+.eq-almc-tabla th {
+  color: var(--text-primary) !important;
+  background: var(--glass-stat-bg) !important;
+  backdrop-filter: blur(4px);
+}
+.eq-loading {
+  color: var(--text-secondary) !important;
+}
+
 
 /* ═══════════════════════════════════════════
    EQUIPOS ASIGNAR — búsqueda, asignación, form
@@ -1329,6 +1454,15 @@ body.dark-mode .doc-gen-icono.pdf {
   border: 1px solid var(--glass-border) !important;
   border-radius: var(--glass-radius-xs) !important;
 }
+.cumple-titulo {
+  color: var(--text-primary) !important;
+}
+.cumple-nombre {
+  color: var(--text-primary) !important;
+}
+.cumple-vacio {
+  color: var(--text-secondary) !important;
+}
 
 
 /* ═══════════════════════════════════════════
@@ -1373,12 +1507,21 @@ body.dark-mode .doc-gen-icono.pdf {
   border: 1px solid var(--glass-border);
 }
 
-.chat-msg-texto {
+.chat-msg.suyo .chat-msg-texto {
   color: var(--text-primary) !important;
 }
+.chat-msg.mio .chat-msg-texto {
+  color: #fff !important;
+}
+.chat-msg.mio .chat-msg-burbuja {
+  color: #fff !important;
+}
 
-.chat-msg-hora {
+.chat-msg.suyo .chat-msg-hora {
   color: var(--text-muted) !important;
+}
+.chat-msg.mio .chat-msg-hora {
+  color: rgba(255,255,255,0.7) !important;
 }
 
 .chat-ventana-header {
@@ -2220,6 +2363,473 @@ body.dark-mode .doc-gen-icono.pdf {
 
 
 /* ═══════════════════════════════════════════════════════
+   LICENCIAS — tarjetas, stats, formulario, equipos
+   ═══════════════════════════════════════════════════════ */
+.lic-card {
+  background: var(--glass-card-bg) !important;
+  backdrop-filter: blur(var(--glass-blur));
+  -webkit-backdrop-filter: blur(var(--glass-blur));
+  border: 1px solid var(--glass-border) !important;
+  box-shadow: var(--glass-shadow);
+}
+.lic-stat {
+  background: var(--glass-stat-bg) !important;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid var(--glass-border) !important;
+}
+.lic-busqueda {
+  background: var(--glass-input-bg) !important;
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  border: 1px solid var(--glass-border) !important;
+}
+.lic-form-panel,
+.lic-card-edit-inline {
+  background: var(--glass-card-bg) !important;
+  backdrop-filter: blur(var(--glass-blur));
+  -webkit-backdrop-filter: blur(var(--glass-blur));
+  border: 1px solid var(--glass-border) !important;
+}
+.lic-card-detalle {
+  background: transparent !important;
+}
+.lic-equipo-row {
+  background: var(--glass-input-bg) !important;
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+}
+.lic-form-campo input {
+  background: var(--glass-input-bg) !important;
+  border: 1px solid var(--glass-border) !important;
+}
+.lic-mensaje.exito {
+  background: rgba(34,197,94,0.15) !important;
+}
+.lic-mensaje.error {
+  background: rgba(239,68,68,0.15) !important;
+}
+.lic-btn-desasignar {
+  background: rgba(239,68,68,0.12) !important;
+}
+
+
+/* ═══════════════════════════════════════════════════════
+   ASISTENCIAS GENERAL — filas grupo, estados de fila
+   ═══════════════════════════════════════════════════════ */
+.asistg-fila-grupo {
+  background: var(--glass-card-bg) !important;
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+}
+.asistg-header-row {
+  background: var(--glass-stat-bg) !important;
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+}
+.asistg-emp-horario {
+  background: rgba(232,245,233,0.55) !important;
+  backdrop-filter: blur(4px);
+}
+.fila-emp-asistio {
+  background: rgba(39,174,96,0.08) !important;
+}
+.fila-emp-tardanza {
+  background: rgba(243,156,18,0.08) !important;
+}
+.fila-emp-falta {
+  background: rgba(231,76,60,0.08) !important;
+}
+.fila-descanso {
+  background: rgba(92,107,192,0.1) !important;
+}
+.fila-falta {
+  background: rgba(231,76,60,0.1) !important;
+}
+.fila-tardanza {
+  background: rgba(243,156,18,0.1) !important;
+}
+.fila-pendiente {
+  background: rgba(200,200,200,0.1) !important;
+}
+.fila-asistio {
+  background: rgba(39,174,96,0.1) !important;
+}
+
+/* Categorías asistencia general */
+.catga-descanso { background: rgba(92,107,192,0.12) !important; }
+.catga-ausentismo { background: rgba(231,76,60,0.12) !important; }
+.catga-normal, .catga-puntual { background: rgba(39,174,96,0.12) !important; }
+.catga-vacio { background: rgba(200,200,200,0.1) !important; }
+.catga-tardanza { background: rgba(243,156,18,0.12) !important; }
+.catga-vacaciones { background: rgba(33,150,243,0.12) !important; }
+.catga-permiso, .catga-permisopersonal { background: rgba(156,39,176,0.12) !important; }
+.catga-licencia { background: rgba(0,150,136,0.12) !important; }
+.catga-falta { background: rgba(231,76,60,0.12) !important; }
+.catga-inconsistencia { background: rgba(255,193,7,0.12) !important; }
+.catga-compensacionhoras { background: rgba(0,188,212,0.12) !important; }
+.catga-comision { background: rgba(233,30,99,0.12) !important; }
+.catga-viajelaboral { background: rgba(92,107,192,0.12) !important; }
+.catga-dialibre { background: rgba(139,195,74,0.12) !important; }
+
+/* Filtro estado botones */
+.filtro-estado-btn.fest-asist.activo { background: rgba(39,174,96,0.85) !important; }
+.filtro-estado-btn.fest-tard.activo { background: rgba(243,156,18,0.85) !important; }
+.filtro-estado-btn.fest-falta.activo { background: rgba(231,76,60,0.85) !important; }
+
+
+/* ═══════════════════════════════════════════════════════
+   CHAT — paneles, ventana, burbujas, inputs
+   ═══════════════════════════════════════════════════════ */
+.chat-panel {
+  background: var(--glass-card-bg) !important;
+  backdrop-filter: blur(var(--glass-blur));
+  -webkit-backdrop-filter: blur(var(--glass-blur));
+  border: 1px solid var(--glass-border) !important;
+}
+.chat-ventana {
+  background: var(--glass-card-bg) !important;
+  backdrop-filter: blur(var(--glass-blur));
+  -webkit-backdrop-filter: blur(var(--glass-blur));
+  border: 1px solid var(--glass-border) !important;
+}
+.chat-ventana-body {
+  background: var(--glass-bg) !important;
+}
+.chat-ventana-input {
+  background: var(--glass-input-bg) !important;
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  border-top: 1px solid var(--glass-border) !important;
+}
+.chat-msg.suyo .chat-msg-burbuja {
+  background: rgba(226,232,240,0.75) !important;
+  backdrop-filter: blur(6px);
+  border: 1px solid var(--glass-border) !important;
+}
+body.dark-mode .chat-msg.suyo .chat-msg-burbuja {
+  background: rgba(51,65,85,0.75) !important;
+}
+.chat-contacto-item:hover {
+  background: var(--glass-hover) !important;
+}
+.chat-modal-crear-grupo {
+  background: var(--glass-bg) !important;
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid var(--glass-border) !important;
+}
+.chat-grupo-contacto-item:hover {
+  background: var(--glass-hover) !important;
+}
+.chat-grupo-contacto-item.seleccionado {
+  background: rgba(99,102,241,0.12) !important;
+}
+.chat-crear-grupo-btn {
+  background: rgba(59,130,246,0.1) !important;
+}
+.chat-crear-grupo-btn:hover {
+  background: rgba(59,130,246,0.18) !important;
+}
+.chat-btn-cancelar {
+  background: var(--glass-input-bg) !important;
+}
+.chat-msg-descargar-btn {
+  background: var(--glass-input-bg) !important;
+}
+.mi-espacio-body {
+  background: var(--glass-bg) !important;
+}
+.mi-espacio-footer {
+  background: var(--glass-input-bg) !important;
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+}
+.mi-espacio-crear {
+  background: var(--glass-card-bg) !important;
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+}
+.mi-espacio-crear textarea {
+  background: var(--glass-input-bg) !important;
+}
+.mi-espacio-btn-nueva:hover {
+  background: rgba(245,158,11,0.15) !important;
+}
+.mi-espacio-btn-cancelar:hover {
+  background: var(--glass-hover) !important;
+}
+.sticker-picker-retro {
+  background: var(--glass-bg) !important;
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--glass-border) !important;
+}
+.sticker-picker-retro-tabs {
+  background: var(--glass-stat-bg) !important;
+}
+.chat-ventana-tools {
+  background: var(--glass-input-bg) !important;
+}
+
+
+/* ═══════════════════════════════════════════════════════
+   PERSONAL DETALLE — botones, badges, tablas asistencia
+   ═══════════════════════════════════════════════════════ */
+.det-btn-editar {
+  background: rgba(59,130,246,0.12) !important;
+}
+.det-btn-editar:hover {
+  background: rgba(59,130,246,0.22) !important;
+}
+.det-btn-guardar, .det-btn-reactivar {
+  background: rgba(34,197,94,0.12) !important;
+}
+.det-btn-guardar:hover, .det-btn-reactivar:hover {
+  background: rgba(34,197,94,0.22) !important;
+}
+.det-btn-cancelar {
+  background: var(--glass-input-bg) !important;
+}
+.det-btn-cancelar:hover {
+  background: var(--glass-hover) !important;
+}
+.det-btn-desactivar {
+  background: rgba(249,115,22,0.12) !important;
+}
+.det-btn-desactivar:hover {
+  background: rgba(249,115,22,0.22) !important;
+}
+.det-btn-sync {
+  background: rgba(59,130,246,0.1) !important;
+}
+.det-btn-sync:hover {
+  background: rgba(59,130,246,0.2) !important;
+}
+.det-btn-filtrar {
+  background: rgba(59,130,246,0.1) !important;
+}
+.det-btn-filtrar:hover {
+  background: rgba(59,130,246,0.2) !important;
+}
+.det-btn-justificar {
+  background: rgba(245,158,11,0.12) !important;
+}
+.det-btn-justificar:hover {
+  background: rgba(245,158,11,0.22) !important;
+}
+.detalle-horario-badge,
+.asist-horario-badge {
+  background: rgba(34,197,94,0.12) !important;
+}
+.detalle-estado-badge.estado-activo {
+  background: rgba(34,197,94,0.12) !important;
+}
+.detalle-estado-badge.estado-inactivo {
+  background: rgba(231,76,60,0.12) !important;
+}
+.asist-rango-info {
+  background: rgba(33,150,243,0.1) !important;
+}
+.asist-res-asist { background: rgba(34,197,94,0.12) !important; }
+.asist-res-tard { background: rgba(255,193,7,0.12) !important; }
+.asist-res-min { background: rgba(233,30,99,0.12) !important; }
+.asist-res-falt { background: rgba(255,87,34,0.12) !important; }
+.asist-fila-descanso td { background: rgba(200,200,200,0.1) !important; }
+.asist-fila-falta td { background: rgba(231,76,60,0.08) !important; }
+.asist-fila-tardanza td { background: rgba(255,193,7,0.08) !important; }
+
+/* Categorías asistencia detalle */
+.asist-cat-asistio { background: rgba(34,197,94,0.12) !important; }
+.asist-cat-ausentismo { background: rgba(231,76,60,0.12) !important; }
+.asist-cat-feriado { background: rgba(33,150,243,0.12) !important; }
+.asist-cat-vacaciones { background: rgba(92,107,192,0.12) !important; }
+.asist-cat-descanso { background: rgba(200,200,200,0.1) !important; }
+.asist-cat-permisodesalud { background: rgba(245,158,11,0.12) !important; }
+.asist-cat-compensacionhoras { background: rgba(0,150,136,0.12) !important; }
+.asist-cat-comision { background: rgba(156,39,176,0.12) !important; }
+.asist-cat-licencia { background: rgba(233,30,99,0.12) !important; }
+.asist-cat-viajelaboral { background: rgba(33,150,243,0.12) !important; }
+
+
+/* ═══════════════════════════════════════════════════════
+   PERMISOS — badges, filas, banner, checks
+   ═══════════════════════════════════════════════════════ */
+.permisos-mensaje.exito {
+  background: rgba(34,197,94,0.15) !important;
+}
+.permisos-mensaje.error {
+  background: rgba(239,68,68,0.15) !important;
+}
+.permisos-tabla tbody tr:hover {
+  background: var(--glass-hover) !important;
+}
+.permisos-tabla tbody tr.fila-con-cambios {
+  background: rgba(245,158,11,0.08) !important;
+}
+.avatar-placeholder {
+  background: var(--glass-input-bg) !important;
+}
+.badge-administrador, .badge-admin, .admin-badge {
+  background: rgba(59,130,246,0.12) !important;
+}
+.badge-soporte {
+  background: rgba(245,158,11,0.12) !important;
+}
+.badge-usuario {
+  background: var(--glass-input-bg) !important;
+}
+.badge-recursoshumanos, .badge-rrhh {
+  background: rgba(34,197,94,0.12) !important;
+}
+.badge-supervisor {
+  background: rgba(99,102,241,0.12) !important;
+}
+.check-btn {
+  background: var(--glass-input-bg) !important;
+  border: 2px solid var(--glass-border) !important;
+}
+.btn-todos {
+  background: rgba(59,130,246,0.1) !important;
+}
+.btn-todos:hover {
+  background: rgba(59,130,246,0.18) !important;
+}
+.btn-ninguno {
+  background: rgba(239,68,68,0.08) !important;
+}
+.btn-ninguno:hover {
+  background: rgba(239,68,68,0.15) !important;
+}
+.permisos-info-banner {
+  background: rgba(59,130,246,0.08) !important;
+  backdrop-filter: blur(4px);
+}
+.rol-select {
+  background: var(--glass-input-bg) !important;
+  border: 1px solid var(--glass-border) !important;
+}
+.rol-select.cambiado {
+  background: rgba(245,158,11,0.1) !important;
+}
+
+
+/* ═══════════════════════════════════════════════════════
+   HORARIOS — día descanso, masivo, badge, modals
+   ═══════════════════════════════════════════════════════ */
+.horario-dia.dia-descanso {
+  background: rgba(254,243,226,0.55) !important;
+}
+.masivo-select {
+  background: var(--glass-input-bg) !important;
+  border: 1px solid var(--glass-border) !important;
+}
+.horarios-tabla .fila-seleccionada {
+  background: rgba(74,144,217,0.1) !important;
+}
+.badge-horario {
+  background: rgba(34,197,94,0.12) !important;
+}
+.modal-tabla-dias .fila-descanso {
+  background: rgba(254,243,226,0.4) !important;
+}
+.feriado-msg.exito {
+  background: rgba(34,197,94,0.15) !important;
+}
+.feriado-msg.error {
+  background: rgba(239,68,68,0.15) !important;
+}
+
+
+/* ═══════════════════════════════════════════════════════
+   TICKETS — mensajes, estados, valoración
+   ═══════════════════════════════════════════════════════ */
+.ticket-mensaje.exito, .tickets-msg-exito {
+  background: rgba(34,197,94,0.15) !important;
+}
+.ticket-mensaje.error {
+  background: rgba(239,68,68,0.15) !important;
+}
+.ticket-estado-badge[data-estado="abierto"] {
+  background: rgba(245,158,11,0.15) !important;
+}
+.ticket-estado-badge[data-estado="cerrado"] {
+  background: rgba(34,197,94,0.15) !important;
+}
+.val-lento { background: rgba(239,68,68,0.1) !important; }
+.val-lento:hover { background: rgba(239,68,68,0.18) !important; }
+.val-normal { background: rgba(250,204,21,0.1) !important; }
+.val-normal:hover { background: rgba(250,204,21,0.18) !important; }
+.val-rapido { background: rgba(34,197,94,0.1) !important; }
+.val-rapido:hover { background: rgba(34,197,94,0.18) !important; }
+.btn-reabrir-ticket { background: rgba(239,68,68,0.1) !important; }
+.btn-cerrar-vigente:hover { background: rgba(239,68,68,0.1) !important; }
+.detalle-valoracion { background: rgba(250,204,21,0.08) !important; }
+
+
+/* ═══════════════════════════════════════════════════════
+   CHIPS — badges, mensajes
+   ═══════════════════════════════════════════════════════ */
+.chip-mensaje.exito { background: rgba(34,197,94,0.15) !important; }
+.chip-mensaje.error { background: rgba(239,68,68,0.15) !important; }
+.chip-estado-badge.asignado { background: rgba(59,130,246,0.12) !important; }
+.chip-estado-badge.disponible { background: rgba(34,197,94,0.12) !important; }
+.chip-estado-badge.devuelto { background: var(--glass-input-bg) !important; }
+
+
+/* ═══════════════════════════════════════════════════════
+   EQUIPOS — mensajes, asignación, historial, estado
+   ═══════════════════════════════════════════════════════ */
+.eqa-mensaje.exito { background: rgba(34,197,94,0.15) !important; }
+.eqa-mensaje.error { background: rgba(239,68,68,0.15) !important; }
+.eqa-card-asignacion {
+  background: var(--glass-stat-bg) !important;
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  border: 1px solid var(--glass-border) !important;
+}
+.eqa-asig-avatar { background: rgba(59,130,246,0.12) !important; }
+.eqa-hist-toggle { background: rgba(59,130,246,0.12) !important; }
+.eqa-historial { background: rgba(59,130,246,0.06) !important; }
+.eqa-hist-avatar { background: rgba(59,130,246,0.1) !important; }
+.eqa-btn-card.devolver { background: rgba(245,158,11,0.12) !important; color: #d97706 !important; }
+.estado-disponible { background: rgba(34,197,94,0.12) !important; }
+.estado-asignado { background: rgba(245,158,11,0.12) !important; }
+.estado-baja { background: rgba(239,68,68,0.12) !important; }
+
+
+/* ═══════════════════════════════════════════════════════
+   PERSONAL — badges
+   ═══════════════════════════════════════════════════════ */
+.personal-badge-activo { background: rgba(34,197,94,0.12) !important; }
+.personal-badge-inactivo { background: rgba(239,68,68,0.12) !important; }
+
+
+/* ═══════════════════════════════════════════════════════
+   NOTIFICACIONES — item urgente, iconos tipo
+   ═══════════════════════════════════════════════════════ */
+.noti-item.noti-urgente { background: rgba(231,76,60,0.08) !important; }
+.noti-tipo-contrato .noti-item-icono { background: rgba(245,158,11,0.12) !important; }
+.noti-tipo-cumpleanos .noti-item-icono { background: rgba(233,30,99,0.12) !important; }
+.noti-tipo-menu .noti-item-icono { background: rgba(34,197,94,0.12) !important; }
+.noti-tipo-evento .noti-item-icono { background: rgba(33,150,243,0.12) !important; }
+.noti-tipo-falta .noti-item-icono { background: rgba(231,76,60,0.12) !important; }
+
+
+/* ═══════════════════════════════════════════════════════
+   PASSWORD — mensajes
+   ═══════════════════════════════════════════════════════ */
+.cambio-pw-msg.error { background: rgba(239,68,68,0.15) !important; }
+.cambio-pw-msg.exito { background: rgba(34,197,94,0.15) !important; }
+
+
+/* ═══════════════════════════════════════════════════════
+   LOGIN — error
+   ═══════════════════════════════════════════════════════ */
+.login-error-msg { background: rgba(239,68,68,0.1) !important; }
+
+
+/* ═══════════════════════════════════════════════════════
    GLASS-OFF — desactiva todo efecto vidrio
    Cuando body tiene .glass-off se restauran fondos sólidos
    ═══════════════════════════════════════════════════════ */
@@ -2258,6 +2868,16 @@ body.glass-off .doc-gen-card,
 body.glass-off .doc-card,
 body.glass-off .eqa-card,
 body.glass-off .chip-card,
+body.glass-off .lic-card,
+body.glass-off .lic-stat,
+body.glass-off .lic-busqueda,
+body.glass-off .lic-form-panel,
+body.glass-off .lic-card-edit-inline,
+body.glass-off .lic-equipo-row,
+body.glass-off .asistg-fila-grupo,
+body.glass-off .chat-panel,
+body.glass-off .chat-ventana,
+body.glass-off .chat-ventana-input,
 body.glass-off .tarjeta-personal,
 body.glass-off .tarjeta-empleado,
 body.glass-off .donut-card,
@@ -2273,6 +2893,13 @@ body.glass-off .modal-content,
 body.glass-off .modal-overlay > div,
 body.glass-off .permiso-modal-overlay > div,
 body.glass-off .cumple-modal-content,
+body.glass-off .saludos-cumple-card,
+body.glass-off .saludos-detalle,
+body.glass-off .saludo-card,
+body.glass-off .faltante-item,
+body.glass-off .cumple-item,
+body.glass-off .cumple-modal,
+body.glass-off .eq-foto-area,
 body.glass-off .valoracion-content,
 body.glass-off .reapertura-content,
 body.glass-off table,
@@ -2322,6 +2949,9 @@ body.glass-off .doc-gen-card,
 body.glass-off .doc-card,
 body.glass-off .eqa-card,
 body.glass-off .chip-card,
+body.glass-off .lic-card,
+body.glass-off .lic-form-panel,
+body.glass-off .lic-card-edit-inline,
 body.glass-off .tarjeta-personal,
 body.glass-off .tarjeta-empleado,
 body.glass-off .donut-card,
@@ -2339,7 +2969,8 @@ body.glass-off .dashboard-card {
 body.glass-off .stat-card,
 body.glass-off .chip-stat,
 body.glass-off .eqa-stat,
-body.glass-off .eq-stat-card {
+body.glass-off .eq-stat-card,
+body.glass-off .lic-stat {
   background: var(--bg-card, #ffffff) !important;
   border: 1px solid var(--border-color, #ddd) !important;
   box-shadow: 0 2px 6px rgba(0,0,0,0.05);
@@ -2348,6 +2979,9 @@ body.glass-off .eq-stat-card {
 body.glass-off .det-input,
 body.glass-off .det-select,
 body.glass-off .chip-busqueda,
+body.glass-off .lic-busqueda,
+body.glass-off .lic-form-campo input,
+body.glass-off .lic-equipo-row,
 body.glass-off .tickets-search-box,
 body.glass-off .ticket-form input,
 body.glass-off .ticket-form select,
@@ -2490,4 +3124,169 @@ body.dark-mode.glass-off .check-btn.activo {
   background: #22c55e !important;
   border-color: #22c55e !important;
   color: #fff !important;
+}
+
+/* ── Glass-off: Asistencias General filas y rows ── */
+body.glass-off .asistg-fila-grupo {
+  background: var(--bg-card, #fff) !important;
+}
+body.glass-off .asistg-header-row {
+  background: var(--bg-subtle, #f5f7fa) !important;
+}
+body.glass-off .asistg-emp-horario {
+  background: #e8f5e9 !important;
+}
+body.glass-off .fila-emp-asistio { background: #f0faf3 !important; }
+body.glass-off .fila-emp-tardanza { background: #fffaf0 !important; }
+body.glass-off .fila-emp-falta { background: #fef5f5 !important; }
+body.glass-off .fila-descanso { background: #e8edf8 !important; }
+body.glass-off .fila-falta { background: #fce4e4 !important; }
+body.glass-off .fila-tardanza { background: #fff3e0 !important; }
+body.glass-off .fila-pendiente { background: #f5f5f5 !important; }
+body.glass-off .fila-asistio { background: #f0faf3 !important; }
+
+/* ── Glass-off: Chat ── */
+body.glass-off .chat-panel,
+body.glass-off .chat-ventana,
+body.glass-off .chat-modal-crear-grupo {
+  background: var(--bg-card, #fff) !important;
+}
+body.glass-off .chat-ventana-body {
+  background: var(--bg-page, #f8fafc) !important;
+}
+body.glass-off .chat-ventana-input {
+  background: var(--bg-card, #fff) !important;
+}
+
+/* ── Glass-off: Licencias ── */
+body.glass-off .lic-card,
+body.glass-off .lic-form-panel,
+body.glass-off .lic-card-edit-inline {
+  background: var(--bg-card, #fff) !important;
+}
+body.glass-off .lic-stat {
+  background: var(--bg-card, #fff) !important;
+}
+body.glass-off .lic-busqueda,
+body.glass-off .lic-form-campo input {
+  background: var(--bg-input, #f8fafc) !important;
+}
+body.glass-off .lic-equipo-row {
+  background: var(--bg-hover, #f1f5f9) !important;
+}
+
+/* ── Glass-off + Dark mode: TODAS las áreas oscuras ── */
+body.dark-mode.glass-off .lic-card,
+body.dark-mode.glass-off .lic-form-panel,
+body.dark-mode.glass-off .lic-card-edit-inline {
+  background: var(--bg-card, #1e2640) !important;
+  border: 1px solid var(--border-color, #2e3650) !important;
+}
+body.dark-mode.glass-off .lic-stat {
+  background: var(--bg-card, #1e2640) !important;
+  border: 1px solid var(--border-color, #2e3650) !important;
+}
+body.dark-mode.glass-off .lic-busqueda,
+body.dark-mode.glass-off .lic-form-campo input {
+  background: var(--bg-input, #1a1f35) !important;
+  border-color: var(--border-color, #2e3650) !important;
+}
+body.dark-mode.glass-off .lic-equipo-row {
+  background: var(--bg-subtle, #1a1f35) !important;
+}
+
+body.dark-mode.glass-off .asistg-tabla-wrapper {
+  background: var(--bg-card, #1e2640) !important;
+  border: 1px solid var(--border-color, #2e3650) !important;
+}
+body.dark-mode.glass-off .asistg-fila-grupo {
+  background: var(--bg-card, #1e2640) !important;
+}
+body.dark-mode.glass-off .asistg-header-row {
+  background: var(--bg-subtle, #151a2e) !important;
+}
+body.dark-mode.glass-off .asistg-emp-horario {
+  background: #1b3a2a !important;
+  color: #5cae7b;
+}
+body.dark-mode.glass-off .fila-emp-asistio { background: #0d2818 !important; }
+body.dark-mode.glass-off .fila-emp-tardanza { background: #2a1f0a !important; }
+body.dark-mode.glass-off .fila-emp-falta { background: #2a0f0f !important; }
+body.dark-mode.glass-off .fila-descanso { background: #1a1d3a !important; }
+body.dark-mode.glass-off .fila-falta { background: #2a0f0f !important; }
+body.dark-mode.glass-off .fila-tardanza { background: #2a1f0a !important; }
+body.dark-mode.glass-off .fila-pendiente { background: #1a1d2a !important; }
+body.dark-mode.glass-off .fila-asistio { background: #0d2818 !important; }
+
+body.dark-mode.glass-off .chat-panel,
+body.dark-mode.glass-off .chat-ventana,
+body.dark-mode.glass-off .chat-modal-crear-grupo {
+  background: var(--bg-card, #1e2640) !important;
+  border: 1px solid var(--border-color, #2e3650) !important;
+}
+body.dark-mode.glass-off .chat-ventana-body {
+  background: var(--bg-page, #0e1017) !important;
+}
+body.dark-mode.glass-off .chat-ventana-input {
+  background: var(--bg-card, #1e2640) !important;
+}
+
+body.dark-mode.glass-off .chip-tabla-wrap,
+body.dark-mode.glass-off .eq-almc-tabla-wrap,
+body.dark-mode.glass-off .tickets-tabla-wrap {
+  background: var(--bg-card, #1e2640) !important;
+  border: 1px solid var(--border-color, #2e3650) !important;
+}
+
+body.dark-mode.glass-off .chip-tabla tbody tr,
+body.dark-mode.glass-off .tickets-tabla tbody tr,
+body.dark-mode.glass-off .eq-almc-tabla tbody tr,
+body.dark-mode.glass-off .horarios-tabla tbody tr,
+body.dark-mode.glass-off .asist-tabla tbody tr,
+body.dark-mode.glass-off .asistg-detalle-tabla tbody tr,
+body.dark-mode.glass-off .det-cuentas-tabla tbody tr,
+body.dark-mode.glass-off .permisos-tabla tbody tr {
+  background: var(--bg-card, #1e2640) !important;
+}
+
+body.dark-mode.glass-off .chip-tabla tbody tr:hover,
+body.dark-mode.glass-off .tickets-tabla tbody tr:hover,
+body.dark-mode.glass-off .eq-almc-tabla tbody tr:hover,
+body.dark-mode.glass-off .horarios-tabla tbody tr:hover,
+body.dark-mode.glass-off .asist-tabla tbody tr:hover,
+body.dark-mode.glass-off .asistg-detalle-tabla tbody tr:hover,
+body.dark-mode.glass-off .det-cuentas-tabla tbody tr:hover,
+body.dark-mode.glass-off .permisos-tabla tbody tr:hover {
+  background: var(--bg-hover, #252d48) !important;
+}
+
+body.dark-mode.glass-off .chip-tabla thead,
+body.dark-mode.glass-off .tickets-tabla thead,
+body.dark-mode.glass-off .eq-almc-tabla thead,
+body.dark-mode.glass-off .horarios-tabla thead,
+body.dark-mode.glass-off .asist-tabla thead,
+body.dark-mode.glass-off .asistg-detalle-tabla thead,
+body.dark-mode.glass-off .det-cuentas-tabla thead,
+body.dark-mode.glass-off .permisos-tabla thead {
+  background: var(--bg-subtle, #151a2e) !important;
+}
+
+body.dark-mode.glass-off .det-input,
+body.dark-mode.glass-off .det-select,
+body.dark-mode.glass-off .chip-busqueda,
+body.dark-mode.glass-off .lic-busqueda,
+body.dark-mode.glass-off .tickets-search-box,
+body.dark-mode.glass-off .ticket-form input,
+body.dark-mode.glass-off .ticket-form select,
+body.dark-mode.glass-off .ticket-form textarea,
+body.dark-mode.glass-off .filtro-date,
+body.dark-mode.glass-off .asistg-buscador input {
+  background: var(--bg-input, #1a1f35) !important;
+  border: 1px solid var(--border-color, #2e3650) !important;
+  color: var(--text-primary, #e2e8f0) !important;
+}
+
+body.dark-mode.glass-off .asistg-filtros-barra {
+  background: var(--bg-card, #1e2640) !important;
+  border: 1px solid var(--border-color, #2e3650) !important;
 }

@@ -130,6 +130,10 @@
 }
 .lic-equipo-icono { font-size: 0.85rem; color: var(--color-primario, #3b82f6); width: 20px; text-align: center; }
 .lic-equipo-tipo { font-size: 0.82rem; font-weight: 700; color: var(--texto-primario, #1e293b); min-width: 80px; }
+.lic-equipo-codigo {
+    font-size: 0.72rem; font-weight: 700; color: #6366f1; background: rgba(99,102,241,0.1);
+    padding: 2px 8px; border-radius: 6px; font-family: 'Courier New', monospace; letter-spacing: 0.02em;
+}
 .lic-equipo-serie { font-size: 0.8rem; color: var(--texto-secundario, #64748b); font-family: 'Courier New', monospace; flex: 1; }
 .lic-btn-desasignar {
     width: 22px; height: 22px; border-radius: 50%; border: none;
@@ -200,6 +204,7 @@ body.dark-mode .lic-card-detalle { border-color: var(--border-color); }
 body.dark-mode .lic-detalle-item span:last-child { color: var(--text-secondary); }
 body.dark-mode .lic-equipo-row { background: var(--bg-subtle); }
 body.dark-mode .lic-equipo-tipo { color: var(--text-primary); }
+body.dark-mode .lic-equipo-codigo { background: rgba(129,140,248,0.15); color: #a5b4fc; }
 body.dark-mode .lic-equipo-serie { color: var(--text-secondary); }
 body.dark-mode .lic-card-acciones { border-color: var(--border-color); }
 body.dark-mode .lic-card-edit-inline { border-left-color: var(--active-color); }

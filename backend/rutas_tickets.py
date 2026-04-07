@@ -26,6 +26,7 @@ from database import (
 from auth_token import verificar_token
 from auditoria import registrar_accion
 from mongodb import coleccion_notif_tickets
+from servicios.permiso_service import PermisoService
 
 router = APIRouter()
 
@@ -43,6 +44,20 @@ def _rol_token(token: dict) -> str:
 
 def _es_ti(token: dict) -> bool:
     return _rol_token(token) in ROLES_TI
+
+
+def _tiene_panel_tickets(token: dict, db: Session) -> bool:
+    """True si el usuario es TI por rol O tiene permiso TICKETS_PANEL asignado."""
+    if _es_ti(token):
+        return True
+    # Buscar ID_ROL del usuario y verificar si tiene TICKETS_PANEL
+    id_accs = token.get("id_accs")
+    if id_accs and Acceso:
+        acc = db.query(Acceso).filter(Acceso.ID_ACCS == id_accs).first()
+        if acc:
+            modulos = PermisoService(db).obtener_modulos_rol(acc.ID_ROL)
+            return "TICKETS_PANEL" in modulos
+    return False
 
 
 def _personal_por_accs(db: Session, id_accs: int):
@@ -322,7 +337,7 @@ def listar_tecnicos(db: Session = Depends(get_db), token: dict = Depends(verific
 
 @router.get("/tickets/estadisticas")
 def estadisticas_tickets(db: Session = Depends(get_db), token: dict = Depends(verificar_token)):
-    if not _es_ti(token):
+    if not _tiene_panel_tickets(token, db):
         raise HTTPException(status_code=403, detail="Sin permisos")
     if not Ticket:
         return {"abiertos": 0, "asignados": 0, "en_progreso": 0, "cerrados": 0, "total": 0, "por_mes": []}
@@ -685,7 +700,7 @@ def informe_tickets_pdf(
 
     id_accs = token.get("id_accs")
     id_empresa = token.get("id_emp")
-    es_ti = _es_ti(token)
+    es_ti = _tiene_panel_tickets(token, db)
 
     # Base query filtrada por mes y año
     query = (
@@ -761,9 +776,9 @@ def listar_tickets(
 
     id_empresa = token.get("id_emp")
     id_accs = token.get("id_accs")
-    es_ti = _es_ti(token)
+    es_panel = _tiene_panel_tickets(token, db)
 
-    if es_ti:
+    if es_panel:
         query = (
             db.query(Ticket)
             .join(Personal, Personal.ID_PERSONAL == Ticket.ID_PERSONAL)
@@ -1057,7 +1072,7 @@ async def actualizar_codigo_sap(
     """TI actualiza los códigos SAP antes de cerrar el ticket.
        Acepta {"codigos": [{"id": X, "tipo": "articulo", "codigo_sap": "..."},  ...]}
        o formato legacy {"codigo_sap": "..."} para un solo item."""
-    if not _es_ti(token):
+    if not _tiene_panel_tickets(token, db):
         raise HTTPException(status_code=403, detail="Sin permisos")
 
     t = db.query(Ticket).filter(Ticket.ID_TICKET == id_ticket).first()
@@ -1117,8 +1132,8 @@ async def asignar_ticket(
     db: Session = Depends(get_db),
     token: dict = Depends(verificar_token),
 ):
-    """Solo Admin/Soporte pueden asignar un técnico."""
-    if not _es_ti(token):
+    """Admin/Soporte o usuarios con permiso TICKETS_PANEL pueden asignar un técnico."""
+    if not _tiene_panel_tickets(token, db):
         raise HTTPException(status_code=403, detail="Sin permisos para asignar tickets")
     if not Ticket:
         raise HTTPException(status_code=500, detail="Módulo de tickets no disponible")
@@ -1163,8 +1178,8 @@ async def cambiar_estado(
     db: Session = Depends(get_db),
     token: dict = Depends(verificar_token),
 ):
-    """Cambiar estado del ticket. Solo Admin/Soporte."""
-    if not _es_ti(token):
+    """Cambiar estado del ticket. Admin/Soporte o TICKETS_PANEL."""
+    if not _tiene_panel_tickets(token, db):
         raise HTTPException(status_code=403, detail="Sin permisos")
     if not Ticket:
         raise HTTPException(status_code=500, detail="Módulo no disponible")
@@ -1211,8 +1226,8 @@ async def cambiar_prioridad(
     db: Session = Depends(get_db),
     token: dict = Depends(verificar_token),
 ):
-    """Cambiar prioridad del ticket. Solo Admin/Soporte."""
-    if not _es_ti(token):
+    """Cambiar prioridad del ticket. Admin/Soporte o TICKETS_PANEL."""
+    if not _tiene_panel_tickets(token, db):
         raise HTTPException(status_code=403, detail="Sin permisos")
     if not Ticket:
         raise HTTPException(status_code=500, detail="Módulo no disponible")
@@ -1257,8 +1272,8 @@ async def cerrar_ticket(
     db: Session = Depends(get_db),
     token: dict = Depends(verificar_token),
 ):
-    """Cerrar ticket con comentario opcional. Solo Admin/Soporte."""
-    if not _es_ti(token):
+    """Cerrar ticket con comentario opcional. Admin/Soporte o TICKETS_PANEL."""
+    if not _tiene_panel_tickets(token, db):
         raise HTTPException(status_code=403, detail="Sin permisos")
     if not Ticket:
         raise HTTPException(status_code=500, detail="Módulo no disponible")

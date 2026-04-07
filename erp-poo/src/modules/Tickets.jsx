@@ -47,10 +47,11 @@ export default function Tickets() {
     var [informeAnio, setInformeAnio] = useState(new Date().getFullYear());
     var [descargandoPdf, setDescargandoPdf] = useState(false);
 
-    // Detectar si el usuario actual es TI
+    // Detectar si el usuario actual es TI o tiene permiso TICKETS_PANEL
     var sessionData = getSession();
     var rolUsuario = (sessionData && sessionData.usuario && sessionData.usuario.rol || '').toUpperCase();
-    var esRolTI = ['ADMINISTRADOR', 'ADMIN', 'SOPORTE'].indexOf(rolUsuario) >= 0;
+    var modulosUsuario = (sessionData && sessionData.usuario && sessionData.usuario.modulos) || [];
+    var esRolTI = ['ADMINISTRADOR', 'ADMIN', 'SOPORTE'].indexOf(rolUsuario) >= 0 || modulosUsuario.indexOf('TICKETS_PANEL') >= 0;
 
     useEffect(function () { cargarDatos(); }, []);
 

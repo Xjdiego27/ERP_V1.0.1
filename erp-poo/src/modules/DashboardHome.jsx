@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { API_URL, headersAuth } from '../auth';
 import IconoFa from '../components/IconoFa';
-import { faLaptop, faPhone, faDesktop, faTablet, faPrint, faKeyboard, faKey, faTicket, faChevronLeft, faChevronRight, faCalendarDays } from '@fortawesome/free-solid-svg-icons';
+import { faLaptop, faPhone, faDesktop, faTablet, faPrint, faKeyboard, faKey, faTicket, faChevronLeft, faChevronRight, faCalendarDays, faMicrochip, faMemory, faHardDrive, faBarcode, faStar } from '@fortawesome/free-solid-svg-icons';
 import '../styles/DashboardHome.css';
 
 var ICONOS_EQUIPO = {
@@ -74,14 +74,25 @@ export default function DashboardHome() {
               <SeccionItems titulo="Mis Equipos" icono={faLaptop} tipo="equipo">
                 {equipos.map(function (eq) {
                   return (
-                    <div className="dh-item-card" key={'eq-' + eq.id_equipo}>
+                    <div className="dh-item-card dh-equipo-card" key={'eq-' + eq.id_equipo}>
                       <div className="dh-item-icon equipo"><IconoFa icono={iconoEquipo(eq.tipo)} /></div>
                       <div className="dh-item-body">
                         <div className="dh-item-name">{eq.marca ? eq.marca + ' ' + (eq.modelo || '') : eq.tipo || 'Equipo'}</div>
                         <div className="dh-item-meta">
                           {eq.tipo && <span>Tipo: <strong>{eq.tipo}</strong></span>}
                           {eq.serie && <span>Serie: <strong>{eq.serie}</strong></span>}
+                          {eq.codigoe && <span><IconoFa icono={faBarcode} /> <strong>{eq.codigoe}</strong></span>}
                         </div>
+                        {(eq.procesador || eq.ram || eq.almacenamiento && eq.almacenamiento.length > 0 || eq.gama) && (
+                          <div className="dh-equipo-specs">
+                            {eq.procesador && <span className="dh-spec-badge"><IconoFa icono={faMicrochip} /> {eq.procesador}</span>}
+                            {eq.ram && <span className="dh-spec-badge"><IconoFa icono={faMemory} /> {eq.tipo_ram ? eq.tipo_ram + ' ' : ''}{eq.ram}</span>}
+                            {eq.almacenamiento && eq.almacenamiento.map(function (alm, i) {
+                              return <span className="dh-spec-badge" key={i}><IconoFa icono={faHardDrive} /> {alm}</span>;
+                            })}
+                            {eq.gama && <span className="dh-spec-badge gama"><IconoFa icono={faStar} /> {eq.gama}</span>}
+                          </div>
+                        )}
                       </div>
                     </div>
                   );

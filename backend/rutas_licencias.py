@@ -2,7 +2,7 @@
 # CRUD para el módulo de Licencias de software
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
-from database import get_db, Licencia, AsignacionLicencia, Equipo, TipoEquipo
+from database import get_db, Licencia, AsignacionLicencia, Equipo, TipoEquipo, EspecificacionesTec
 from auth_token import verificar_token
 
 router = APIRouter()
@@ -28,12 +28,16 @@ def listar_licencias(db: Session = Depends(get_db), _=Depends(verificar_token)):
     # Precargar equipos para mostrar info de cada asignación
     equipo_map = {}
     tipo_map = {}
+    espec_map = {}
     if Equipo:
         for eq in db.query(Equipo).all():
             equipo_map[eq.ID_EQUIPO] = eq
     if TipoEquipo:
         for t in db.query(TipoEquipo).all():
             tipo_map[t.ID_TEQUIPO] = t.DESCRIP
+    if EspecificacionesTec:
+        for e in db.query(EspecificacionesTec).all():
+            espec_map[e.ID_ESPEC] = e
 
     resultado = []
     for lic in licencias:
@@ -46,11 +50,13 @@ def listar_licencias(db: Session = Depends(get_db), _=Depends(verificar_token)):
         for a in asignaciones_lic:
             eq = equipo_map.get(a.ID_EQUIPO)
             if eq:
+                espec = espec_map.get(eq.ID_ESPEC) if eq.ID_ESPEC else None
                 equipos_asignados.append({
                     "id_asiglicenc": a.ID_ASIGLICENC,
                     "id_equipo": eq.ID_EQUIPO,
                     "serie": eq.SERIE_EQUIPO,
                     "tipo": tipo_map.get(eq.ID_TEQUIPO, ''),
+                    "codigoe": espec.CODIGOE if espec and espec.CODIGOE else '',
                 })
 
         resultado.append({

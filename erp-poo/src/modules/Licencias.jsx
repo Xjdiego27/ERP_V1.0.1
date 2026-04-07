@@ -3,7 +3,7 @@ import { API_URL, headersConToken } from '../auth';
 import IconoFa from '../components/IconoFa';
 import PageContent from '../components/PageContent';
 import {
-    faKey, faPlus, faPen, faTrash, faSearch, faLaptop,
+    faKey, faPlus, faPen, faSearch, faLaptop,
     faCheckCircle, faXmark, faFloppyDisk, faChevronDown,
     faChevronRight, faDesktop, faServer, faMobileScreen,
     faTabletScreenButton
@@ -318,6 +318,7 @@ export default function Licencias() {
                                                         <div key={eq.id_asiglicenc} className="lic-equipo-row">
                                                             <IconoFa icono={iconoTipo} clase="lic-equipo-icono" />
                                                             <span className="lic-equipo-tipo">{eq.tipo}</span>
+                                                            {eq.codigoe && <span className="lic-equipo-codigo">{eq.codigoe}</span>}
                                                             <span className="lic-equipo-serie">S/N: {eq.serie}</span>
                                                             <button className="lic-btn-desasignar" onClick={function () { desasignar(eq.id_asiglicenc); }}
                                                                 title="Desasignar licencia">
@@ -336,9 +337,6 @@ export default function Licencias() {
                                         <div className="lic-card-acciones">
                                             <button className="lic-btn editar" onClick={function () { abrirEditar(lic); }}>
                                                 <IconoFa icono={faPen} /> Editar
-                                            </button>
-                                            <button className="lic-btn eliminar" onClick={function () { eliminar(lic.id_licencia, lic.descripcion); }}>
-                                                <IconoFa icono={faTrash} /> Eliminar
                                             </button>
                                         </div>
                                     </div>

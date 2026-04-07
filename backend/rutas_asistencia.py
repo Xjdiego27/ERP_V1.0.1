@@ -202,14 +202,20 @@ def _procesar_dias_nosql(fi, ff, marcajes_por_dia, justif_por_fecha, horario_dia
 
         if justif:
             # ── Justificacion manual existe → prioridad
-            j_catga = justif.get("id_catga")
+            raw_catga = justif.get("id_catga")
+            j_catga = int(raw_catga) if raw_catga is not None else None
             cat = categorias.get(j_catga, '')
             j_he = justif.get("hora_e") or hora_e
             j_hs = justif.get("hora_s") or hora_s
             obsv = justif.get("obsv", "")
 
+            # FERIADO (id_catga 14) → tratar como día no laborable
+            es_feriado = (j_catga == 14)
+            if es_feriado:
+                cat = cat or "FERIADO"
+
             tard = 0
-            if not es_descanso and j_he and j_he != '00:00:00':
+            if not es_descanso and not es_feriado and j_he and j_he != '00:00:00':
                 tard = _calcular_tardanza(j_he, h_dia.get('hora_e'))
 
             # Si llegó tarde pero la justificación dice PUNTUAL, corregir a TARDANZA
@@ -217,9 +223,9 @@ def _procesar_dias_nosql(fi, ff, marcajes_por_dia, justif_por_fecha, horario_dia
                 j_catga = 2
                 cat = categorias.get(2, 'TARDANZA')
 
-            es_falta = (not es_descanso and (j_he in (None, '00:00:00')) and j_catga in (None, 2))
+            es_falta = (not es_descanso and not es_feriado and (j_he in (None, '00:00:00')) and j_catga in (None, 2))
 
-            if not es_descanso:
+            if not es_descanso and not es_feriado:
                 if es_falta:
                     resumen["total_faltas"] += 1
                 else:

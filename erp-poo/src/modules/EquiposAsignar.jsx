@@ -608,11 +608,19 @@ export default function EquiposAsignar() {
                                             {eq.gama && (
                                                 <div className="eqa-spec"><span className="eqa-gama-badge">{eq.gama}</span></div>
                                             )}
-                                            {eq.licencias && eq.licencias.length > 0 && eq.licencias.map(function (lic) {
-                                                return (
-                                                    <div key={lic.id_asiglicenc} className="eqa-spec"><IconoFa icono={faKey} /><span>{lic.descripcion} — {lic.serie_keys}</span></div>
-                                                );
-                                            })}
+                                            {eq.licencias && eq.licencias.length > 0 && (
+                                                <div className="eqa-card-storage">
+                                                    <span className="eqa-storage-label"><IconoFa icono={faKey} /> Licencias</span>
+                                                    {eq.licencias.map(function (lic) {
+                                                        return (
+                                                            <div key={lic.id_asiglicenc} className="eqa-storage-item">
+                                                                <span className="eqa-storage-tipo">{lic.descripcion}</span>
+                                                                <span className="eqa-storage-cap" style={{fontFamily: "'Courier New', monospace", fontSize: '0.75rem'}}>{lic.serie_keys}</span>
+                                                            </div>
+                                                        );
+                                                    })}
+                                                </div>
+                                            )}
                                         </div>
 
                                         {/* Almacenamiento detallado */}

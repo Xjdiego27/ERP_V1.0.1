@@ -10,6 +10,8 @@ from sqlalchemy.orm import Session
 from database import (
     get_db, Personal, Equipo, TipoEquipo, Marca, Modelo,
     EspecificacionesTec, AsignacionEquipo,
+    Procesador, TipoRam, Ram, Gama, Almacenamiento,
+    TipoDisco, CapacidadDisco, Disco,
     Chips, OperadorChips, PlanChips, AsignacionChip,
     Licencia, AsignacionLicencia,
     Ticket, CategoriaTicket,
@@ -52,6 +54,24 @@ async def mi_panel(db: Session = Depends(get_db), token: dict = Depends(verifica
             tipos_map = {t.ID_TEQUIPO: t.DESCRIP for t in db.query(TipoEquipo).all()} if TipoEquipo else {}
             marcas_map = {m.ID_MARCA: m.DESCRIP for m in db.query(Marca).all()} if Marca else {}
             modelos_map = {m.ID_MODELO: m.DESCRIP for m in db.query(Modelo).all()} if Modelo else {}
+            procs_map = {p.ID_PROCESADOR: p.DESCRIP for p in db.query(Procesador).all()} if Procesador else {}
+            trams_map = {t.ID_TIPO_RAM: t.DESCRIP for t in db.query(TipoRam).all()} if TipoRam else {}
+            rams_map = {r.ID_RAM: r.DESCRIP for r in db.query(Ram).all()} if Ram else {}
+            gamas_map = {g.ID_GAMA: g.DESCRIP for g in db.query(Gama).all()} if Gama else {}
+
+            # Mapa de discos: id_disco → (tipo_disco, capacidad)
+            tdiscos_map = {t.ID_TDISCO: t.DESCRIP for t in db.query(TipoDisco).all()} if TipoDisco else {}
+            capdiscos_map = {c.ID_CAPDISCO: c.DESCRIP for c in db.query(CapacidadDisco).all()} if CapacidadDisco else {}
+            discos_map = {}
+            if Disco:
+                for d in db.query(Disco).all():
+                    discos_map[d.ID_DISCO] = (d.ID_TDISCO, d.ID_CAPDISCO)
+
+            # Almacenamiento por equipo
+            almc_map = {}
+            if Almacenamiento:
+                for a in db.query(Almacenamiento).filter(Almacenamiento.ID_EQUIPO.in_(eq_ids_asignados)).all():
+                    almc_map.setdefault(a.ID_EQUIPO, []).append(a)
 
             for a in asigs:
                 eq = equipos_db.get(a.ID_EQUIPO)
@@ -60,17 +80,42 @@ async def mi_panel(db: Session = Depends(get_db), token: dict = Depends(verifica
                 tipo_nombre = tipos_map.get(eq.ID_TEQUIPO, '')
                 marca_nombre = ''
                 modelo_nombre = ''
+                procesador = ''
+                tipo_ram = ''
+                ram = ''
+                gama = ''
+                codigoe = ''
                 if EspecificacionesTec and eq.ID_ESPEC:
                     espec = db.query(EspecificacionesTec).filter(EspecificacionesTec.ID_ESPEC == eq.ID_ESPEC).first()
                     if espec:
                         marca_nombre = marcas_map.get(espec.ID_MARCA, '')
                         modelo_nombre = modelos_map.get(espec.ID_MODELO, '')
+                        procesador = procs_map.get(espec.ID_PROCESADOR, '')
+                        tipo_ram = trams_map.get(getattr(espec, 'ID_TIPO_RAM', None), '')
+                        ram = rams_map.get(espec.ID_RAM, '')
+                        gama = gamas_map.get(espec.ID_GAMA, '')
+                        codigoe = espec.CODIGOE or ''
+
+                # Almacenamiento
+                almacenes = []
+                for almc in almc_map.get(eq.ID_EQUIPO, []):
+                    disco_info = discos_map.get(almc.ID_DISCO)
+                    td = tdiscos_map.get(disco_info[0], '') if disco_info else ''
+                    cd = capdiscos_map.get(disco_info[1], '') if disco_info else ''
+                    almacenes.append(f"{td} {cd}".strip())
+
                 equipos.append({
                     "id_equipo": eq.ID_EQUIPO,
                     "serie": eq.SERIE_EQUIPO,
                     "tipo": tipo_nombre,
                     "marca": marca_nombre,
                     "modelo": modelo_nombre,
+                    "procesador": procesador,
+                    "tipo_ram": tipo_ram,
+                    "ram": ram,
+                    "gama": gama,
+                    "codigoe": codigoe,
+                    "almacenamiento": almacenes,
                     "fecha_asig": str(a.FECH_ASIG) if a.FECH_ASIG else None,
                 })
 

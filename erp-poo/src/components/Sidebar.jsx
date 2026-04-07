@@ -97,10 +97,11 @@ export default function Sidebar({ isOpen, onToggleMenu }) {
     ];
     const subMenuEquipos = subMenuEquiposBase.filter(function (s) { return tieneAcceso(s.modulo); });
 
-    // Sub-opciones de Tickets (filtradas)
+    // Sub-opciones de Tickets (filtradas por permisos)
     const subMenuTicketsBase = [
         { nombre: 'Nuevo Ticket',  ruta: '/dashboard/tickets/nuevo',  icono: faPlus,      modulo: 'TICKETS_NUEVO' },
-    ].concat(esRolTI ? [{ nombre: 'Tickets', ruta: '/dashboard/tickets', icono: faListCheck, modulo: 'TICKETS_PANEL' }] : []);
+        { nombre: 'Tickets',       ruta: '/dashboard/tickets',        icono: faListCheck, modulo: 'TICKETS_PANEL' },
+    ];
     const subMenuTickets = subMenuTicketsBase.filter(function (s) { return tieneAcceso(s.modulo); });
 
     // ¿Alguna sub-ruta de RRHH está activa?
