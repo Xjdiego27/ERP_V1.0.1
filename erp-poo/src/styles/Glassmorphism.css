@@ -1140,7 +1140,27 @@ body.dark-mode .doc-gen-icono.pdf {
 
 .check-btn {
   background: var(--glass-input-bg) !important;
+  border: 2px solid rgba(148,163,184,0.5) !important;
   border-radius: var(--glass-radius-xs) !important;
+  color: rgba(148,163,184,0.6);
+}
+.check-btn.activo {
+  background: #22c55e !important;
+  border-color: #22c55e !important;
+  color: #fff !important;
+}
+.check-btn.activo:disabled {
+  background: #3b82f6 !important;
+  border-color: #3b82f6 !important;
+  color: #fff !important;
+  opacity: .7;
+}
+.estado-indicador.si {
+  color: #22c55e !important;
+  filter: drop-shadow(0 0 2px rgba(34,197,94,0.4));
+}
+.estado-indicador.no {
+  color: rgba(148,163,184,0.5) !important;
 }
 
 
@@ -2438,4 +2458,31 @@ body.glass-off .permisos-tabla thead {
 body.glass-off .dashboard-layout {
   background-image: none !important;
   background-color: var(--bg-page, #f0f2f5) !important;
+}
+
+/* ── Glass-off: checkboxes de permisos ── */
+body.glass-off .check-btn {
+  background: var(--bg-input, #f8fafc) !important;
+  border: 2px solid var(--border-color, #cbd5e1) !important;
+  color: var(--border-color, #cbd5e1);
+}
+body.glass-off .check-btn.activo {
+  background: #22c55e !important;
+  border-color: #22c55e !important;
+  color: #fff !important;
+}
+body.glass-off .check-btn.activo:disabled {
+  background: #3b82f6 !important;
+  border-color: #3b82f6 !important;
+  color: #fff !important;
+}
+body.dark-mode.glass-off .check-btn {
+  background: var(--bg-input, #334155) !important;
+  border-color: var(--border-color, #475569) !important;
+  color: #475569;
+}
+body.dark-mode.glass-off .check-btn.activo {
+  background: #22c55e !important;
+  border-color: #22c55e !important;
+  color: #fff !important;
 }

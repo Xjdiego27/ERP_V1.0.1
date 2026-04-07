@@ -11,10 +11,10 @@
 }
 
 .dh-content {
-  padding: 24px 20px;
+  padding: 18px 16px;
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 14px;
   flex: 1;
   overflow-y: auto;
 }
@@ -26,18 +26,18 @@
   font-size: 0.95rem;
 }
 
-/* ═══ ROW TOP: Calendario + Tickets lado a lado ═══ */
-.dh-row-top {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 20px;
-}
-
-/* ═══ ROW BOTTOM: Items asignados ═══ */
-.dh-row-bottom {
+/* ═══ ROW ITEMS: Equipos asignados (arriba) ═══ */
+.dh-row-items {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
   gap: 18px;
+}
+
+/* ═══ ROW TOP: Calendario + Tickets ═══ */
+.dh-row-top {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
 }
 
 
@@ -49,19 +49,19 @@
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
   border: 1px solid var(--glass-border, rgba(255,255,255,0.3));
-  border-radius: var(--glass-radius, 18px);
-  padding: 20px;
+  border-radius: var(--glass-radius, 14px);
+  padding: 14px;
   box-shadow: var(--glass-shadow, 0 4px 24px rgba(31,38,135,0.08));
 }
 
 .dh-cal-header {
   display: flex;
   align-items: center;
-  gap: 8px;
-  font-size: 1.05rem;
+  gap: 6px;
+  font-size: 0.88rem;
   font-weight: 700;
   color: var(--text-primary, #1e293b);
-  margin-bottom: 14px;
+  margin-bottom: 8px;
 }
 
 .dh-cal-titulo { font-weight: 700; }
@@ -70,31 +70,31 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 12px;
-  margin-bottom: 12px;
+  gap: 8px;
+  margin-bottom: 8px;
 }
 
 .dh-cal-btn {
   background: rgba(59,130,246,0.1);
   border: none;
-  border-radius: 8px;
-  width: 30px;
-  height: 30px;
+  border-radius: 6px;
+  width: 24px;
+  height: 24px;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
   color: var(--text-primary, #334155);
-  font-size: 0.8rem;
+  font-size: 0.7rem;
   transition: background 0.2s;
 }
 .dh-cal-btn:hover { background: rgba(59,130,246,0.2); }
 
 .dh-cal-mes {
-  font-size: 0.92rem;
+  font-size: 0.82rem;
   font-weight: 600;
   color: var(--text-primary, #1e293b);
-  min-width: 140px;
+  min-width: 120px;
   text-align: center;
 }
 
@@ -102,15 +102,15 @@
 .dh-cal-grid {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
-  gap: 3px;
+  gap: 2px;
 }
 
 .dh-cal-dow {
   text-align: center;
-  font-size: 0.7rem;
+  font-size: 0.6rem;
   font-weight: 600;
   color: var(--text-secondary, #64748b);
-  padding: 4px 0;
+  padding: 2px 0;
   text-transform: uppercase;
 }
 
@@ -123,15 +123,15 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: 8px;
-  font-size: 0.78rem;
+  border-radius: 6px;
+  font-size: 0.68rem;
   font-weight: 500;
   color: var(--text-primary, #334155);
   cursor: default;
   transition: transform 0.15s;
   position: relative;
 }
-.dh-cal-day:hover { transform: scale(1.15); z-index: 2; }
+.dh-cal-day:hover { transform: scale(1.12); z-index: 2; }
 
 /* Colores por categoría */
 .dh-cal-day.puntual      { background: #22c55e; color: #fff; font-weight: 700; }
@@ -149,25 +149,25 @@
 .dh-cal-leyenda {
   display: flex;
   flex-wrap: wrap;
-  gap: 10px;
+  gap: 8px;
   justify-content: center;
-  margin-top: 14px;
-  padding-top: 10px;
+  margin-top: 8px;
+  padding-top: 6px;
   border-top: 1px solid var(--glass-border, rgba(255,255,255,0.2));
 }
 
 .dh-ley {
   display: flex;
   align-items: center;
-  gap: 4px;
-  font-size: 0.7rem;
+  gap: 3px;
+  font-size: 0.6rem;
   color: var(--text-secondary, #64748b);
 }
 
 .dh-ley-dot {
-  width: 10px;
-  height: 10px;
-  border-radius: 3px;
+  width: 8px;
+  height: 8px;
+  border-radius: 2px;
   display: inline-block;
 }
 .dh-ley-dot.puntual  { background: #22c55e; }
@@ -180,8 +180,8 @@
 .dh-cal-resumen {
   display: flex;
   justify-content: space-around;
-  margin-top: 12px;
-  padding-top: 10px;
+  margin-top: 8px;
+  padding-top: 6px;
   border-top: 1px solid var(--glass-border, rgba(255,255,255,0.2));
 }
 
@@ -191,17 +191,17 @@
 
 .dh-cal-stat-num {
   display: block;
-  font-size: 1.3rem;
+  font-size: 1.05rem;
   font-weight: 800;
   color: var(--text-primary, #1e293b);
   line-height: 1.2;
 }
 
 .dh-cal-stat-label {
-  font-size: 0.68rem;
+  font-size: 0.58rem;
   color: var(--text-secondary, #64748b);
   text-transform: uppercase;
-  letter-spacing: 0.5px;
+  letter-spacing: 0.4px;
 }
 
 
@@ -213,8 +213,8 @@
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
   border: 1px solid var(--glass-border, rgba(255,255,255,0.3));
-  border-radius: var(--glass-radius, 18px);
-  padding: 20px;
+  border-radius: var(--glass-radius, 14px);
+  padding: 14px;
   box-shadow: var(--glass-shadow, 0 4px 24px rgba(31,38,135,0.08));
   display: flex;
   flex-direction: column;
@@ -223,11 +223,11 @@
 .dh-tk-header {
   display: flex;
   align-items: center;
-  gap: 8px;
-  font-size: 1.05rem;
+  gap: 6px;
+  font-size: 0.88rem;
   font-weight: 700;
   color: var(--text-primary, #1e293b);
-  margin-bottom: 14px;
+  margin-bottom: 10px;
 }
 
 .dh-tk-titulo { font-weight: 700; }
@@ -255,16 +255,17 @@
 .dh-tk-list {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 6px;
   flex: 1;
   overflow-y: auto;
+  max-height: 260px;
 }
 
 .dh-tk-card {
   background: rgba(255,255,255,0.35);
   border: 1px solid var(--glass-border, rgba(255,255,255,0.2));
-  border-radius: 12px;
-  padding: 12px 14px;
+  border-radius: 10px;
+  padding: 8px 10px;
   transition: transform 0.2s, box-shadow 0.2s;
 }
 .dh-tk-card:hover {
@@ -297,10 +298,10 @@
 .dh-tk-estado.asignado { background: rgba(59,130,246,0.12); color: #3b82f6; }
 
 .dh-tk-asunto {
-  font-size: 0.85rem;
+  font-size: 0.78rem;
   font-weight: 600;
   color: var(--text-primary, #1e293b);
-  margin-bottom: 6px;
+  margin-bottom: 4px;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -340,19 +341,19 @@
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
   border: 1px solid var(--glass-border, rgba(255,255,255,0.3));
-  border-radius: var(--glass-radius, 18px);
-  padding: 18px;
+  border-radius: var(--glass-radius, 14px);
+  padding: 14px;
   box-shadow: var(--glass-shadow, 0 4px 24px rgba(31,38,135,0.08));
 }
 
 .dh-seccion-header {
   display: flex;
   align-items: center;
-  gap: 8px;
-  font-size: 0.95rem;
+  gap: 6px;
+  font-size: 0.85rem;
   font-weight: 700;
   color: var(--text-primary, #1e293b);
-  margin-bottom: 12px;
+  margin-bottom: 8px;
 }
 
 .dh-items-list {
@@ -364,23 +365,23 @@
 .dh-item-card {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 10px;
   background: rgba(255,255,255,0.3);
   border: 1px solid var(--glass-border, rgba(255,255,255,0.2));
-  border-radius: 12px;
-  padding: 12px 14px;
+  border-radius: 10px;
+  padding: 10px 12px;
   transition: transform 0.2s;
 }
-.dh-item-card:hover { transform: translateX(4px); }
+.dh-item-card:hover { transform: translateX(3px); }
 
 .dh-item-icon {
-  width: 40px;
-  height: 40px;
-  border-radius: 10px;
+  width: 34px;
+  height: 34px;
+  border-radius: 8px;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 1.1rem;
+  font-size: 0.95rem;
   flex-shrink: 0;
 }
 .dh-item-icon.equipo   { background: rgba(59,130,246,0.12); color: #3b82f6; }
@@ -393,7 +394,7 @@
 }
 
 .dh-item-name {
-  font-size: 0.88rem;
+  font-size: 0.8rem;
   font-weight: 600;
   color: var(--text-primary, #1e293b);
   white-space: nowrap;
@@ -404,11 +405,11 @@
 .dh-item-meta {
   display: flex;
   flex-direction: column;
-  gap: 1px;
+  gap: 0;
 }
 
 .dh-item-meta span {
-  font-size: 0.75rem;
+  font-size: 0.68rem;
   color: var(--text-secondary, #64748b);
 }
 
@@ -504,7 +505,7 @@ body.glass-off.dark-mode .dh-item-card {
     padding: 16px 12px;
     gap: 14px;
   }
-  .dh-row-bottom {
+  .dh-row-items {
     grid-template-columns: 1fr;
   }
 }

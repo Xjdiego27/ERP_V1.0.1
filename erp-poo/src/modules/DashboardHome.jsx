@@ -61,73 +61,77 @@ export default function DashboardHome() {
   var resumen = (data && data.resumen_asistencia) || {};
   var tickets = (data && data.tickets) || [];
 
+  var hayItems = equipos.length > 0 || telefonos.length > 0 || licencias.length > 0;
+
   return (
     <div className="dh-container">
       <div className="dh-content">
 
-        {/* ═══ ROW 1: Calendario + Tickets ═══ */}
+        {/* ═══ ROW 1: Equipos asignados (lo primero que se ve) ═══ */}
+        {hayItems && (
+          <div className="dh-row-items">
+            {equipos.length > 0 && (
+              <SeccionItems titulo="Mis Equipos" icono={faLaptop} tipo="equipo">
+                {equipos.map(function (eq) {
+                  return (
+                    <div className="dh-item-card" key={'eq-' + eq.id_equipo}>
+                      <div className="dh-item-icon equipo"><IconoFa icono={iconoEquipo(eq.tipo)} /></div>
+                      <div className="dh-item-body">
+                        <div className="dh-item-name">{eq.marca ? eq.marca + ' ' + (eq.modelo || '') : eq.tipo || 'Equipo'}</div>
+                        <div className="dh-item-meta">
+                          {eq.tipo && <span>Tipo: <strong>{eq.tipo}</strong></span>}
+                          {eq.serie && <span>Serie: <strong>{eq.serie}</strong></span>}
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </SeccionItems>
+            )}
+
+            {telefonos.length > 0 && (
+              <SeccionItems titulo="Mis Líneas" icono={faPhone} tipo="telefono">
+                {telefonos.map(function (tel) {
+                  return (
+                    <div className="dh-item-card" key={'tel-' + tel.id_chip}>
+                      <div className="dh-item-icon telefono"><IconoFa icono={faPhone} /></div>
+                      <div className="dh-item-body">
+                        <div className="dh-item-name">{tel.numero}</div>
+                        <div className="dh-item-meta">
+                          {tel.operador && <span>Operador: <strong>{tel.operador}</strong></span>}
+                          {tel.plan && <span>Plan: <strong>{tel.plan}</strong></span>}
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </SeccionItems>
+            )}
+
+            {licencias.length > 0 && (
+              <SeccionItems titulo="Mis Licencias" icono={faKey} tipo="licencia">
+                {licencias.map(function (lic, i) {
+                  return (
+                    <div className="dh-item-card" key={'lic-' + i}>
+                      <div className="dh-item-icon licencia"><IconoFa icono={faKey} /></div>
+                      <div className="dh-item-body">
+                        <div className="dh-item-name">{lic.nombre}</div>
+                        <div className="dh-item-meta">
+                          {lic.serie && <span>Key: <strong>{lic.serie}</strong></span>}
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </SeccionItems>
+            )}
+          </div>
+        )}
+
+        {/* ═══ ROW 2: Calendario + Tickets ═══ */}
         <div className="dh-row-top">
           <CalendarioAsistencia asistencia={asistencia} resumen={resumen} />
           <TicketsActivos tickets={tickets} />
-        </div>
-
-        {/* ═══ ROW 2: Items asignados ═══ */}
-        <div className="dh-row-bottom">
-          {equipos.length > 0 && (
-            <SeccionItems titulo="Mis Equipos" icono={faLaptop} tipo="equipo">
-              {equipos.map(function (eq) {
-                return (
-                  <div className="dh-item-card" key={'eq-' + eq.id_equipo}>
-                    <div className="dh-item-icon equipo"><IconoFa icono={iconoEquipo(eq.tipo)} /></div>
-                    <div className="dh-item-body">
-                      <div className="dh-item-name">{eq.marca ? eq.marca + ' ' + (eq.modelo || '') : eq.tipo || 'Equipo'}</div>
-                      <div className="dh-item-meta">
-                        {eq.tipo && <span>Tipo: <strong>{eq.tipo}</strong></span>}
-                        {eq.serie && <span>Serie: <strong>{eq.serie}</strong></span>}
-                      </div>
-                    </div>
-                  </div>
-                );
-              })}
-            </SeccionItems>
-          )}
-
-          {telefonos.length > 0 && (
-            <SeccionItems titulo="Mis Líneas" icono={faPhone} tipo="telefono">
-              {telefonos.map(function (tel) {
-                return (
-                  <div className="dh-item-card" key={'tel-' + tel.id_chip}>
-                    <div className="dh-item-icon telefono"><IconoFa icono={faPhone} /></div>
-                    <div className="dh-item-body">
-                      <div className="dh-item-name">{tel.numero}</div>
-                      <div className="dh-item-meta">
-                        {tel.operador && <span>Operador: <strong>{tel.operador}</strong></span>}
-                        {tel.plan && <span>Plan: <strong>{tel.plan}</strong></span>}
-                      </div>
-                    </div>
-                  </div>
-                );
-              })}
-            </SeccionItems>
-          )}
-
-          {licencias.length > 0 && (
-            <SeccionItems titulo="Mis Licencias" icono={faKey} tipo="licencia">
-              {licencias.map(function (lic, i) {
-                return (
-                  <div className="dh-item-card" key={'lic-' + i}>
-                    <div className="dh-item-icon licencia"><IconoFa icono={faKey} /></div>
-                    <div className="dh-item-body">
-                      <div className="dh-item-name">{lic.nombre}</div>
-                      <div className="dh-item-meta">
-                        {lic.serie && <span>Key: <strong>{lic.serie}</strong></span>}
-                      </div>
-                    </div>
-                  </div>
-                );
-              })}
-            </SeccionItems>
-          )}
         </div>
 
       </div>
