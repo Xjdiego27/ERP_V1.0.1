@@ -2,17 +2,10 @@ from datetime import datetime, timedelta
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 from sqlalchemy import extract, or_, and_
-from database import get_db, Personal, Contrato, Acceso, Horario, HorarioDetalle, Cargo
-try:
-    from database import Ticket
-except ImportError:
-    Ticket = None
-try:
-    from database import Mantenimiento, Equipo, EspecificacionesTec
-except ImportError:
-    Mantenimiento = None
-    Equipo = None
-    EspecificacionesTec = None
+from database import (
+    get_db, Personal, Contrato, Acceso, Horario, HorarioDetalle, Cargo,
+    Ticket, Mantenimiento, Equipo, EspecificacionesTec,
+)
 from mongodb import coleccion_menus, coleccion_eventos, coleccion_asistencia, coleccion_justificaciones, coleccion_notif_tickets, coleccion_saludos_cumple
 from auth_token import verificar_token
 

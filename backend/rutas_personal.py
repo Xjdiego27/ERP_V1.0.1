@@ -12,6 +12,7 @@ from typing import Optional, List
 from pathlib import Path
 from collections import defaultdict
 import re
+from datetime import date
 from database import (
     get_db, Personal, Contrato, Contacto, Acceso,
     Area, Cargo, Documento, EstadoAccs, EstadoContrato,
@@ -19,7 +20,7 @@ from database import (
     GradoAcademico, Distrito, TipoFamiliar,
     SegurosAportaciones, AFP, CuentaBanca,
     Banco, Moneda, TipoCuenta, Modalidad,
-    Horario, AsignacionEmp
+    Horario, AsignacionEmp, AsignacionEquipo, Equipo, TipoEquipo
 )
 from helpers import construir_rangos_horarios
 from auth_token import verificar_token
@@ -410,12 +411,52 @@ async def actualizar_personal(id: int, datos: PersonalSchema, db: Session = Depe
         db.rollback()
         raise HTTPException(status_code=500, detail=str(e))
 
+@router.get("/personal/{id}/equipos-asignados")
+def equipos_asignados_personal(id: int, db: Session = Depends(get_db), _=Depends(verificar_token)):
+    """Devuelve equipos activamente asignados a un empleado."""
+    if not AsignacionEquipo or not Equipo:
+        return []
+    rows = db.query(AsignacionEquipo).filter(
+        AsignacionEquipo.ID_PERSONAL == id,
+        AsignacionEquipo.FECHA_DEVOL.is_(None)
+    ).all()
+    tipos_map = {}
+    if TipoEquipo:
+        for t in db.query(TipoEquipo).all():
+            tipos_map[t.ID_TEQUIPO] = t.DESCRIP
+    resultado = []
+    for a in rows:
+        eq = db.query(Equipo).filter(Equipo.ID_EQUIPO == a.ID_EQUIPO).first()
+        resultado.append({
+            "id_asig": a.ID_ASIG,
+            "id_equipo": a.ID_EQUIPO,
+            "serie": eq.SERIE_EQUIPO if eq else '',
+            "tipo_equipo": tipos_map.get(eq.ID_TEQUIPO, '') if eq else '',
+        })
+    return resultado
+
+
 @router.put("/personal/{id}/desactivar")
 async def desactivar_personal(id: int, db: Session = Depends(get_db), token: dict = Depends(verificar_token)):
     persona = db.query(Personal).filter(Personal.ID_PERSONAL == id).first()
     if not persona: raise HTTPException(status_code=404, detail="Empleado no encontrado")
     acceso = db.query(Acceso).filter(Acceso.ID_ACCS == persona.ID_ACCS).first()
     if not acceso: raise HTTPException(status_code=404, detail="Acceso no encontrado")
+
+    # Al desactivar, liberar equipos asignados automáticamente
+    equipos_liberados = []
+    if acceso.ID_ESTADO == 1 and AsignacionEquipo and Equipo:
+        activas = db.query(AsignacionEquipo).filter(
+            AsignacionEquipo.ID_PERSONAL == id,
+            AsignacionEquipo.FECHA_DEVOL.is_(None)
+        ).all()
+        for a in activas:
+            a.FECHA_DEVOL = date.today()
+            eq = db.query(Equipo).filter(Equipo.ID_EQUIPO == a.ID_EQUIPO).first()
+            if eq:
+                eq.ID_EST_EQUIPO = 1  # DISPONIBLE
+                equipos_liberados.append(eq.SERIE_EQUIPO)
+
     if acceso.ID_ESTADO == 1:
         acceso.ID_ESTADO = 2; mensaje = "Empleado desactivado"
     else:
@@ -427,9 +468,12 @@ async def desactivar_personal(id: int, db: Session = Depends(get_db), token: dic
         modulo="PERSONAL",
         id_afectado=id,
         nombre_afectado=f"{persona.APE_PATERNO} {persona.APE_MATERNO}, {persona.NOMBRES}",
-        datos_nuevos={"estado": acceso.ID_ESTADO}
+        datos_nuevos={"estado": acceso.ID_ESTADO, "equipos_liberados": equipos_liberados}
     )
-    return {"mensaje": mensaje}
+    resp = {"mensaje": mensaje}
+    if equipos_liberados:
+        resp["equipos_liberados"] = equipos_liberados
+    return resp
 
 
 # === REINICIAR CLAVE (admin resetea password y fuerza cambio) ===

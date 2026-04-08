@@ -2,7 +2,7 @@
 # CRUD para el módulo de Mantenimiento de Equipos
 import os, uuid
 from datetime import datetime
-from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Form
+from fastapi import APIRouter, Depends, HTTPException, UploadFile, File
 from pydantic import BaseModel
 from typing import Optional
 from sqlalchemy.orm import Session

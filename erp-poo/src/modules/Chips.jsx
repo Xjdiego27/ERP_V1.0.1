@@ -17,6 +17,7 @@ export default function Chips() {
     var [filtro, setFiltro] = useState('');
     var [filtroEstado, setFiltroEstado] = useState('todos'); // todos | asignado | disponible
     var [filtroOperador, setFiltroOperador] = useState('');
+    var [filtroEmpresa, setFiltroEmpresa] = useState('');
     var [mensaje, setMensaje] = useState('');
     var [exito, setExito] = useState(false);
 
@@ -86,7 +87,8 @@ export default function Chips() {
             (filtroEstado === 'asignado' && c.asignacion) ||
             (filtroEstado === 'disponible' && !c.asignacion);
         var coincideOp = !filtroOperador || String(c.id_operador) === String(filtroOperador);
-        return coincideTexto && coincideEstado && coincideOp;
+        var coincideEmpresa = !filtroEmpresa || String(c.id_emp) === String(filtroEmpresa);
+        return coincideTexto && coincideEstado && coincideOp && coincideEmpresa;
     });
 
     // ══════════════════════════════
@@ -276,6 +278,16 @@ export default function Chips() {
                     <option value="">Todos los operadores</option>
                     {catalogos.operadores.map(function (op) {
                         return <option key={op.id} value={op.id}>{op.nombre}</option>;
+                    })}
+                </select>
+                <select
+                    className="chip-filtro-select"
+                    value={filtroEmpresa}
+                    onChange={function (e) { setFiltroEmpresa(e.target.value); }}
+                >
+                    <option value="">Todas las empresas</option>
+                    {catalogos.empresas.map(function (emp) {
+                        return <option key={emp.id} value={emp.id}>{emp.nombre}</option>;
                     })}
                 </select>
                 <button className="chip-btn-nueva" onClick={function () { setVerFormNuevo(!verFormNuevo); }}>

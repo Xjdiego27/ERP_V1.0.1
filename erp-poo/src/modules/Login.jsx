@@ -6,7 +6,6 @@ import IconoFa from '../components/IconoFa';
 import { faSun, faMoon, faEye, faEyeSlash, faBuilding, faUser, faLock, faArrowRightToBracket } from '@fortawesome/free-solid-svg-icons';
 import { API_URL } from '../auth';
 import { getSession } from '../utils/session';
-import logoERP from '../logo.svg';
 import '/src/styles/Login.css';
 
 const estadoInicial = {
@@ -135,10 +134,10 @@ export default function Login() {
     const empresaActual = listaEmpresas.find(emp => emp.id.toString() === empresaElegida);
 
     function logoEmpresa() {
-        if (!empresaActual) return logoERP;
+        if (!empresaActual) return '';
         if (darkMode && empresaActual.logo_dark) return '/assets/' + empresaActual.logo_dark;
         if (empresaActual.logo) return '/assets/' + empresaActual.logo;
-        return logoERP;
+        return '';
     }
 
     return (

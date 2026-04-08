@@ -1,9 +1,11 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import { API_URL, headersConToken, headersAuth } from '../auth';
 import { getSession, clearSession } from '../utils/session';
 import { useNavigate } from 'react-router-dom';
 import PageContent from '../components/PageContent';
 import IconoFa from '../components/IconoFa';
+import ModalImagen from '../components/ModalImagen';
 import { faWrench, faPlus, faSearch, faEdit, faTrash, faCalendarAlt, faUser, faLaptop, faCheckCircle, faClock, faBan, faTimes, faTools, faClipboardList, faArrowsRotate, faSave, faCamera, faImage } from '@fortawesome/free-solid-svg-icons';
 import '../styles/Mantenimiento.css';
 
@@ -57,6 +59,7 @@ export default function Mantenimiento() {
     var [editando, setEditando] = useState(null);
     var [guardando, setGuardando] = useState(false);
     var [mensaje, setMensaje] = useState(null);
+    var [imagenExpandida, setImagenExpandida] = useState(null);
 
     /* Fotos */
     var [foto1Preview, setFoto1Preview] = useState('');
@@ -430,8 +433,8 @@ export default function Mantenimiento() {
                                             </td>
                                             <td>
                                                 <div className="mnt-fotos-mini">
-                                                    {m.foto1 ? <img src={'/' + m.foto1} alt="F1" className="mnt-foto-thumb" /> : <span className="mnt-foto-vacia"><IconoFa icono={faImage} /></span>}
-                                                    {m.foto2 ? <img src={'/' + m.foto2} alt="F2" className="mnt-foto-thumb" /> : <span className="mnt-foto-vacia"><IconoFa icono={faImage} /></span>}
+                                                    {m.foto1 ? <img src={'/' + m.foto1} alt="F1" className="mnt-foto-thumb" onClick={function () { setImagenExpandida('/' + m.foto1); }} /> : <span className="mnt-foto-vacia"><IconoFa icono={faImage} /></span>}
+                                                    {m.foto2 ? <img src={'/' + m.foto2} alt="F2" className="mnt-foto-thumb" onClick={function () { setImagenExpandida('/' + m.foto2); }} /> : <span className="mnt-foto-vacia"><IconoFa icono={faImage} /></span>}
                                                 </div>
                                             </td>
                                             <td><span className="mnt-detalle-text" title={m.detalle}>{m.detalle || '—'}</span></td>
@@ -453,8 +456,11 @@ export default function Mantenimiento() {
                     )}
                 </div>
 
+                {/* Modal Imagen expandida */}
+                {imagenExpandida && <ModalImagen url={imagenExpandida} onCerrar={function () { setImagenExpandida(null); }} />}
+
                 {/* Modal Crear/Editar */}
-                {modalAbierto && (
+                {modalAbierto && createPortal(
                     <div className="mnt-modal-overlay" onClick={cerrarModal}>
                         <div className="mnt-modal" onClick={function (e) { e.stopPropagation(); }}>
                             <div className="mnt-modal-header">
@@ -566,7 +572,8 @@ export default function Mantenimiento() {
                                 </div>
                             </form>
                         </div>
-                    </div>
+                    </div>,
+                    document.body
                 )}
             </div>
         </PageContent>

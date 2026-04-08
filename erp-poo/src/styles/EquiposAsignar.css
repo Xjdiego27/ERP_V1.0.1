@@ -424,6 +424,11 @@
 .eqa-btn-card.devolver { background: #fff8e1; color: #856404; border: 1px solid #ffc107; }
 .eqa-btn-card.confirmar { background: #2563eb; color: #fff; }
 .eqa-btn-card.cancelar { background: var(--bg-subtle, #f1f5f9); color: var(--text-secondary, #64748b); }
+.eqa-btn-card.historial {
+    background: #ede9fe; color: #5b21b6; border: 1px solid #c4b5fd;
+    width: 100%; justify-content: center; gap: 6px;
+}
+.eqa-btn-card.historial.activo { background: #ddd6fe; border-color: #a78bfa; }
 
 /* Form inline */
 .eqa-card-form {
@@ -708,6 +713,8 @@ body.dark-mode .eqa-gama-badge {
 
 body.dark-mode .eqa-btn-card.devolver { background: #3a3200; border-color: #665800; color: #f5d97e; }
 body.dark-mode .eqa-btn-card.cancelar { background: var(--bg-subtle, #2c3038); color: var(--text-secondary, #9ca3af); }
+body.dark-mode .eqa-btn-card.historial { background: #2e1065; border-color: #6d28d9; color: #c4b5fd; }
+body.dark-mode .eqa-btn-card.historial.activo { background: #3b0764; border-color: #7c3aed; }
 
 body.dark-mode .eqa-mensaje.exito { background: #1e4620; color: #8fd99a; }
 body.dark-mode .eqa-mensaje.error { background: #4a1c1c; color: #f09090; }

@@ -1,9 +1,4 @@
-# ============================================
-# CONEXIÓN A MONGODB — Motor async para FastAPI
-# Base de datos: erp_nosql
-# Colecciones: menus, eventos, cumpleanos
-# ============================================
-
+# Conexión MongoDB — Motor async para FastAPI
 import os
 from motor.motor_asyncio import AsyncIOMotorClient
 from dotenv import load_dotenv

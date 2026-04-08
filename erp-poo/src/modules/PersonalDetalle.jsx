@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import { useParams, useNavigate } from 'react-router-dom';
-import { faPerson, faPersonDress, faPen, faFloppyDisk, faXmark, faBan, faArrowLeft, faCheck, faPlus, faTrash, faCamera, faCalendarCheck, faCalendarDays, faExclamationTriangle, faClock, faFileContract, faFileLines, faFileSignature, faHandshake, faFileInvoiceDollar, faFolder, faEllipsisVertical, faKey } from '@fortawesome/free-solid-svg-icons';
+import { faPerson, faPersonDress, faPen, faFloppyDisk, faXmark, faBan, faArrowLeft, faCheck, faPlus, faTrash, faCamera, faCalendarCheck, faCalendarDays, faExclamationTriangle, faClock, faFileContract, faFileLines, faFileSignature, faHandshake, faFileInvoiceDollar, faFolder, faEllipsisVertical, faKey, faLaptop } from '@fortawesome/free-solid-svg-icons';
 import IconoFa from '../components/IconoFa';
 import AsistenciaTab from '../components/AsistenciaTab';
 import DocumentosTab from '../components/DocumentosTab';
@@ -43,6 +44,9 @@ export default function PersonalDetalle() {
   var [editandoCuentas, setEditandoCuentas] = useState(false);
   var cargosAbortRef = useRef(null);
   var fotoInputRef = useRef(null);
+
+  // Estado para modal de equipos al desactivar
+  var [modalEquipos, setModalEquipos] = useState(null); // null | {equipos: [...], cargando: false}
 
   // Estado para tab ASISTENCIA
   var [asistenciaData, setAsistenciaData] = useState(null);
@@ -292,13 +296,47 @@ export default function PersonalDetalle() {
   }
 
   function desactivarEmpleado() {
-    var idActual = id; // Capturar para evitar stale closure
+    var idActual = id;
     var accion = empleado.estado === 'ACTIVO' ? 'desactivar' : 'reactivar';
-    if (!confirm('¿Seguro que deseas ' + accion + ' a ' + empleado.nombres + '?')) return;
+
+    // Si es reactivar, no necesitamos verificar equipos
+    if (accion === 'reactivar') {
+      if (!confirm('¿Seguro que deseas reactivar a ' + empleado.nombres + '?')) return;
+      ejecutarDesactivar(idActual);
+      return;
+    }
+
+    // Para desactivar, verificar equipos asignados primero
+    setModalEquipos({ equipos: [], cargando: true });
+    fetch(API_URL + '/personal/' + idActual + '/equipos-asignados', { headers: headersAuth() })
+      .then(function (res) { return res.json(); })
+      .then(function (equipos) {
+        if (!equipos || equipos.length === 0) {
+          // Sin equipos: cerrar modal y pedir confirmación simple
+          setModalEquipos(null);
+          if (!confirm('¿Seguro que deseas desactivar a ' + empleado.nombres + '?')) return;
+          ejecutarDesactivar(idActual);
+        } else {
+          // Con equipos: mostrar modal
+          setModalEquipos({ equipos: equipos, cargando: false });
+        }
+      })
+      .catch(function () {
+        setModalEquipos(null);
+        alert('Error al verificar equipos asignados');
+      });
+  }
+
+  function ejecutarDesactivar(idActual) {
     fetch(API_URL + '/personal/' + idActual + '/desactivar', { method: 'PUT', headers: headersAuth() })
       .then(function (res) { return res.json(); })
       .then(function (resp) {
-        alert(resp.mensaje);
+        setModalEquipos(null);
+        var msg = resp.mensaje;
+        if (resp.equipos_liberados && resp.equipos_liberados.length > 0) {
+          msg += '\n\nEquipos liberados:\n• ' + resp.equipos_liberados.join('\n• ');
+        }
+        alert(msg);
         fetch(API_URL + '/personal', { headers: headersAuth() })
           .then(function (r) { return r.json(); })
           .then(function (data) {
@@ -306,7 +344,7 @@ export default function PersonalDetalle() {
             setEmpleado(act);
           });
       })
-      .catch(function () { alert('Error al desactivar'); });
+      .catch(function () { setModalEquipos(null); alert('Error al desactivar'); });
   }
 
   function reiniciarClave() {
@@ -1169,6 +1207,47 @@ export default function PersonalDetalle() {
           datosJustif={datosJustif}
           setDatosJustif={setDatosJustif}
         />
+      )}
+
+      {/* Modal de equipos al desactivar */}
+      {modalEquipos && createPortal(
+        <div className="det-modal-overlay" onClick={function () { if (!modalEquipos.cargando) setModalEquipos(null); }}>
+          <div className="det-modal-equipos" onClick={function (e) { e.stopPropagation(); }}>
+            {modalEquipos.cargando ? (
+              <p style={{ textAlign: 'center', padding: '2rem' }}>Verificando equipos asignados...</p>
+            ) : (
+              <>
+                <div className="det-modal-equipos-header">
+                  <IconoFa icono={faExclamationTriangle} />
+                  <h3>Equipos asignados</h3>
+                </div>
+                <p className="det-modal-equipos-msg">
+                  {empleado.nombres} tiene <strong>{modalEquipos.equipos.length}</strong> equipo{modalEquipos.equipos.length > 1 ? 's' : ''} asignado{modalEquipos.equipos.length > 1 ? 's' : ''}. Al desactivar se liberarán automáticamente:
+                </p>
+                <ul className="det-modal-equipos-lista">
+                  {modalEquipos.equipos.map(function (eq) {
+                    return (
+                      <li key={eq.id_asig}>
+                        <IconoFa icono={faLaptop} />
+                        <span className="det-eq-tipo">{eq.tipo_equipo}</span>
+                        <span className="det-eq-serie">{eq.serie}</span>
+                      </li>
+                    );
+                  })}
+                </ul>
+                <div className="det-modal-equipos-acciones">
+                  <button className="det-btn det-btn-cancelar" onClick={function () { setModalEquipos(null); }}>
+                    <IconoFa icono={faXmark} /> Cancelar
+                  </button>
+                  <button className="det-btn det-btn-desactivar" onClick={function () { ejecutarDesactivar(id); }}>
+                    <IconoFa icono={faBan} /> Desactivar y liberar equipos
+                  </button>
+                </div>
+              </>
+            )}
+          </div>
+        </div>,
+        document.body
       )}
     </div>
   );

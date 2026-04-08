@@ -639,26 +639,34 @@ export default function EquiposAsignar() {
                                             </div>
                                         )}
 
-                                        {/* Asignación actual */}
-                                        {asig && (function () {
+                                        {/* Asignación actual + historial */}
+                                        {(function () {
                                             var historial = obtenerHistorial(eq.id_equipo);
                                             var histAbierto = historialAbierto === eq.id_equipo;
                                             return (
                                                 <div className="eqa-asig-bloque">
-                                                    <div className="eqa-card-asignacion">
-                                                        <div className="eqa-asig-avatar"><IconoFa icono={faUser} /></div>
-                                                        <div className="eqa-asig-info">
-                                                            <span className="eqa-asig-nombre">{asig.empleado}</span>
-                                                            <span className="eqa-asig-fecha">Desde: {asig.fecha_asig}</span>
+                                                    {asig && (
+                                                        <div className="eqa-card-asignacion">
+                                                            <div className="eqa-asig-avatar"><IconoFa icono={faUser} /></div>
+                                                            <div className="eqa-asig-info">
+                                                                <span className="eqa-asig-nombre">{asig.empleado}</span>
+                                                                <span className="eqa-asig-fecha">Desde: {asig.fecha_asig}</span>
+                                                            </div>
+                                                            {historial.length > 0 && (
+                                                                <button className={'eqa-hist-toggle' + (histAbierto ? ' abierto' : '')}
+                                                                    onClick={function () { setHistorialAbierto(histAbierto ? null : eq.id_equipo); }}
+                                                                    title="Ver historial de asignaciones">
+                                                                    <IconoFa icono={faChevronDown} />
+                                                                </button>
+                                                            )}
                                                         </div>
-                                                        {historial.length > 0 && (
-                                                            <button className={'eqa-hist-toggle' + (histAbierto ? ' abierto' : '')}
-                                                                onClick={function () { setHistorialAbierto(histAbierto ? null : eq.id_equipo); }}
-                                                                title="Ver historial de asignaciones">
-                                                                <IconoFa icono={faChevronDown} />
-                                                            </button>
-                                                        )}
-                                                    </div>
+                                                    )}
+                                                    {!asig && historial.length > 0 && (
+                                                        <button className={'eqa-btn-card historial' + (histAbierto ? ' activo' : '')}
+                                                            onClick={function () { setHistorialAbierto(histAbierto ? null : eq.id_equipo); }}>
+                                                            <IconoFa icono={faClockRotateLeft} /> Historial ({historial.length})
+                                                        </button>
+                                                    )}
                                                     {histAbierto && historial.length > 0 && (
                                                         <div className="eqa-historial">
                                                             <span className="eqa-hist-titulo">

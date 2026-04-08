@@ -175,8 +175,10 @@ async def _justificaciones_mongo_todas(fi, ff):
 
 # ─── PROCESAMIENTO DE DIAS ────────────────────────
 
-def _procesar_dias_nosql(fi, ff, marcajes_por_dia, justif_por_fecha, horario_dias, categorias):
-    """Construye la lista de dias combinando marcajes MongoDB + justificaciones + horarios MySQL."""
+def _procesar_dias_nosql(fi, ff, marcajes_por_dia, justif_por_fecha, horario_dias, categorias, fech_ingreso=None):
+    """Construye la lista de dias combinando marcajes MongoDB + justificaciones + horarios MySQL.
+    Si fech_ingreso se proporciona, los dias anteriores a esa fecha se marcan en blanco
+    (el empleado aun no trabajaba aqui)."""
     hoy = date.today()
     dias = []
     resumen = {"total_asistencias": 0, "total_tardanzas": 0, "total_faltas": 0, "total_min_tardanza": 0}
@@ -188,6 +190,17 @@ def _procesar_dias_nosql(fi, ff, marcajes_por_dia, justif_por_fecha, horario_dia
         h_dia = horario_dias.get(d.weekday(), {})
         es_descanso = h_dia.get('descanso', False)
         es_futuro = d > hoy
+
+        # Si el dia es anterior a la fecha de ingreso → en blanco (no contabilizar)
+        if fech_ingreso and d < fech_ingreso:
+            dias.append({
+                "id": None, "fecha": dia_str, "dia": dia_semana.capitalize(),
+                "hora_e": None, "hora_s": None, "min_tardanza": 0,
+                "categoria": "", "id_catga": None, "obsv": "Sin ingreso",
+                "es_descanso": False, "es_falta": False
+            })
+            d += timedelta(days=1)
+            continue
 
         # Marcajes crudos del huellero (MongoDB)
         horas = marcajes_por_dia.get(dia_str, [])
@@ -385,7 +398,12 @@ async def obtener_asistencia_personal(
     marcajes_por_dia = await _marcajes_mongo_por_dni(dni, fi, ff) if dni else {}
     justif_por_fecha = await _justificaciones_mongo(id_personal, fi, ff)
 
-    dias, resumen = _procesar_dias_nosql(fi, ff, marcajes_por_dia, justif_por_fecha, horario_dias, categorias)
+    # Fecha de ingreso para no marcar como falta dias previos
+    fech_ingreso = None
+    if contrato and hasattr(contrato, 'FECH_INGR') and contrato.FECH_INGR:
+        fech_ingreso = contrato.FECH_INGR if isinstance(contrato.FECH_INGR, date) else date.fromisoformat(str(contrato.FECH_INGR)[:10])
+
+    dias, resumen = _procesar_dias_nosql(fi, ff, marcajes_por_dia, justif_por_fecha, horario_dias, categorias, fech_ingreso=fech_ingreso)
 
     # Horario legible para el frontend
     horario_front = {}
@@ -725,7 +743,12 @@ async def asistencia_general(
 
         justif_por_fecha = justif_por_personal.get(p.ID_PERSONAL, {})
 
-        dias, resumen = _procesar_dias_nosql(fi, ff, marcajes_por_dia, justif_por_fecha, horario_dias, categorias)
+        # Fecha de ingreso para no marcar como falta dias previos
+        fech_ingreso = None
+        if contrato and hasattr(contrato, 'FECH_INGR') and contrato.FECH_INGR:
+            fech_ingreso = contrato.FECH_INGR if isinstance(contrato.FECH_INGR, date) else date.fromisoformat(str(contrato.FECH_INGR)[:10])
+
+        dias, resumen = _procesar_dias_nosql(fi, ff, marcajes_por_dia, justif_por_fecha, horario_dias, categorias, fech_ingreso=fech_ingreso)
 
         nombre_comp = f"{p.APE_PATERNO} {p.APE_MATERNO}, {p.NOMBRES}"
         area_nombre = areas_map.get(getattr(contrato, 'ID_AREA', None), '') if contrato else ''

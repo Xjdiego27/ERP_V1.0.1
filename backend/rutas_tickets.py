@@ -9,7 +9,6 @@ from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Form, Q
 from fastapi.responses import StreamingResponse
 from sqlalchemy.orm import Session
 from sqlalchemy import func, case, extract
-from pydantic import BaseModel
 from typing import Optional
 from datetime import datetime
 from pathlib import Path
@@ -545,8 +544,6 @@ def _generar_pdf_tickets(tickets_data: list, mes: int, anio: int, nombre_usuario
     # ── Por Estado ──
     elementos.append(Paragraph("Tickets por Estado", seccion_style))
     estado_rows = [["Estado", "Cantidad", "%"]]
-    colores_estado = {"ABIERTO": "#f59e0b", "ASIGNADO": "#3b82f6",
-                      "RESUELTO": "#8b5cf6", "CERRADO": "#16a34a"}
     for est in ["ABIERTO", "ASIGNADO", "RESUELTO", "CERRADO"]:
         cant = por_estado.get(est, 0)
         pct = round((cant / total) * 100, 1) if total > 0 else 0
