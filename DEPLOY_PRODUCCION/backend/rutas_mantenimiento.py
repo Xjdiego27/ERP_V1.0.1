@@ -7,7 +7,7 @@ from pydantic import BaseModel
 from typing import Optional
 from sqlalchemy.orm import Session
 from database import (
-    get_db, settings, Equipo, TipoEquipo, Marca, Modelo, EspecificacionesTec,
+    get_db, Equipo, TipoEquipo, Marca, Modelo, EspecificacionesTec,
     AsignacionEquipo, Personal, Contrato, Acceso, Mantenimiento, Cargo,
 )
 from auth_token import verificar_token
@@ -15,9 +15,7 @@ from auth_token import verificar_token
 router = APIRouter()
 
 # Directorio de uploads para fotos de mantenimiento
-# Usa STATIC_DIR del .env; si no está, asume ruta dev (erp-poo/public)
-_static_root = settings.static_dir or os.path.join(os.path.dirname(__file__), "..", "erp-poo", "public")
-MANT_UPLOAD_DIR = os.path.join(_static_root, "assets", "mantenimiento")
+MANT_UPLOAD_DIR = os.path.join(os.path.dirname(__file__), "..", "erp-poo", "public", "assets", "mantenimiento")
 os.makedirs(MANT_UPLOAD_DIR, exist_ok=True)
 
 # Departamento TI — solo personal de este depto puede ser técnico
@@ -107,8 +105,8 @@ def listar_mantenimientos(db: Session = Depends(get_db), _=Depends(verificar_tok
             "fecha_mant": m.FECHA_MANT.isoformat() if m.FECHA_MANT else '',
             "fecha_prog": m.FECHA_PROG.isoformat() if m.FECHA_PROG else '',
             "detalle": m.DETALLE_MANT or '',
-            "foto1": getattr(m, 'FOTO1', '') or '',
-            "foto2": getattr(m, 'FOTO2', '') or '',
+            "foto1": m.FOTO1 or '',
+            "foto2": m.FOTO2 or '',
         })
 
     return resultado
@@ -369,7 +367,7 @@ async def subir_foto_mant(
         # Borrar foto anterior si existe
         vieja = getattr(mant, f"FOTO{num}", None)
         if vieja:
-            vieja_path = os.path.join(_static_root, vieja)
+            vieja_path = os.path.join(os.path.dirname(__file__), "..", "erp-poo", "public", vieja)
             if os.path.exists(vieja_path):
                 os.remove(vieja_path)
         setattr(mant, f"FOTO{num}", url_rel)

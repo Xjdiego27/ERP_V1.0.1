@@ -1295,7 +1295,9 @@ CREATE TABLE `mantenimiento` (
   `ESTADO` enum('PENDIENTE','EN_PROCESO','COMPLETADO','CANCELADO') NOT NULL,
   `TIPO_PERIODO` enum('TRIMESTRAL','SEMESTRAL','ANUAL') NOT NULL,
   `FECHA_PROG` datetime NOT NULL,
-  `DETALLE_MANT` varchar(255) NOT NULL
+  `DETALLE_MANT` varchar(255) NOT NULL,
+  `FOTO1` varchar(255) DEFAULT NULL,
+  `FOTO2` varchar(255) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------

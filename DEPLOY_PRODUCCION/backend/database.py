@@ -15,11 +15,6 @@ class Settings(BaseSettings):
     algorithm: str = 'HS256'
     access_token_expire_minutes: int = 480
 
-    # Directorio raíz de archivos estáticos (donde están los assets servidos)
-    # Dev:  ../erp-poo/public   (relativo al backend/)
-    # Prod: C:\nginx\html\erp  (donde nginx sirve los archivos)
-    static_dir: str = ''
-
     class Config:
         env_file = '.env'
         env_file_encoding = 'utf-8'

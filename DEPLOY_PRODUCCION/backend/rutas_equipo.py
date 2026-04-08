@@ -5,7 +5,7 @@ from datetime import date
 from fastapi import APIRouter, Depends, HTTPException, UploadFile, File
 from sqlalchemy.orm import Session
 from database import (
-    get_db, settings, Equipo, TipoEquipo, EstadoEquipo, Gama, Marca, Modelo,
+    get_db, Equipo, TipoEquipo, EstadoEquipo, Gama, Marca, Modelo,
     Procesador, TipoRam, Ram, TipoDisco, CapacidadDisco, Disco,
     EspecificacionesTec, Almacenamiento, Personal, Contrato, Acceso,
     AsignacionEquipo, Licencia, AsignacionLicencia
@@ -14,8 +14,7 @@ from auth_token import verificar_token
 
 router = APIRouter()
 
-_static_root = settings.static_dir or os.path.join(os.path.dirname(__file__), "..", "erp-poo", "public")
-UPLOAD_DIR = os.path.join(_static_root, "assets", "equipos")
+UPLOAD_DIR = os.path.join(os.path.dirname(__file__), "..", "erp-poo", "public", "assets", "equipos")
 os.makedirs(UPLOAD_DIR, exist_ok=True)
 
 

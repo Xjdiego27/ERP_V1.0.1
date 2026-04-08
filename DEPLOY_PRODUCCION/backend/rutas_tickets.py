@@ -16,7 +16,7 @@ from pathlib import Path
 from io import BytesIO
 
 from database import (
-    get_db, settings, Ticket, CategoriaTicket, SubcategoriaTicket,
+    get_db, Ticket, CategoriaTicket, SubcategoriaTicket,
     Personal, Acceso, Contrato, Cargo, Equipo, AsignacionEquipo, TipoEquipo,
     EspecificacionesTec,
     FamiliaSap, SubfamiliaSap, MarcaSap, ModeloSap,
@@ -32,8 +32,7 @@ router = APIRouter()
 
 ROLES_TI = ("ADMINISTRADOR", "ADMIN", "SOPORTE")
 
-_static_root = Path(settings.static_dir) if settings.static_dir else Path(__file__).resolve().parent.parent / "erp-poo" / "public"
-UPLOAD_DIR = _static_root / "assets" / "tickets"
+UPLOAD_DIR = Path(__file__).resolve().parent.parent / "erp-poo" / "public" / "assets" / "tickets"
 UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
 
 
