@@ -181,6 +181,27 @@
     color: var(--color-primario, #D71D27);
 }
 
+/* ── Recu\u00e9rdame checkbox ── */
+.login-recordar {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    font-size: 13px;
+    color: var(--color-texto-suave, #666);
+    user-select: none;
+}
+.login-recordar input[type="checkbox"] {
+    width: 16px;
+    height: 16px;
+    accent-color: var(--color-primario, #D71D27);
+    cursor: pointer;
+    margin: 0;
+}
+.login-recordar span {
+    line-height: 1;
+}
+
 /* ── Error message ── */
 .error-mensaje {
     background: #fff0f0;
@@ -361,6 +382,10 @@ body.dark-mode .login-eye-btn {
 
 body.dark-mode .login-eye-btn:hover {
     color: var(--color-primario);
+}
+
+body.dark-mode .login-recordar {
+    color: #999;
 }
 
 body.dark-mode .error-mensaje {

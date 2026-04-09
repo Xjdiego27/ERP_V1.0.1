@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { faMagnifyingGlass, faFilter, faCalendarDays, faClockRotateLeft, faUserClock, faUserXmark, faUserCheck, faUser } from '@fortawesome/free-solid-svg-icons';
+import { faMagnifyingGlass, faFilter, faCalendarDays, faClockRotateLeft, faUserClock, faUserXmark, faUserCheck, faUser, faSortUp, faSortDown, faSort } from '@fortawesome/free-solid-svg-icons';
 import IconoFa from '../components/IconoFa';
 import { headersAuth, API_URL } from '../auth';
 import '../styles/AsistenciasGeneral.css';
@@ -28,6 +28,10 @@ export default function AsistenciasGeneral() {
 
   // Expandir detalle por empleado
   var [expandido, setExpandido] = useState(null);
+
+  // Ordenamiento de columnas
+  var [ordenCol, setOrdenCol] = useState('');        // 'asistencias' | 'tardanzas' | 'faltas' | 'min_tardanza' | 'nombre'
+  var [ordenDir, setOrdenDir] = useState('desc');     // 'asc' | 'desc'
 
   // Polling en tiempo real
   var [ultimaActualizacion, setUltimaActualizacion] = useState(null);
@@ -112,6 +116,21 @@ export default function AsistenciasGeneral() {
 
   function toggleExpandir(id) {
     setExpandido(expandido === id ? null : id);
+  }
+
+  // Ordenar columnas
+  function toggleOrden(col) {
+    if (ordenCol === col) {
+      setOrdenDir(ordenDir === 'asc' ? 'desc' : 'asc');
+    } else {
+      setOrdenCol(col);
+      setOrdenDir('desc');
+    }
+  }
+
+  function iconoOrden(col) {
+    if (ordenCol !== col) return faSort;
+    return ordenDir === 'asc' ? faSortUp : faSortDown;
   }
 
   // Formato hora legible
@@ -284,6 +303,23 @@ export default function AsistenciasGeneral() {
           });
         }
 
+        // Aplicar ordenamiento
+        if (ordenCol) {
+          empleadosFiltrados = empleadosFiltrados.slice().sort(function (a, b) {
+            var va, vb;
+            if (ordenCol === 'nombre') {
+              va = (a.nombre || '').toLowerCase();
+              vb = (b.nombre || '').toLowerCase();
+              if (va < vb) return ordenDir === 'asc' ? -1 : 1;
+              if (va > vb) return ordenDir === 'asc' ? 1 : -1;
+              return 0;
+            }
+            va = a[ordenCol] || 0;
+            vb = b[ordenCol] || 0;
+            return ordenDir === 'asc' ? va - vb : vb - va;
+          });
+        }
+
         return empleadosFiltrados.length === 0
           ? <p className="asistg-vacio">No se encontraron empleados con "{busqueda}".</p>
           : (
@@ -291,15 +327,15 @@ export default function AsistenciasGeneral() {
           {/* Cabecera de columnas */}
           <div className="asistg-header-row">
             <span className="asistg-hcol hcol-foto"></span>
-            <span className="asistg-hcol hcol-nombre">Empleado</span>
+            <span className="asistg-hcol hcol-nombre asistg-hcol-sort" onClick={function () { toggleOrden('nombre'); }}>Empleado <IconoFa icono={iconoOrden('nombre')} clase="sort-icon" /></span>
             <span className="asistg-hcol hcol-dato hide-mobile">Área</span>
             <span className="asistg-hcol hcol-dato hide-mobile">Departamento</span>
             <span className="asistg-hcol hcol-dato hide-mobile">Cargo</span>
             <span className="asistg-hcol hcol-horario hide-mobile">Horario</span>
-            <span className="asistg-hcol hcol-num">Asist.</span>
-            <span className="asistg-hcol hcol-num">Tard.</span>
-            <span className="asistg-hcol hcol-num">Faltas</span>
-            <span className="asistg-hcol hcol-num">Min.</span>
+            <span className="asistg-hcol hcol-num asistg-hcol-sort" onClick={function () { toggleOrden('asistencias'); }}>Asist. <IconoFa icono={iconoOrden('asistencias')} clase="sort-icon" /></span>
+            <span className="asistg-hcol hcol-num asistg-hcol-sort" onClick={function () { toggleOrden('tardanzas'); }}>Tard. <IconoFa icono={iconoOrden('tardanzas')} clase="sort-icon" /></span>
+            <span className="asistg-hcol hcol-num asistg-hcol-sort" onClick={function () { toggleOrden('faltas'); }}>Faltas <IconoFa icono={iconoOrden('faltas')} clase="sort-icon" /></span>
+            <span className="asistg-hcol hcol-num asistg-hcol-sort" onClick={function () { toggleOrden('min_tardanza'); }}>Min. <IconoFa icono={iconoOrden('min_tardanza')} clase="sort-icon" /></span>
           </div>
 
           {/* Filas de empleados */}

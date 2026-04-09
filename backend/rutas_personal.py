@@ -20,8 +20,10 @@ from database import (
     GradoAcademico, Distrito, TipoFamiliar,
     SegurosAportaciones, AFP, CuentaBanca,
     Banco, Moneda, TipoCuenta, Modalidad,
-    Horario, AsignacionEmp, AsignacionEquipo, Equipo, TipoEquipo
+    Horario, AsignacionEmp, AsignacionEquipo, Equipo, TipoEquipo,
+    AsignacionChip, Chips
 )
+from datetime import datetime as dt_now_import
 from helpers import construir_rangos_horarios
 from auth_token import verificar_token
 from auditoria import registrar_accion
@@ -436,6 +438,26 @@ def equipos_asignados_personal(id: int, db: Session = Depends(get_db), _=Depends
     return resultado
 
 
+@router.get("/personal/{id}/chips-asignados")
+def chips_asignados_personal(id: int, db: Session = Depends(get_db), _=Depends(verificar_token)):
+    """Devuelve chips activamente asignados a un empleado."""
+    if not AsignacionChip or not Chips:
+        return []
+    rows = db.query(AsignacionChip).filter(
+        AsignacionChip.ID_PERSONAL == id,
+        AsignacionChip.FECHA_DEVOL.is_(None)
+    ).all()
+    resultado = []
+    for a in rows:
+        chip = db.query(Chips).filter(Chips.ID_CHIPS == a.ID_CHIPS).first()
+        resultado.append({
+            "id_asig": a.ID_CHIP_ASIG,
+            "id_chip": a.ID_CHIPS,
+            "numero": chip.NUMERO if chip else '',
+        })
+    return resultado
+
+
 @router.put("/personal/{id}/desactivar")
 async def desactivar_personal(id: int, db: Session = Depends(get_db), token: dict = Depends(verificar_token)):
     persona = db.query(Personal).filter(Personal.ID_PERSONAL == id).first()
@@ -457,6 +479,20 @@ async def desactivar_personal(id: int, db: Session = Depends(get_db), token: dic
                 eq.ID_EST_EQUIPO = 1  # DISPONIBLE
                 equipos_liberados.append(eq.SERIE_EQUIPO)
 
+    # Al desactivar, liberar chips asignados automáticamente
+    chips_liberados = []
+    if acceso.ID_ESTADO == 1 and AsignacionChip and Chips:
+        chips_activos = db.query(AsignacionChip).filter(
+            AsignacionChip.ID_PERSONAL == id,
+            AsignacionChip.FECHA_DEVOL.is_(None)
+        ).all()
+        from datetime import datetime as _dt
+        for ac in chips_activos:
+            ac.FECHA_DEVOL = _dt.now()
+            chip = db.query(Chips).filter(Chips.ID_CHIPS == ac.ID_CHIPS).first()
+            if chip:
+                chips_liberados.append(chip.NUMERO)
+
     if acceso.ID_ESTADO == 1:
         acceso.ID_ESTADO = 2; mensaje = "Empleado desactivado"
     else:
@@ -468,11 +504,13 @@ async def desactivar_personal(id: int, db: Session = Depends(get_db), token: dic
         modulo="PERSONAL",
         id_afectado=id,
         nombre_afectado=f"{persona.APE_PATERNO} {persona.APE_MATERNO}, {persona.NOMBRES}",
-        datos_nuevos={"estado": acceso.ID_ESTADO, "equipos_liberados": equipos_liberados}
+        datos_nuevos={"estado": acceso.ID_ESTADO, "equipos_liberados": equipos_liberados, "chips_liberados": chips_liberados}
     )
     resp = {"mensaje": mensaje}
     if equipos_liberados:
         resp["equipos_liberados"] = equipos_liberados
+    if chips_liberados:
+        resp["chips_liberados"] = chips_liberados
     return resp
 
 

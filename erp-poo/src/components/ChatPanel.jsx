@@ -39,8 +39,12 @@ export default function ChatPanel() {
     const [ultimoMsg, setUltimoMsg] = useState({});            // {id_personal: timestamp} para ordenar contactos
     const socketRef = useRef(null);
     const panelRef = useRef(null);
+    const contactosRef = useRef([]);
     const totalNoLeidosGrupos = Object.values(noLeidosGrupos).reduce((s, v) => s + v, 0);
     const totalNoLeidos = Object.values(noLeidos).reduce((s, v) => s + v, 0) + noLeidosGeneral + totalNoLeidosGrupos;
+
+    // Mantener ref sincronizada para acceder dentro de socket listeners
+    useEffect(() => { contactosRef.current = contactos; }, [contactos]);
 
     // ── Detectar mobile/tablet ──
     useEffect(() => {
@@ -143,17 +147,32 @@ export default function ChatPanel() {
             });
         });
 
-        // ── Zumbido: mover chat al inicio de la lista (estilo MSN) ──
+        // ── Zumbido: abrir chat del remitente automáticamente (estilo MSN) ──
         socket.on('zumbido', (data) => {
             setChatsAbiertos(prev => {
                 const idx = prev.findIndex(c => c.id_personal === data.remitente_id);
-                if (idx > 0) {
-                    // Mover al inicio
-                    const copia = [...prev];
-                    const [chat] = copia.splice(idx, 1);
-                    return [chat, ...copia];
+                if (idx >= 0) {
+                    // Ya abierto: moverlo al inicio
+                    if (idx > 0) {
+                        const copia = [...prev];
+                        const [chat] = copia.splice(idx, 1);
+                        return [chat, ...copia];
+                    }
+                    return prev;
                 }
-                return prev;
+                // No abierto: buscar contacto y abrir ventana
+                const contacto = contactosRef.current.find(c => c.id_personal === data.remitente_id);
+                if (contacto) {
+                    setAbierto(true);
+                    sonidoNotificacion.currentTime = 0;
+                    sonidoNotificacion.play().catch(() => {});
+                    return [contacto, ...prev];
+                }
+                // Contacto no encontrado en lista: crear entrada mínima
+                setAbierto(true);
+                sonidoNotificacion.currentTime = 0;
+                sonidoNotificacion.play().catch(() => {});
+                return [{ id_personal: data.remitente_id, nombre: data.nombre_remitente, foto: null, cargo: '' }, ...prev];
             });
         });
 

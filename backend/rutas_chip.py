@@ -1,6 +1,6 @@
 
 from datetime import datetime
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 from database import (
     get_db, Chips, PlanChips, OperadorChips, DescuentoChips,
@@ -117,12 +117,13 @@ def listar_chips(db: Session = Depends(get_db), token: dict = Depends(verificar_
 #  PERSONAL DISPONIBLE (para asignar chips)
 # ═══════════════════════════════════════════
 @router.get("/chips/personal")
-def personal_disponible(db: Session = Depends(get_db), token: dict = Depends(verificar_token)):
+def personal_disponible(db: Session = Depends(get_db), token: dict = Depends(verificar_token),
+                        id_emp: int = Query(None)):
     if not Personal or not Contrato:
         return []
-    id_emp = token.get("id_emp", 1)
+    filtro_emp = id_emp if id_emp else token.get("id_emp", 1)
     contratos = db.query(Contrato).filter(
-        Contrato.ID_EMP == id_emp,
+        Contrato.ID_EMP == filtro_emp,
         Contrato.ID_ESTADO_CONTRATO == 1
     ).all()
     ids = [ct.ID_PERSONAL for ct in contratos]

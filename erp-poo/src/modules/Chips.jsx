@@ -17,7 +17,6 @@ export default function Chips() {
     var [filtro, setFiltro] = useState('');
     var [filtroEstado, setFiltroEstado] = useState('todos'); // todos | asignado | disponible
     var [filtroOperador, setFiltroOperador] = useState('');
-    var [filtroEmpresa, setFiltroEmpresa] = useState('');
     var [mensaje, setMensaje] = useState('');
     var [exito, setExito] = useState(false);
 
@@ -34,6 +33,9 @@ export default function Chips() {
     // Modal asignar/reasignar
     var [modalAsignar, setModalAsignar] = useState(null); // chip obj
     var [asignarPersonal, setAsignarPersonal] = useState('');
+    var [asignarEmpresa, setAsignarEmpresa] = useState('');
+    var [personalModal, setPersonalModal] = useState([]);
+    var [cargandoPersonal, setCargandoPersonal] = useState(false);
 
     // Modal historial
     var [modalHistorial, setModalHistorial] = useState(null);
@@ -87,8 +89,7 @@ export default function Chips() {
             (filtroEstado === 'asignado' && c.asignacion) ||
             (filtroEstado === 'disponible' && !c.asignacion);
         var coincideOp = !filtroOperador || String(c.id_operador) === String(filtroOperador);
-        var coincideEmpresa = !filtroEmpresa || String(c.id_emp) === String(filtroEmpresa);
-        return coincideTexto && coincideEstado && coincideOp && coincideEmpresa;
+        return coincideTexto && coincideEstado && coincideOp;
     });
 
     // ══════════════════════════════
@@ -151,6 +152,20 @@ export default function Chips() {
     function abrirAsignar(chip) {
         setModalAsignar(chip);
         setAsignarPersonal('');
+        var empId = chip.id_emp ? String(chip.id_emp) : '';
+        setAsignarEmpresa(empId);
+        setPersonalModal([]);
+        if (empId) cargarPersonalPorEmpresa(empId);
+    }
+
+    function cargarPersonalPorEmpresa(idEmp) {
+        if (!idEmp) { setPersonalModal([]); return; }
+        setCargandoPersonal(true);
+        fetch(API_URL + '/chips/personal?id_emp=' + idEmp, { headers: headersConToken() })
+            .then(function (r) { return r.json(); })
+            .then(function (data) { setPersonalModal(Array.isArray(data) ? data : []); })
+            .catch(function () { setPersonalModal([]); })
+            .finally(function () { setCargandoPersonal(false); });
     }
 
     function confirmarAsignar() {
@@ -278,16 +293,6 @@ export default function Chips() {
                     <option value="">Todos los operadores</option>
                     {catalogos.operadores.map(function (op) {
                         return <option key={op.id} value={op.id}>{op.nombre}</option>;
-                    })}
-                </select>
-                <select
-                    className="chip-filtro-select"
-                    value={filtroEmpresa}
-                    onChange={function (e) { setFiltroEmpresa(e.target.value); }}
-                >
-                    <option value="">Todas las empresas</option>
-                    {catalogos.empresas.map(function (emp) {
-                        return <option key={emp.id} value={emp.id}>{emp.nombre}</option>;
                     })}
                 </select>
                 <button className="chip-btn-nueva" onClick={function () { setVerFormNuevo(!verFormNuevo); }}>
@@ -465,10 +470,23 @@ export default function Chips() {
                             <p className="chip-modal-info">Actualmente asignado a: <strong>{modalAsignar.asignacion.empleado}</strong></p>
                         )}
                         <div className="chip-campo">
+                            <label>Empresa</label>
+                            <select value={asignarEmpresa} onChange={function (e) {
+                                setAsignarEmpresa(e.target.value);
+                                setAsignarPersonal('');
+                                cargarPersonalPorEmpresa(e.target.value);
+                            }}>
+                                <option value="">-- Seleccionar empresa --</option>
+                                {catalogos.empresas.map(function (emp) {
+                                    return <option key={emp.id} value={emp.id}>{emp.nombre}</option>;
+                                })}
+                            </select>
+                        </div>
+                        <div className="chip-campo">
                             <label>Seleccionar empleado</label>
-                            <select value={asignarPersonal} onChange={function (e) { setAsignarPersonal(e.target.value); }}>
-                                <option value="">-- Seleccionar --</option>
-                                {personal.map(function (p) {
+                            <select value={asignarPersonal} onChange={function (e) { setAsignarPersonal(e.target.value); }} disabled={!asignarEmpresa || cargandoPersonal}>
+                                <option value="">{cargandoPersonal ? 'Cargando...' : !asignarEmpresa ? '-- Seleccione empresa primero --' : '-- Seleccionar --'}</option>
+                                {personalModal.map(function (p) {
                                     return <option key={p.id} value={p.id}>{p.nombre} — {p.num_doc}</option>;
                                 })}
                             </select>

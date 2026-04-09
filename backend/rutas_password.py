@@ -85,3 +85,25 @@ def cambiar_password(datos: dict, token: dict = Depends(verificar_token), db: Se
     db.commit()
 
     return {"status": "ok", "mensaje": "Contraseña actualizada correctamente"}
+
+
+# ═══════════════════════════════════════════
+#  VERIFICAR CONTRASEÑA (para desbloquear datos sensibles)
+# ═══════════════════════════════════════════
+@router.post("/auth/verificar-clave")
+def verificar_clave(datos: dict, token: dict = Depends(verificar_token), db: Session = Depends(get_db)):
+    """Verifica la contraseña del usuario autenticado. Retorna ok/error."""
+    id_accs = token.get("id_accs")
+    password_input = datos.get("password", "")
+
+    if not password_input:
+        raise HTTPException(status_code=400, detail="Contraseña requerida")
+
+    acceso = db.query(Acceso).filter(Acceso.ID_ACCS == id_accs).first()
+    if not acceso:
+        raise HTTPException(status_code=404, detail="Usuario no encontrado")
+
+    if not verificar_password(password_input, acceso.PASSWORD):
+        raise HTTPException(status_code=401, detail="Contraseña incorrecta")
+
+    return {"status": "ok", "verificado": True}

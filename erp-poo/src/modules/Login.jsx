@@ -44,6 +44,7 @@ export default function Login() {
     const { usuario, clave, empresaElegida, mensaje, bloqueado, darkMode } = state;
     const [verClave, setVerClave] = useState(false);
     const [cargando, setCargando] = useState(false);
+    const [recordarme, setRecordarme] = useState(false);
     const navigate = useNavigate();
 
     const { data: listaEmpresas = [], isError } = useQuery({
@@ -64,6 +65,19 @@ export default function Login() {
             dispatch({ type: 'SET_CAMPO', campo: 'empresaElegida', valor: listaEmpresas[0].id.toString() });
         }
     }, [listaEmpresas, empresaElegida]);
+
+    // Cargar credenciales guardadas (Recuérdame)
+    useEffect(() => {
+        try {
+            var saved = JSON.parse(localStorage.getItem('erp-remember'));
+            if (saved) {
+                setRecordarme(true);
+                if (saved.empresa) dispatch({ type: 'SET_CAMPO', campo: 'empresaElegida', valor: saved.empresa });
+                if (saved.usuario) dispatch({ type: 'SET_CAMPO', campo: 'usuario', valor: saved.usuario });
+                if (saved.clave)   dispatch({ type: 'SET_CAMPO', campo: 'clave', valor: saved.clave });
+            }
+        } catch (e) { /* ignorar */ }
+    }, []);
 
     useEffect(() => {
         document.body.classList.toggle('dark-mode', darkMode);
@@ -107,6 +121,12 @@ export default function Login() {
             });
             const data = await res.json();
             if (res.ok) {
+                // Guardar o limpiar Recuérdame
+                if (recordarme) {
+                    localStorage.setItem('erp-remember', JSON.stringify({ empresa: empresaElegida, usuario: usuario, clave: clave }));
+                } else {
+                    localStorage.removeItem('erp-remember');
+                }
                 localStorage.setItem('session', JSON.stringify(data));
                 navigate('/dashboard');
             } else {
@@ -208,6 +228,13 @@ export default function Login() {
                             </button>
                         </div>
                     </div>
+
+                    {/* Recuérdame */}
+                    <label className="login-recordar">
+                        <input type="checkbox" checked={recordarme}
+                            onChange={function () { setRecordarme(!recordarme); }} />
+                        <span>Recuérdame</span>
+                    </label>
 
                     {/* Mensaje de error */}
                     {mensaje && <p className="error-mensaje">{mensaje}</p>}

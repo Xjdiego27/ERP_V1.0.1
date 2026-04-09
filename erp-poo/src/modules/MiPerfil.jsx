@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { faPerson, faPersonDress, faCamera, faClock } from '@fortawesome/free-solid-svg-icons';
+import { faPerson, faPersonDress, faCamera, faClock, faEye, faEyeSlash, faLock } from '@fortawesome/free-solid-svg-icons';
 import IconoFa from '../components/IconoFa';
 import AsistenciaTab from '../components/AsistenciaTab';
 import DocumentosTab from '../components/DocumentosTab';
@@ -36,6 +36,54 @@ export default function MiPerfil() {
   var [categoriasAsist, setCategoriasAsist] = useState([]);
   var [justificando, setJustificando] = useState(null);
   var [datosJustif, setDatosJustif] = useState({ id_catga: '', obsv: '', hora_e: '', hora_s: '' });
+
+  // ── Datos sensibles ocultos ──────────────────────
+  var [datosVisibles, setDatosVisibles] = useState(false);
+  var [modalClave, setModalClave] = useState(false);
+  var [claveInput, setClaveInput] = useState('');
+  var [claveError, setClaveError] = useState('');
+  var [verificando, setVerificando] = useState(false);
+
+  function solicitarDesbloqueo() {
+    setClaveInput('');
+    setClaveError('');
+    setModalClave(true);
+  }
+
+  function verificarClave() {
+    if (!claveInput) { setClaveError('Ingresa tu contraseña'); return; }
+    setVerificando(true);
+    fetch(API_URL + '/auth/verificar-clave', {
+      method: 'POST',
+      headers: Object.assign({}, headersAuth(), { 'Content-Type': 'application/json' }),
+      body: JSON.stringify({ password: claveInput })
+    })
+      .then(function (r) {
+        if (!r.ok) throw new Error('incorrecta');
+        return r.json();
+      })
+      .then(function () {
+        setDatosVisibles(true);
+        setModalClave(false);
+        setClaveInput('');
+        setVerificando(false);
+      })
+      .catch(function () {
+        setClaveError('Contraseña incorrecta');
+        setVerificando(false);
+      });
+  }
+
+  function ocultarDatos() {
+    setDatosVisibles(false);
+  }
+
+  // Helper: mostrar u ocultar un valor sensible
+  function valorSensible(val) {
+    if (!val || val === '—') return '—';
+    if (datosVisibles) return val;
+    return '••••••••';
+  }
 
   // ── Carga de datos ──────────────────────────────────
   useEffect(function () {
@@ -151,7 +199,15 @@ export default function MiPerfil() {
       {tabActiva === 'informacion' && (
         <div className="detalle-tarjeta">
           <div className="detalle-cabecera">
-            <div className="detalle-botones">{/* Sin botones de edición */}</div>
+            <div className="detalle-botones">
+              {/* Botón para ver/ocultar datos sensibles */}
+              <button className={'det-btn-sensible ' + (datosVisibles ? 'visible' : '')}
+                onClick={datosVisibles ? ocultarDatos : solicitarDesbloqueo}
+                title={datosVisibles ? 'Ocultar datos personales' : 'Ver datos personales'}>
+                <IconoFa icono={datosVisibles ? faEyeSlash : faEye} />
+                <span>{datosVisibles ? 'Ocultar datos' : 'Ver datos'}</span>
+              </button>
+            </div>
 
             <div className="detalle-area-campo">
               <label className="det-label det-label-area">Área</label>
@@ -220,11 +276,11 @@ export default function MiPerfil() {
                     </div>
                     <div className="det-campo">
                       <label className="det-label">N° Documento</label>
-                      <span className="det-valor">{empleado.num_doc}</span>
+                      <span className="det-valor">{valorSensible(empleado.num_doc)}</span>
                     </div>
                     <div className="det-campo">
                       <label className="det-label">Fecha Nac.</label>
-                      <span className="det-valor">{empleado.fech_nac || '—'}</span>
+                      <span className="det-valor">{valorSensible(empleado.fech_nac)}</span>
                     </div>
                   </div>
 
@@ -232,7 +288,7 @@ export default function MiPerfil() {
                   <div className="det-fila">
                     <div className="det-campo">
                       <label className="det-label">Celular</label>
-                      <span className="det-valor">{empleado.celular || '—'}</span>
+                      <span className="det-valor">{valorSensible(empleado.celular)}</span>
                     </div>
                   </div>
 
@@ -240,7 +296,7 @@ export default function MiPerfil() {
                   <div className="det-fila">
                     <div className="det-campo det-campo-full">
                       <label className="det-label">Correo Pers.</label>
-                      <span className="det-valor">{empleado.email || '—'}</span>
+                      <span className="det-valor">{valorSensible(empleado.email)}</span>
                     </div>
                   </div>
 
@@ -280,7 +336,7 @@ export default function MiPerfil() {
                     </div>
                     <div className="det-campo">
                       <label className="det-label">Sueldo</label>
-                      <span className="det-valor">{empleado.sueldo || '—'}</span>
+                      <span className="det-valor">{valorSensible(empleado.sueldo ? String(empleado.sueldo) : null)}</span>
                     </div>
                     <div className="det-campo">
                       <label className="det-label">Asig. Familiar</label>
@@ -308,7 +364,7 @@ export default function MiPerfil() {
                     </div>
                     <div className="det-campo">
                       <label className="det-label">Dirección</label>
-                      <span className="det-valor">{empleado.direccion || '—'}</span>
+                      <span className="det-valor">{valorSensible(empleado.direccion)}</span>
                     </div>
                   </div>
 
@@ -342,11 +398,11 @@ export default function MiPerfil() {
                 <div className="det-fila">
                   <div className="det-campo">
                     <label className="det-label">AFP / ONP</label>
-                    <span className="det-valor">{seguros.afp || '—'}</span>
+                    <span className="det-valor">{valorSensible(seguros.afp)}</span>
                   </div>
                   <div className="det-campo">
                     <label className="det-label">Código AFP</label>
-                    <span className="det-valor">{seguros.cod_afp || '—'}</span>
+                    <span className="det-valor">{valorSensible(seguros.cod_afp)}</span>
                   </div>
                 </div>
                 <div className="det-fila">
@@ -388,7 +444,7 @@ export default function MiPerfil() {
                       <tr key={i}>
                         <td>{c.tipo_cuenta || '—'}</td>
                         <td>{c.banco || '—'}</td>
-                        <td>{c.cuenta_banc || '—'}</td>
+                        <td>{valorSensible(c.cuenta_banc)}</td>
                         <td>{c.moneda || '—'}</td>
                       </tr>
                     );
@@ -426,6 +482,28 @@ export default function MiPerfil() {
           datosJustif={datosJustif}
           setDatosJustif={setDatosJustif}
         />
+      )}
+
+      {/* ===== MODAL VERIFICAR CONTRASEÑA ===== */}
+      {modalClave && (
+        <div className="det-modal-overlay" onClick={function () { setModalClave(false); }}>
+          <div className="det-modal det-modal-clave" onClick={function (e) { e.stopPropagation(); }}>
+            <h3><IconoFa icono={faLock} /> Verificar identidad</h3>
+            <p className="det-modal-clave-desc">Ingresa tu contraseña del login para ver tus datos personales</p>
+            <input type="password" className="det-modal-clave-input" placeholder="Contraseña..."
+              value={claveInput}
+              onChange={function (e) { setClaveInput(e.target.value); setClaveError(''); }}
+              onKeyDown={function (e) { if (e.key === 'Enter') verificarClave(); }}
+              autoFocus />
+            {claveError && <p className="det-modal-clave-error">{claveError}</p>}
+            <div className="det-modal-clave-btns">
+              <button className="det-btn-cancelar" onClick={function () { setModalClave(false); }}>Cancelar</button>
+              <button className="det-btn-confirmar" onClick={verificarClave} disabled={verificando}>
+                {verificando ? 'Verificando...' : 'Desbloquear'}
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );

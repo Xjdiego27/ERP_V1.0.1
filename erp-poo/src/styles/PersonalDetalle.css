@@ -1424,6 +1424,14 @@ body.dark-mode .asist-rango-info {
 .det-eq-tipo { font-weight: 600; color: var(--text-primary, #1e293b); }
 .det-eq-serie { color: var(--text-secondary, #64748b); font-family: monospace; }
 
+.det-modal-seccion-titulo {
+  display: flex; align-items: center; gap: 6px;
+  font-size: .85rem; font-weight: 700; color: var(--text-secondary, #64748b);
+  text-transform: uppercase; letter-spacing: .5px;
+  margin-bottom: .4rem;
+}
+.det-modal-seccion-titulo svg { font-size: .8rem; }
+
 .det-modal-equipos-acciones {
   display: flex; gap: 10px; justify-content: flex-end;
 }
@@ -1432,3 +1440,79 @@ body.dark-mode .asist-rango-info {
 /* Dark mode */
 body.dark-mode .det-modal-equipos { background: var(--bg-card, #1e2330); }
 body.dark-mode .det-modal-equipos-lista li { background: var(--bg-subtle, #252a36); }
+
+/* ===== Botón Ver/Ocultar datos sensibles (MiPerfil) ===== */
+.det-btn-sensible {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 7px 16px; border-radius: 8px;
+  font-size: .82rem; font-weight: 600; cursor: pointer;
+  border: 2px solid var(--primary-color, #4a90d9);
+  background: transparent;
+  color: var(--primary-color, #4a90d9);
+  transition: all .2s;
+}
+.det-btn-sensible:hover { background: var(--primary-color, #4a90d9); color: #fff; }
+.det-btn-sensible.visible { background: #dc2626; border-color: #dc2626; color: #fff; }
+.det-btn-sensible.visible:hover { background: #b91c1c; border-color: #b91c1c; }
+
+/* ===== Modal verificar contraseña ===== */
+.det-modal-clave {
+  background: var(--bg-card, #fff);
+  border-radius: 16px;
+  box-shadow: 0 12px 40px rgba(0,0,0,.2);
+  width: 380px; max-width: 92vw;
+  padding: 1.8rem;
+  animation: detSlideUp .25s;
+  text-align: center;
+}
+.det-modal-clave h3 {
+  margin: 0 0 .3rem; font-size: 1.15rem;
+  color: var(--text-primary, #1e293b);
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+}
+.det-modal-clave h3 svg { color: var(--primary-color, #4a90d9); }
+.det-modal-clave-desc {
+  font-size: .88rem; color: var(--text-secondary, #64748b);
+  margin: 0 0 1.2rem; line-height: 1.4;
+}
+.det-modal-clave-input {
+  width: 100%; box-sizing: border-box;
+  padding: 11px 14px; font-size: 14px;
+  border: 2px solid var(--border-color, #e2e8f0);
+  border-radius: 10px; outline: none;
+  background: var(--bg-input, #f8f9fc);
+  color: var(--text-primary, #1e293b);
+  transition: border-color .2s;
+  text-align: center; letter-spacing: 2px;
+}
+.det-modal-clave-input:focus { border-color: var(--primary-color, #4a90d9); }
+.det-modal-clave-error {
+  color: #dc2626; font-size: .82rem; font-weight: 600;
+  margin: .5rem 0 0; animation: loginShake .35s ease;
+}
+@keyframes loginShake {
+  0%, 100% { transform: translateX(0); }
+  20% { transform: translateX(-6px); }
+  40% { transform: translateX(6px); }
+  60% { transform: translateX(-4px); }
+  80% { transform: translateX(4px); }
+}
+.det-modal-clave-btns {
+  display: flex; gap: 10px; justify-content: center; margin-top: 1.2rem;
+}
+.det-btn-cancelar {
+  padding: 9px 20px; border-radius: 8px; font-size: .88rem; font-weight: 600;
+  border: 2px solid var(--border-color, #d1d5db); background: transparent;
+  color: var(--text-secondary, #64748b); cursor: pointer; transition: all .2s;
+}
+.det-btn-cancelar:hover { background: var(--bg-subtle, #f1f5f9); }
+.det-btn-confirmar {
+  padding: 9px 20px; border-radius: 8px; font-size: .88rem; font-weight: 600;
+  border: none; background: var(--primary-color, #4a90d9); color: #fff;
+  cursor: pointer; transition: all .2s;
+}
+.det-btn-confirmar:hover { filter: brightness(1.1); }
+.det-btn-confirmar:disabled { opacity: .6; cursor: not-allowed; }
+
+body.dark-mode .det-modal-clave { background: var(--bg-card, #1e2330); }
+body.dark-mode .det-modal-clave-input { background: #272a33; border-color: #3a3f4a; color: #e0e4ea; }

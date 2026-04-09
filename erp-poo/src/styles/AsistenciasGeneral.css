@@ -271,6 +271,26 @@
   text-align: center;
 }
 
+.asistg-hcol-sort {
+  cursor: pointer;
+  user-select: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  transition: color 0.2s;
+}
+.asistg-hcol-sort:hover {
+  color: var(--primary-color, #4a90d9);
+}
+.asistg-hcol-sort .sort-icon {
+  font-size: 9px;
+  opacity: 0.45;
+  transition: opacity 0.2s;
+}
+.asistg-hcol-sort:hover .sort-icon {
+  opacity: 1;
+}
+
 .asistg-fila-grupo {
   border-bottom: 1px solid var(--border-color, #f0f0f0);
   background: var(--bg-card, #fff);

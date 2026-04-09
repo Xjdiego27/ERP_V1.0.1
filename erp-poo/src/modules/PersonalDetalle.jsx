@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { useParams, useNavigate } from 'react-router-dom';
-import { faPerson, faPersonDress, faPen, faFloppyDisk, faXmark, faBan, faArrowLeft, faCheck, faPlus, faTrash, faCamera, faCalendarCheck, faCalendarDays, faExclamationTriangle, faClock, faFileContract, faFileLines, faFileSignature, faHandshake, faFileInvoiceDollar, faFolder, faEllipsisVertical, faKey, faLaptop } from '@fortawesome/free-solid-svg-icons';
+import { faPerson, faPersonDress, faPen, faFloppyDisk, faXmark, faBan, faArrowLeft, faCheck, faPlus, faTrash, faCamera, faCalendarCheck, faCalendarDays, faExclamationTriangle, faClock, faFileContract, faFileLines, faFileSignature, faHandshake, faFileInvoiceDollar, faFolder, faEllipsisVertical, faKey, faLaptop, faSimCard, faPhone } from '@fortawesome/free-solid-svg-icons';
 import IconoFa from '../components/IconoFa';
 import AsistenciaTab from '../components/AsistenciaTab';
 import DocumentosTab from '../components/DocumentosTab';
@@ -306,24 +306,26 @@ export default function PersonalDetalle() {
       return;
     }
 
-    // Para desactivar, verificar equipos asignados primero
-    setModalEquipos({ equipos: [], cargando: true });
-    fetch(API_URL + '/personal/' + idActual + '/equipos-asignados', { headers: headersAuth() })
-      .then(function (res) { return res.json(); })
-      .then(function (equipos) {
-        if (!equipos || equipos.length === 0) {
-          // Sin equipos: cerrar modal y pedir confirmación simple
+    // Para desactivar, verificar equipos Y chips asignados en paralelo
+    setModalEquipos({ equipos: [], chips: [], cargando: true });
+    Promise.all([
+      fetch(API_URL + '/personal/' + idActual + '/equipos-asignados', { headers: headersAuth() }).then(function (r) { return r.json(); }),
+      fetch(API_URL + '/personal/' + idActual + '/chips-asignados', { headers: headersAuth() }).then(function (r) { return r.json(); })
+    ])
+      .then(function (res) {
+        var equipos = Array.isArray(res[0]) ? res[0] : [];
+        var chips = Array.isArray(res[1]) ? res[1] : [];
+        if (equipos.length === 0 && chips.length === 0) {
           setModalEquipos(null);
           if (!confirm('¿Seguro que deseas desactivar a ' + empleado.nombres + '?')) return;
           ejecutarDesactivar(idActual);
         } else {
-          // Con equipos: mostrar modal
-          setModalEquipos({ equipos: equipos, cargando: false });
+          setModalEquipos({ equipos: equipos, chips: chips, cargando: false });
         }
       })
       .catch(function () {
         setModalEquipos(null);
-        alert('Error al verificar equipos asignados');
+        alert('Error al verificar asignaciones');
       });
   }
 
@@ -335,6 +337,9 @@ export default function PersonalDetalle() {
         var msg = resp.mensaje;
         if (resp.equipos_liberados && resp.equipos_liberados.length > 0) {
           msg += '\n\nEquipos liberados:\n• ' + resp.equipos_liberados.join('\n• ');
+        }
+        if (resp.chips_liberados && resp.chips_liberados.length > 0) {
+          msg += '\n\nLíneas telefónicas liberadas:\n• ' + resp.chips_liberados.join('\n• ');
         }
         alert(msg);
         fetch(API_URL + '/personal', { headers: headersAuth() })
@@ -1214,33 +1219,54 @@ export default function PersonalDetalle() {
         <div className="det-modal-overlay" onClick={function () { if (!modalEquipos.cargando) setModalEquipos(null); }}>
           <div className="det-modal-equipos" onClick={function (e) { e.stopPropagation(); }}>
             {modalEquipos.cargando ? (
-              <p style={{ textAlign: 'center', padding: '2rem' }}>Verificando equipos asignados...</p>
+              <p style={{ textAlign: 'center', padding: '2rem' }}>Verificando asignaciones...</p>
             ) : (
               <>
                 <div className="det-modal-equipos-header">
                   <IconoFa icono={faExclamationTriangle} />
-                  <h3>Equipos asignados</h3>
+                  <h3>Asignaciones activas</h3>
                 </div>
                 <p className="det-modal-equipos-msg">
-                  {empleado.nombres} tiene <strong>{modalEquipos.equipos.length}</strong> equipo{modalEquipos.equipos.length > 1 ? 's' : ''} asignado{modalEquipos.equipos.length > 1 ? 's' : ''}. Al desactivar se liberarán automáticamente:
+                  {empleado.nombres} tiene asignaciones activas. Al desactivar se liberarán automáticamente:
                 </p>
-                <ul className="det-modal-equipos-lista">
-                  {modalEquipos.equipos.map(function (eq) {
-                    return (
-                      <li key={eq.id_asig}>
-                        <IconoFa icono={faLaptop} />
-                        <span className="det-eq-tipo">{eq.tipo_equipo}</span>
-                        <span className="det-eq-serie">{eq.serie}</span>
-                      </li>
-                    );
-                  })}
-                </ul>
+                {modalEquipos.equipos.length > 0 && (
+                  <>
+                    <span className="det-modal-seccion-titulo"><IconoFa icono={faLaptop} /> Equipos ({modalEquipos.equipos.length})</span>
+                    <ul className="det-modal-equipos-lista">
+                      {modalEquipos.equipos.map(function (eq) {
+                        return (
+                          <li key={'eq-' + eq.id_asig}>
+                            <IconoFa icono={faLaptop} />
+                            <span className="det-eq-tipo">{eq.tipo_equipo}</span>
+                            <span className="det-eq-serie">{eq.serie}</span>
+                          </li>
+                        );
+                      })}
+                    </ul>
+                  </>
+                )}
+                {modalEquipos.chips.length > 0 && (
+                  <>
+                    <span className="det-modal-seccion-titulo"><IconoFa icono={faPhone} /> Líneas telefónicas ({modalEquipos.chips.length})</span>
+                    <ul className="det-modal-equipos-lista">
+                      {modalEquipos.chips.map(function (ch) {
+                        return (
+                          <li key={'ch-' + ch.id_asig}>
+                            <IconoFa icono={faSimCard} />
+                            <span className="det-eq-tipo">Línea</span>
+                            <span className="det-eq-serie">{ch.numero}</span>
+                          </li>
+                        );
+                      })}
+                    </ul>
+                  </>
+                )}
                 <div className="det-modal-equipos-acciones">
                   <button className="det-btn det-btn-cancelar" onClick={function () { setModalEquipos(null); }}>
                     <IconoFa icono={faXmark} /> Cancelar
                   </button>
                   <button className="det-btn det-btn-desactivar" onClick={function () { ejecutarDesactivar(id); }}>
-                    <IconoFa icono={faBan} /> Desactivar y liberar equipos
+                    <IconoFa icono={faBan} /> Desactivar y liberar todo
                   </button>
                 </div>
               </>
