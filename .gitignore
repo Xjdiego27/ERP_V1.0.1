@@ -4,11 +4,13 @@ __pycache__/
 *.pyc
 .venv/
 .env
+venv/
 
 # Node / React
 node_modules/
 dist/
 .agents/
+.cache/
 
 # Build
 *.log
