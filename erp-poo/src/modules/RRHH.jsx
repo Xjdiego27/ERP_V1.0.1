@@ -5,6 +5,13 @@ import IconoFa from '../components/IconoFa';
 import { headersAuth, API_URL } from '../auth';
 import '../styles/RRHH.css';
 
+function formatFecha(iso) {
+    if (!iso) return '—';
+    var s = String(iso).substring(0, 10);
+    var p = s.split('-');
+    return p.length === 3 ? p[2] + '/' + p[1] + '/' + p[0] : s;
+}
+
 // Módulo Personal — Vista de tarjetas tipo ficha
 // Tarjetas con: foto, nombre, DNI, Área > Departamento > Cargo, celular, correo, etc.
 // Filtros: búsqueda texto, área, departamento, toggle activos/bloqueados
@@ -218,7 +225,7 @@ export default function RRHH() {
                 </div>
                 <div className="tarjeta-fila">
                   <span className="tarjeta-label">F. Ingreso</span>
-                  <span className="tarjeta-valor">{emp.fech_ingreso || '—'}</span>
+                  <span className="tarjeta-valor">{formatFecha(emp.fech_ingreso)}</span>
                 </div>
 
                 {/* Estado */}

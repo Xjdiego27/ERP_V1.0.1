@@ -626,27 +626,37 @@ def _generar_pdf_tickets(tickets_data: list, mes: int, anio: int, nombre_usuario
     # ── Detalle de tickets ──
     if tickets_data:
         elementos.append(Paragraph("Detalle de Tickets", seccion_style))
-        det_rows = [["#", "Asunto", "Estado", "Prioridad", "Categoría", "Creación"]]
+        det_rows = [["#", "Creador", "Asunto", "Estado", "Prioridad", "Técnico", "Creación", "Cierre"]]
         for t in tickets_data:
             fch = ""
             if t.get("fech_creacion"):
                 try:
                     dt = datetime.fromisoformat(str(t["fech_creacion"]))
-                    fch = dt.strftime("%d/%m/%Y")
+                    fch = dt.strftime("%d/%m/%Y %H:%M")
                 except Exception:
-                    fch = str(t["fech_creacion"])[:10]
+                    fch = str(t["fech_creacion"])[:16]
+
+            fch_cierre = ""
+            if t.get("fech_cierre"):
+                try:
+                    dt2 = datetime.fromisoformat(str(t["fech_cierre"]))
+                    fch_cierre = dt2.strftime("%d/%m/%Y %H:%M")
+                except Exception:
+                    fch_cierre = str(t["fech_cierre"])[:16]
 
             det_rows.append([
                 str(t.get("id_ticket", "")),
-                Paragraph(str(t.get("asunto", ""))[:50], normal_style),
+                Paragraph(str(t.get("nombre_creador", "") or "")[:30], normal_style),
+                Paragraph(str(t.get("asunto", ""))[:40], normal_style),
                 t.get("estado", ""),
                 t.get("prioridad", ""),
-                str(t.get("categoria", "") or "")[:20],
+                Paragraph(str(t.get("tecnico", "") or "—")[:25], normal_style),
                 fch,
+                fch_cierre or "—",
             ])
 
-        col_w = [doc.width * 0.07, doc.width * 0.30, doc.width * 0.14,
-                 doc.width * 0.14, doc.width * 0.18, doc.width * 0.17]
+        col_w = [doc.width * 0.05, doc.width * 0.14, doc.width * 0.18, doc.width * 0.10,
+                 doc.width * 0.10, doc.width * 0.13, doc.width * 0.15, doc.width * 0.15]
         tbl_det = Table(det_rows, colWidths=col_w, repeatRows=1)
         tbl_det.setStyle(TableStyle([
             ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor("#1e293b")),
@@ -737,12 +747,27 @@ def informe_tickets_pdf(
             CategoriaTicket.ID_CATEGORIA == t.ID_CATEGORIA
         ).first() if CategoriaTicket and t.ID_CATEGORIA else None
 
+        # Nombre del creador
+        creador = db.query(Personal).filter(Personal.ID_PERSONAL == t.ID_PERSONAL).first()
+        nombre_creador = ""
+        if creador:
+            nombre_creador = f"{creador.APE_PATERNO} {creador.APE_MATERNO}, {creador.NOMBRES}"
+
+        # Nombre del técnico asignado
+        tecnico_nombre = None
+        if t.ID_TI:
+            tec = db.query(Personal).filter(Personal.ID_PERSONAL == t.ID_TI).first()
+            if tec:
+                tecnico_nombre = f"{tec.NOMBRES} {tec.APE_PATERNO}"
+
         tickets_data.append({
             "id_ticket": t.ID_TICKET,
             "estado": t.ESTADO,
             "prioridad": t.PRIORIDAD,
             "asunto": t.ASUNTO,
             "categoria": cat.DESCRIP if cat else None,
+            "nombre_creador": nombre_creador,
+            "tecnico": tecnico_nombre,
             "fech_creacion": str(t.FECH_CREACION) if t.FECH_CREACION else None,
             "fech_cierre": str(t.FECH_CIERRE) if t.FECH_CIERRE else None,
             "valoracion": t.VALORACION,

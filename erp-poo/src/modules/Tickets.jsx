@@ -149,16 +149,17 @@ export default function Tickets() {
         return true;
     });
 
-    // ── Tiempo relativo ──
-    function tiempoRelativo(fechaStr) {
+    // ── Formatear fecha dd/mm/yyyy HH:mm ──
+    function formatearFechaHora(fechaStr) {
         if (!fechaStr) return '';
         var fecha = new Date(fechaStr);
-        var ahora = new Date();
-        var diff = Math.floor((ahora - fecha) / 1000);
-        if (diff < 60) return 'hace un momento';
-        if (diff < 3600) return 'hace ' + Math.floor(diff / 60) + ' min';
-        if (diff < 86400) return 'hace ' + Math.floor(diff / 3600) + ' h';
-        return 'hace ' + Math.floor(diff / 86400) + ' día(s)';
+        if (isNaN(fecha.getTime())) return fechaStr;
+        var d = String(fecha.getDate()).padStart(2, '0');
+        var m = String(fecha.getMonth() + 1).padStart(2, '0');
+        var y = fecha.getFullYear();
+        var hh = String(fecha.getHours()).padStart(2, '0');
+        var mm = String(fecha.getMinutes()).padStart(2, '0');
+        return d + '/' + m + '/' + y + ' ' + hh + ':' + mm;
     }
 
     // ── Acciones ──
@@ -260,9 +261,9 @@ export default function Tickets() {
             }
             return s;
         }
-        var cabecera = 'ID,NOMBRE,CATEGORIA,ASUNTO,PRIORIDAD,ESTADO,FECHA CREACIÓN\n';
+        var cabecera = 'ID,NOMBRE,CATEGORÍA,ASUNTO,PRIORIDAD,TÉCNICO,ESTADO,FECHA CREACIÓN,FECHA CIERRE\n';
         var filas = ticketsFiltrados.map(function (t) {
-            return [t.id_ticket, t.nombre_creador, t.categoria, t.asunto, t.prioridad, t.estado, t.fech_creacion].map(escaparCSV).join(',');
+            return [t.id_ticket, t.nombre_creador, t.categoria, t.asunto, t.prioridad, t.tecnico || '', t.estado, formatearFechaHora(t.fech_creacion), t.fech_cierre ? formatearFechaHora(t.fech_cierre) : ''].map(escaparCSV).join(',');
         }).join('\n');
         var blob = new Blob(['\uFEFF' + cabecera + filas], { type: 'text/csv;charset=utf-8' });
         var url = URL.createObjectURL(blob);
@@ -454,7 +455,7 @@ export default function Tickets() {
                                         </div>
                                         <div className="detalle-campo">
                                             <span className="detalle-label">Creado</span>
-                                            <span className="detalle-valor">{tiempoRelativo(seleccionado.fech_creacion)}</span>
+                                            <span className="detalle-valor">{formatearFechaHora(seleccionado.fech_creacion)}</span>
                                         </div>
                                     </div>
 
@@ -612,7 +613,7 @@ export default function Tickets() {
                                     <th>PRIORIDAD</th>
                                     <th>ASIGNADO</th>
                                     <th>VALORACIÓN</th>
-                                    <th>TIEMPO</th>
+                                    <th>FECHA/HORA</th>
                                     <th>ESTADO</th>
                                 </tr>
                             </thead>
@@ -640,7 +641,7 @@ export default function Tickets() {
                                             <td className="td-valoracion">
                                                 {t.valoracion ? ('★'.repeat(t.valoracion) + '☆'.repeat(3 - t.valoracion)) : '—'}
                                             </td>
-                                            <td className="td-tiempo">{tiempoRelativo(t.fech_creacion)}</td>
+                                            <td className="td-tiempo">{formatearFechaHora(t.fech_creacion)}</td>
                                             <td>
                                                 <span className="estado-badge" style={{ background: estilo.bg, color: estilo.color }}>
                                                     {estilo.label}

@@ -85,6 +85,21 @@ export default function MiPerfil() {
     return '••••••••';
   }
 
+  // Helper: formatear fecha ISO (yyyy-mm-dd) a dd/mm/yyyy
+  function formatearFecha(val) {
+    if (!val || val === '—') return '—';
+    var partes = String(val).split('-');
+    if (partes.length === 3) return partes[2] + '/' + partes[1] + '/' + partes[0];
+    return val;
+  }
+
+  // Helper: valor sensible + formato fecha
+  function fechaSensible(val) {
+    if (!val || val === '—') return '—';
+    if (!datosVisibles) return '••••••••';
+    return formatearFecha(val);
+  }
+
   // ── Carga de datos ──────────────────────────────────
   useEffect(function () {
     var abortCtrl = new AbortController();
@@ -195,19 +210,23 @@ export default function MiPerfil() {
         </div>
       )}
 
+      {/* ── Botón global de ver/ocultar datos sensibles ── */}
+      {empleado && (
+        <div className="detalle-sensible-global">
+          <button className={'det-btn-sensible ' + (datosVisibles ? 'visible' : '')}
+            onClick={datosVisibles ? ocultarDatos : solicitarDesbloqueo}
+            title={datosVisibles ? 'Ocultar datos personales' : 'Ver datos personales'}>
+            <IconoFa icono={datosVisibles ? faEyeSlash : faEye} />
+            <span>{datosVisibles ? 'Ocultar datos' : 'Ver datos'}</span>
+          </button>
+          {!datosVisibles && <span className="det-sensible-hint">Datos personales protegidos — ingresa tu contraseña para verlos</span>}
+        </div>
+      )}
+
       {/* ===== TAB INFORMACIÓN (solo lectura) ===== */}
       {tabActiva === 'informacion' && (
         <div className="detalle-tarjeta">
           <div className="detalle-cabecera">
-            <div className="detalle-botones">
-              {/* Botón para ver/ocultar datos sensibles */}
-              <button className={'det-btn-sensible ' + (datosVisibles ? 'visible' : '')}
-                onClick={datosVisibles ? ocultarDatos : solicitarDesbloqueo}
-                title={datosVisibles ? 'Ocultar datos personales' : 'Ver datos personales'}>
-                <IconoFa icono={datosVisibles ? faEyeSlash : faEye} />
-                <span>{datosVisibles ? 'Ocultar datos' : 'Ver datos'}</span>
-              </button>
-            </div>
 
             <div className="detalle-area-campo">
               <label className="det-label det-label-area">Área</label>
@@ -272,7 +291,7 @@ export default function MiPerfil() {
                   <div className="det-fila det-fila-3">
                     <div className="det-campo">
                       <label className="det-label">Tipo Doc.</label>
-                      <span className="det-valor">{empleado.tipo_doc || '—'}</span>
+                      <span className="det-valor">{valorSensible(empleado.tipo_doc)}</span>
                     </div>
                     <div className="det-campo">
                       <label className="det-label">N° Documento</label>
@@ -280,7 +299,7 @@ export default function MiPerfil() {
                     </div>
                     <div className="det-campo">
                       <label className="det-label">Fecha Nac.</label>
-                      <span className="det-valor">{valorSensible(empleado.fech_nac)}</span>
+                      <span className="det-valor">{fechaSensible(empleado.fech_nac)}</span>
                     </div>
                   </div>
 
@@ -304,11 +323,11 @@ export default function MiPerfil() {
                   <div className="det-fila">
                     <div className="det-campo">
                       <label className="det-label">Estado Civil</label>
-                      <span className="det-valor">{empleado.estado_civil || '—'}</span>
+                      <span className="det-valor">{valorSensible(empleado.estado_civil)}</span>
                     </div>
                     <div className="det-campo">
                       <label className="det-label">Grado Académico</label>
-                      <span className="det-valor">{empleado.grado_academico || '—'}</span>
+                      <span className="det-valor">{valorSensible(empleado.grado_academico)}</span>
                     </div>
                   </div>
 
@@ -316,11 +335,11 @@ export default function MiPerfil() {
                   <div className="det-fila">
                     <div className="det-campo">
                       <label className="det-label">Departamento</label>
-                      <span className="det-valor">{empleado.departamento || '—'}</span>
+                      <span className="det-valor">{valorSensible(empleado.departamento)}</span>
                     </div>
                     <div className="det-campo">
                       <label className="det-label">Cargo</label>
-                      <span className="det-valor">{empleado.cargo || '—'}</span>
+                      <span className="det-valor">{valorSensible(empleado.cargo)}</span>
                     </div>
                   </div>
 
@@ -328,11 +347,11 @@ export default function MiPerfil() {
                   <div className="det-fila det-fila-3">
                     <div className="det-campo">
                       <label className="det-label">Tipo Contrato</label>
-                      <span className="det-valor">{empleado.tipo_contrato || '—'}</span>
+                      <span className="det-valor">{valorSensible(empleado.tipo_contrato)}</span>
                     </div>
                     <div className="det-campo">
                       <label className="det-label">Modalidad</label>
-                      <span className="det-valor">{empleado.modalidad || '—'}</span>
+                      <span className="det-valor">{valorSensible(empleado.modalidad)}</span>
                     </div>
                     <div className="det-campo">
                       <label className="det-label">Sueldo</label>
@@ -340,7 +359,7 @@ export default function MiPerfil() {
                     </div>
                     <div className="det-campo">
                       <label className="det-label">Asig. Familiar</label>
-                      <span className="det-valor">{empleado.asig_fam ? 'Sí' : 'No'}</span>
+                      <span className="det-valor">{valorSensible(empleado.asig_fam ? 'Sí' : 'No')}</span>
                     </div>
                   </div>
 
@@ -348,11 +367,11 @@ export default function MiPerfil() {
                   <div className="det-fila">
                     <div className="det-campo">
                       <label className="det-label">Fech. Ingreso</label>
-                      <span className="det-valor">{empleado.fech_ingreso || '—'}</span>
+                      <span className="det-valor">{fechaSensible(empleado.fech_ingreso)}</span>
                     </div>
                     <div className="det-campo">
                       <label className="det-label">Cese / Fin de Contrato</label>
-                      <span className="det-valor">{empleado.fech_cese || '—'}</span>
+                      <span className="det-valor">{empleado.fech_cese ? fechaSensible(empleado.fech_cese) : '—'}</span>
                     </div>
                   </div>
 
@@ -360,7 +379,7 @@ export default function MiPerfil() {
                   <div className="det-fila">
                     <div className="det-campo">
                       <label className="det-label">Distrito</label>
-                      <span className="det-valor">{empleado.distrito || '—'}</span>
+                      <span className="det-valor">{valorSensible(empleado.distrito)}</span>
                     </div>
                     <div className="det-campo">
                       <label className="det-label">Dirección</label>
@@ -408,11 +427,11 @@ export default function MiPerfil() {
                 <div className="det-fila">
                   <div className="det-campo">
                     <label className="det-label">Comisión AFP</label>
-                    <span className="det-valor">{seguros.comision_afp ? 'Sí' : 'No'}</span>
+                    <span className="det-valor">{valorSensible(seguros.comision_afp ? 'Sí' : 'No')}</span>
                   </div>
                   <div className="det-campo">
                     <label className="det-label">Aportación</label>
-                    <span className="det-valor">{seguros.aportacion ? 'Sí' : 'No'}</span>
+                    <span className="det-valor">{valorSensible(seguros.aportacion ? 'Sí' : 'No')}</span>
                   </div>
                 </div>
               </div>
@@ -442,10 +461,10 @@ export default function MiPerfil() {
                   {cuentas.map(function (c, i) {
                     return (
                       <tr key={i}>
-                        <td>{c.tipo_cuenta || '—'}</td>
-                        <td>{c.banco || '—'}</td>
+                        <td>{valorSensible(c.tipo_cuenta)}</td>
+                        <td>{valorSensible(c.banco)}</td>
                         <td>{valorSensible(c.cuenta_banc)}</td>
-                        <td>{c.moneda || '—'}</td>
+                        <td>{valorSensible(c.moneda)}</td>
                       </tr>
                     );
                   })}

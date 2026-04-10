@@ -20,6 +20,13 @@ var ICONOS_TIPO = {
     'TABLET': faTabletScreenButton,
 };
 
+function formatFecha(iso) {
+    if (!iso) return '—';
+    var s = String(iso).substring(0, 10);
+    var p = s.split('-');
+    return p.length === 3 ? p[2] + '/' + p[1] + '/' + p[0] : s;
+}
+
 var ESTADO_ESTILOS = {
     'DISPONIBLE': { bg: '#dcfce7', color: '#15803d', label: 'DISPONIBLE' },
     'ASIGNADO': { bg: '#dbeafe', color: '#2563eb', label: 'ASIGNADO' },
@@ -600,7 +607,7 @@ export default function EquiposAsignar() {
                                                 <div className="eqa-spec"><IconoFa icono={faMemory} /><span>{eq.tipo_ram ? eq.tipo_ram + ' ' : ''}{eq.ram}</span></div>
                                             )}
                                             {eq.fech_compra && (
-                                                <div className="eqa-spec"><IconoFa icono={faCalendarDays} /><span>Compra: {eq.fech_compra}</span></div>
+                                                <div className="eqa-spec"><IconoFa icono={faCalendarDays} /><span>Compra: {formatFecha(eq.fech_compra)}</span></div>
                                             )}
                                             {eq.garantia ? (
                                                 <div className="eqa-spec"><IconoFa icono={faShieldHalved} /><span>Garantía: {eq.garantia} meses</span></div>
@@ -650,7 +657,7 @@ export default function EquiposAsignar() {
                                                             <div className="eqa-asig-avatar"><IconoFa icono={faUser} /></div>
                                                             <div className="eqa-asig-info">
                                                                 <span className="eqa-asig-nombre">{asig.empleado}</span>
-                                                                <span className="eqa-asig-fecha">Desde: {asig.fecha_asig}</span>
+                                                                <span className="eqa-asig-fecha">Desde: {formatFecha(asig.fecha_asig)}</span>
                                                             </div>
                                                             {historial.length > 0 && (
                                                                 <button className={'eqa-hist-toggle' + (histAbierto ? ' abierto' : '')}
@@ -679,7 +686,7 @@ export default function EquiposAsignar() {
                                                                         <div className="eqa-hist-info">
                                                                             <span className="eqa-hist-nombre">{h.empleado}</span>
                                                                             <span className="eqa-hist-fechas">
-                                                                                {h.fecha_asig} → {h.fecha_devol || '—'}
+                                                                                {formatFecha(h.fecha_asig)} → {h.fecha_devol ? formatFecha(h.fecha_devol) : '—'}
                                                                             </span>
                                                                         </div>
                                                                     </div>

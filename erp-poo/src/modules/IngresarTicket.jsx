@@ -197,16 +197,17 @@ export default function IngresarTicket() {
         }
     }
 
-    // Tiempo relativo
-    function tiempoRelativo(fechaStr) {
+    // Formatear fecha a dd/mm/yyyy HH:mm
+    function formatearFechaHora(fechaStr) {
         if (!fechaStr) return '';
         var fecha = new Date(fechaStr);
-        var ahora = new Date();
-        var diff = Math.floor((ahora - fecha) / 1000);
-        if (diff < 60) return 'hace un momento';
-        if (diff < 3600) return 'hace ' + Math.floor(diff / 60) + ' min';
-        if (diff < 86400) return 'hace ' + Math.floor(diff / 3600) + ' h';
-        return 'hace ' + Math.floor(diff / 86400) + ' día(s)';
+        if (isNaN(fecha.getTime())) return fechaStr;
+        var d = String(fecha.getDate()).padStart(2, '0');
+        var m = String(fecha.getMonth() + 1).padStart(2, '0');
+        var y = fecha.getFullYear();
+        var hh = String(fecha.getHours()).padStart(2, '0');
+        var mm = String(fecha.getMinutes()).padStart(2, '0');
+        return d + '/' + m + '/' + y + ' ' + hh + ':' + mm;
     }
 
     function colorPrioridad(p) {
@@ -481,7 +482,7 @@ export default function IngresarTicket() {
                                                     <div className="ticket-card-meta">
                                                         <span style={{ color: estiloPri ? estiloPri.color : '#94a3b8' }}>{tk.prioridad}</span>
                                                         <span>{tk.categoria}</span>
-                                                        <span>{tiempoRelativo(tk.fech_creacion)}</span>
+                                                        <span>{formatearFechaHora(tk.fech_creacion)}</span>
                                                     </div>
 
                                                     {/* Progress stepper */}
@@ -519,7 +520,7 @@ export default function IngresarTicket() {
 
                                                     {esCerrado && tk.fech_cierre && (
                                                         <div className="ticket-card-meta cerrado-meta">
-                                                            <span>Cerrado: {new Date(tk.fech_cierre).toLocaleDateString('es-PE')}</span>
+                                                            <span>Cerrado: {formatearFechaHora(tk.fech_cierre)}</span>
                                                         </div>
                                                     )}
                                                 </div>

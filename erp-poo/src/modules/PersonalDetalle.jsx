@@ -8,6 +8,13 @@ import DocumentosTab from '../components/DocumentosTab';
 import { obtenerToken, headersConToken, headersAuth, API_URL } from '../auth';
 import '../styles/PersonalDetalle.css';
 
+function formatFecha(iso) {
+    if (!iso) return '—';
+    var s = String(iso).substring(0, 10);
+    var p = s.split('-');
+    return p.length === 3 ? p[2] + '/' + p[1] + '/' + p[0] : s;
+}
+
 // Página de detalle de un empleado
 // Tabs: INFORMACIÓN | CONTRATOS | SEGUROS Y APORTACIONES | CUENTAS BANCARIAS | DOCUMENTOS | VACACIONES | ASISTENCIA
 // Tab Información = tarjeta con foto + TODOS los campos de la BD
@@ -558,7 +565,7 @@ export default function PersonalDetalle() {
                     </div>
                     <div className="det-campo">
                       <label className="det-label">Fecha Nac.</label>
-                      <span className="det-valor">{empleado.fech_nac || '—'}</span>
+                      <span className="det-valor">{formatFecha(empleado.fech_nac)}</span>
                     </div>
                   </div>
 
@@ -626,11 +633,11 @@ export default function PersonalDetalle() {
                   <div className="det-fila">
                     <div className="det-campo">
                       <label className="det-label">Fech. Ingreso</label>
-                      <span className="det-valor">{empleado.fech_ingreso || '—'}</span>
+                      <span className="det-valor">{formatFecha(empleado.fech_ingreso)}</span>
                     </div>
                     <div className="det-campo">
                       <label className="det-label">Cese / Fin de Contrato</label>
-                      <span className="det-valor">{empleado.fech_cese || '—'}</span>
+                      <span className="det-valor">{formatFecha(empleado.fech_cese)}</span>
                     </div>
                   </div>
 

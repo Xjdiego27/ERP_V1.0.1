@@ -24,6 +24,7 @@ coleccion_notif_tickets = db_mongo["notificaciones_tickets"]  # Notificaciones d
 coleccion_saludos_cumple = db_mongo["saludos_cumpleanos"]      # Saludos de cumpleaños recopilados por Marketing
 coleccion_eventos2 = db_mongo["eventos2"]                      # Segundo evento (foto)
 coleccion_evento_mujeres = db_mongo["evento_mujeres"]          # Evento exclusivo para mujeres
+coleccion_tareas = db_mongo["tareas_personales"]               # Tareas programadas personales por usuario
 
 # === BASE DE DATOS DE ARCHIVO (erp_sql) ===
 db_archivo = cliente_mongo["erp_sql"]

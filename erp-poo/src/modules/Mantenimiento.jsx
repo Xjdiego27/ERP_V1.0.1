@@ -377,9 +377,9 @@ export default function Mantenimiento() {
                                     <th>Equipo</th>
                                     <th>Usuario</th>
                                     <th>Tipo</th>
-                                    <th>Periodo</th>
-                                    <th>Fecha Prog.</th>
                                     <th>Fecha Mant.</th>
+                                    <th>Periodo</th>
+                                    <th>Prox. Mant.</th>
                                     <th>Técnico</th>
                                     <th>Estado</th>
                                     <th>Fotos</th>
@@ -406,9 +406,9 @@ export default function Mantenimiento() {
                                                     <IconoFa icono={tipoInfo.icono} /> {m.tipo_mantenimiento}
                                                 </span>
                                             </td>
+                                            <td>{formatFecha(m.fecha_mant)}</td>
                                             <td><span className="mnt-periodo-badge">{m.tipo_periodo}</span></td>
                                             <td>{formatFecha(m.fecha_prog)}</td>
-                                            <td>{formatFecha(m.fecha_mant)}</td>
                                             <td><span className="mnt-tecnico">{m.tecnico || '—'}</span></td>
                                             <td>
                                                 <div className="mnt-estado-wrap">

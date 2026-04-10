@@ -1,0 +1,105 @@
+================================================================================
+           COMO LEVANTAR EL PROYECTO ERP_V1.0.1 EN WINDOWS
+================================================================================
+
+REQUISITOS PREVIOS (ya instalados en tu maquina):
+  - Python 3.x          (tienes 3.14.2)
+  - Node.js + npm        (tienes Node 24.13.0 / npm 11.6.2)
+  - XAMPP (MariaDB)      (instalado en C:\xampp)
+  - MongoDB              (servicio "MongoDB" instalado)
+
+================================================================================
+PASO 1 — INICIAR LAS BASES DE DATOS
+================================================================================
+
+  1a) MariaDB (via XAMPP):
+      - Abre XAMPP Control Panel (C:\xampp\xampp-control.exe)
+      - Haz clic en "Start" en la fila de MySQL/MariaDB
+      - O desde PowerShell:
+        C:\xampp\mysql\bin\mysqld.exe --defaults-file=C:\xampp\mysql\bin\my.ini
+
+  1b) MongoDB:
+      - Desde PowerShell (como Administrador):
+        Start-Service MongoDB
+      - Verificar que esta corriendo:
+        Get-Service MongoDB
+
+  NOTA: La base de datos "erp" ya esta importada en MariaDB.
+        Si necesitas reimportarla:
+        C:\xampp\mysql\bin\mysql.exe -u root < "C:\Users\User\Desktop\ERP_V1.0.1\erp.sql"
+
+================================================================================
+PASO 2 — LEVANTAR LOS 3 SERVICIOS (FORMA RAPIDA)
+================================================================================
+
+  Abre PowerShell, navega al proyecto y ejecuta el script:
+
+    cd C:\Users\User\Desktop\ERP_V1.0.1
+    .\start.ps1
+
+  Esto levanta automaticamente:
+    - Backend ERP   (FastAPI) en http://localhost:4000
+    - Backend Chat  (FastAPI) en http://localhost:4001
+    - Frontend      (Vite)    en http://localhost:3000
+
+  Para detener todo: presiona Ctrl+C en esa terminal.
+
+================================================================================
+PASO 2 (ALTERNATIVO) — LEVANTAR CADA SERVICIO POR SEPARADO
+================================================================================
+
+  Terminal 1 — Backend ERP:
+    cd C:\Users\User\Desktop\ERP_V1.0.1\backend
+    .venv\Scripts\python.exe -m uvicorn main:app --host 0.0.0.0 --port 4000 --reload
+
+  Terminal 2 — Backend Chat:
+    cd C:\Users\User\Desktop\ERP_V1.0.1\chat_backend
+    ..\backend\.venv\Scripts\python.exe -m uvicorn chat_server:app --host 0.0.0.0 --port 4001 --reload
+
+  Terminal 3 — Frontend:
+    cd C:\Users\User\Desktop\ERP_V1.0.1\erp-poo
+    npm run dev
+
+================================================================================
+PASO 3 — ABRIR EN EL NAVEGADOR
+================================================================================
+
+  Abre: http://localhost:3000
+
+================================================================================
+NOTAS IMPORTANTES
+================================================================================
+
+  - El archivo de configuracion esta en:  backend\.env
+    Contiene las credenciales de BD, secret key, etc.
+
+  - El virtualenv de Python esta en:     backend\.venv\
+    Si necesitas reinstalar dependencias:
+      cd backend
+      .venv\Scripts\pip.exe install -r requirements.txt
+      .venv\Scripts\pip.exe install -r ..\chat_backend\requirements.txt
+
+  - Si necesitas reinstalar dependencias del frontend:
+      cd erp-poo
+      npm install
+
+  - Puertos usados:
+      3000 = Frontend (Vite dev server)
+      4000 = Backend ERP (FastAPI)
+      4001 = Backend Chat (FastAPI + Socket.IO)
+      3306 = MariaDB (XAMPP)
+     27017 = MongoDB
+
+  - Si un puerto esta ocupado, el script start.ps1 intenta liberarlo
+    automaticamente al inicio.
+
+================================================================================
+RESUMEN RAPIDO (COPY-PASTE)
+================================================================================
+
+  1. Abrir XAMPP -> Start MySQL
+  2. PowerShell Admin: Start-Service MongoDB
+  3. PowerShell: cd C:\Users\User\Desktop\ERP_V1.0.1 ; .\start.ps1
+  4. Navegador: http://localhost:3000
+
+================================================================================

@@ -36,6 +36,8 @@ from rutas_plantillas import router as rutas_plantillas
 from rutas_dashboard import router as rutas_dashboard
 from rutas_licencias import router as rutas_licencias
 from rutas_mantenimiento import router as rutas_mantenimiento
+from rutas_tareas import router as rutas_tareas
+from rutas_red import router as rutas_red
 from rutas_saludos_cumpleanos import tarea_limpieza_periodica
 
 app = FastAPI()
@@ -64,7 +66,7 @@ cors_origins = [o.strip() for o in cors_env]
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=cors_origins,
+    allow_origins='*',
     # Permitir cualquier IP privada de red local automaticamente
     allow_origin_regex=r'https?://(192\.168\.\d+\.\d+|10\.\d+\.\d+\.\d+|172\.(1[6-9]|2\d|3[01])\.\d+\.\d+)(:\d+)?',
     allow_credentials=True,
@@ -93,6 +95,8 @@ app.include_router(rutas_plantillas)
 app.include_router(rutas_dashboard)
 app.include_router(rutas_licencias)
 app.include_router(rutas_mantenimiento)
+app.include_router(rutas_tareas)
+app.include_router(rutas_red)
 
 
 # ── Tarea en background: limpieza automática de saludos vencidos ──

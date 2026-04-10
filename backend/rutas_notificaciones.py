@@ -6,7 +6,7 @@ from database import (
     get_db, Personal, Contrato, Acceso, Horario, HorarioDetalle, Cargo,
     Ticket, Mantenimiento, Equipo, EspecificacionesTec,
 )
-from mongodb import coleccion_menus, coleccion_eventos, coleccion_asistencia, coleccion_justificaciones, coleccion_notif_tickets, coleccion_saludos_cumple
+from mongodb import coleccion_menus, coleccion_eventos, coleccion_asistencia, coleccion_justificaciones, coleccion_notif_tickets, coleccion_saludos_cumple, coleccion_tareas
 from auth_token import verificar_token
 
 router = APIRouter()
@@ -391,8 +391,29 @@ async def obtener_notificaciones(db: Session = Depends(get_db), token: dict = De
                 "urgente": urgente,
             })
 
+    # ── 9. Tareas personales programadas para hoy (MongoDB) ──
+    if persona_actual:
+        hoy_str = hoy.strftime("%Y-%m-%d")
+        cursor_tareas = coleccion_tareas.find({
+            "id_personal": persona_actual.ID_PERSONAL,
+            "fecha": hoy_str,
+            "completada": False,
+            "recordatorio": True,
+        }).sort("hora", 1)
+        tareas_hoy = await cursor_tareas.to_list(length=20)
+        for tarea in tareas_hoy:
+            hora_txt = tarea.get("hora", "")
+            titulo = tarea.get("titulo", "Tarea")
+            texto = f"Tarea hoy: {titulo}" + (f" a las {hora_txt}" if hora_txt else "")
+            items.append({
+                "tipo": "tarea",
+                "texto": texto,
+                "icono": "calendar",
+                "urgente": True,
+            })
+
     # Ordenar: urgentes primero, luego por tipo
-    prioridad = {"contrato": 0, "falta": 1, "saludo_pendiente": 2, "mantenimiento": 3, "ticket_reabierto": 4, "ticket_creado": 4, "ticket_nuevo": 4, "ticket_estado": 5, "ticket": 6, "cumpleanos": 7, "cumpleanos_proximo": 8, "evento": 9, "menu": 10}
+    prioridad = {"contrato": 0, "falta": 1, "tarea": 2, "saludo_pendiente": 3, "mantenimiento": 4, "ticket_reabierto": 5, "ticket_creado": 5, "ticket_nuevo": 5, "ticket_estado": 6, "ticket": 7, "cumpleanos": 8, "cumpleanos_proximo": 9, "evento": 10, "menu": 11}
     items.sort(key=lambda x: (0 if x.get("urgente") else 1, prioridad.get(x["tipo"], 10)))
 
     return {

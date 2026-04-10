@@ -1,7 +1,8 @@
-import { useState, useEffect } from 'react';
-import { API_URL, headersAuth } from '../auth';
+import { useState, useEffect, useCallback } from 'react';
+import { createPortal } from 'react-dom';
+import { API_URL, headersAuth, headersConToken } from '../auth';
 import IconoFa from '../components/IconoFa';
-import { faLaptop, faPhone, faDesktop, faTablet, faPrint, faKeyboard, faKey, faTicket, faChevronLeft, faChevronRight, faCalendarDays, faMicrochip, faMemory, faHardDrive, faBarcode, faStar } from '@fortawesome/free-solid-svg-icons';
+import { faLaptop, faPhone, faDesktop, faTablet, faPrint, faKeyboard, faKey, faTicket, faChevronLeft, faChevronRight, faCalendarDays, faMicrochip, faMemory, faHardDrive, faBarcode, faStar, faPlus, faTimes, faCheck, faTrash, faPen, faClock, faBell, faBellSlash } from '@fortawesome/free-solid-svg-icons';
 import '../styles/DashboardHome.css';
 
 var ICONOS_EQUIPO = {
@@ -166,7 +167,7 @@ function SeccionItems(props) {
 }
 
 
-/* ─── Calendario de asistencia ─── */
+/* ─── Calendario de asistencia + Tareas ─── */
 function CalendarioAsistencia(props) {
   var asistencia = props.asistencia || [];
   var resumen = props.resumen || {};
@@ -174,10 +175,33 @@ function CalendarioAsistencia(props) {
   var hoy = new Date();
   var [mes, setMes] = useState(hoy.getMonth() + 1);
   var [anio, setAnio] = useState(hoy.getFullYear());
+  var [tareas, setTareas] = useState([]);
+  var [modalDia, setModalDia] = useState(null); // "YYYY-MM-DD" o null
+  var [formTarea, setFormTarea] = useState({ titulo: '', descripcion: '', hora: '', color: '#3b82f6', recordatorio: true });
+  var [editandoTarea, setEditandoTarea] = useState(null);
+  var [guardando, setGuardando] = useState(false);
 
-  // Mapa fecha → info
+  var COLORES_TAREA = ['#3b82f6', '#22c55e', '#f59e0b', '#ef4444', '#a855f7', '#ec4899', '#06b6d4', '#84cc16'];
+
+  // Mapa fecha → info asistencia
   var mapaAsist = {};
   asistencia.forEach(function (d) { if (d.fecha) mapaAsist[d.fecha] = d; });
+
+  // Mapa fecha → tareas
+  var mapaTareas = {};
+  tareas.forEach(function (t) {
+    if (!mapaTareas[t.fecha]) mapaTareas[t.fecha] = [];
+    mapaTareas[t.fecha].push(t);
+  });
+
+  var cargarTareas = useCallback(function () {
+    fetch(API_URL + '/tareas?mes=' + mes + '&anio=' + anio, { headers: headersConToken() })
+      .then(function (r) { return r.ok ? r.json() : []; })
+      .then(function (data) { setTareas(Array.isArray(data) ? data : []); })
+      .catch(function () { setTareas([]); });
+  }, [mes, anio]);
+
+  useEffect(function () { cargarTareas(); }, [cargarTareas]);
 
   // Primer día del mes → convertir a lunes=0
   var primerDia = new Date(anio, mes - 1, 1);
@@ -202,6 +226,80 @@ function CalendarioAsistencia(props) {
     setMes(m); setAnio(a);
   }
 
+  function fechaStr(dia) {
+    return anio + '-' + String(mes).padStart(2, '0') + '-' + String(dia).padStart(2, '0');
+  }
+
+  function abrirDia(dia) {
+    var f = fechaStr(dia);
+    setModalDia(f);
+    setFormTarea({ titulo: '', descripcion: '', hora: '', color: '#3b82f6', recordatorio: true });
+    setEditandoTarea(null);
+  }
+
+  function cerrarModal() {
+    setModalDia(null);
+    setEditandoTarea(null);
+    setFormTarea({ titulo: '', descripcion: '', hora: '', color: '#3b82f6', recordatorio: true });
+  }
+
+  function editarTarea(t) {
+    setEditandoTarea(t);
+    setFormTarea({ titulo: t.titulo, descripcion: t.descripcion || '', hora: t.hora || '', color: t.color || '#3b82f6', recordatorio: t.recordatorio !== false });
+  }
+
+  function guardarTarea(e) {
+    e.preventDefault();
+    if (!formTarea.titulo.trim()) return;
+    setGuardando(true);
+
+    var url = editandoTarea ? API_URL + '/tareas/' + editandoTarea.id : API_URL + '/tareas';
+    var method = editandoTarea ? 'PUT' : 'POST';
+    var body = editandoTarea
+      ? { titulo: formTarea.titulo, descripcion: formTarea.descripcion, hora: formTarea.hora, color: formTarea.color, recordatorio: formTarea.recordatorio }
+      : { fecha: modalDia, titulo: formTarea.titulo, descripcion: formTarea.descripcion, hora: formTarea.hora, color: formTarea.color, recordatorio: formTarea.recordatorio };
+
+    fetch(url, {
+      method: method,
+      headers: Object.assign({ 'Content-Type': 'application/json' }, headersConToken()),
+      body: JSON.stringify(body),
+    })
+      .then(function (r) { return r.json(); })
+      .then(function (data) {
+        if (data.ok) {
+          cargarTareas();
+          setFormTarea({ titulo: '', descripcion: '', hora: '', color: '#3b82f6', recordatorio: true });
+          setEditandoTarea(null);
+        }
+        setGuardando(false);
+      })
+      .catch(function () { setGuardando(false); });
+  }
+
+  function eliminarTarea(id) {
+    fetch(API_URL + '/tareas/' + id, { method: 'DELETE', headers: headersConToken() })
+      .then(function (r) { return r.json(); })
+      .then(function (data) { if (data.ok) cargarTareas(); });
+  }
+
+  function toggleCompletada(t) {
+    fetch(API_URL + '/tareas/' + t.id, {
+      method: 'PUT',
+      headers: Object.assign({ 'Content-Type': 'application/json' }, headersConToken()),
+      body: JSON.stringify({ completada: !t.completada }),
+    })
+      .then(function (r) { return r.json(); })
+      .then(function (data) { if (data.ok) cargarTareas(); });
+  }
+
+  function formatDiaModal(f) {
+    if (!f) return '';
+    var p = f.split('-');
+    return p[2] + '/' + p[1] + '/' + p[0];
+  }
+
+  var tareasDelDia = modalDia ? (mapaTareas[modalDia] || []) : [];
+
   return (
     <div className="dh-calendario">
       <div className="dh-cal-header">
@@ -220,11 +318,13 @@ function CalendarioAsistencia(props) {
         {celdas.map(function (dia, idx) {
           if (dia === null) return <div className="dh-cal-empty" key={'e' + idx}></div>;
 
-          var fechaStr = anio + '-' + String(mes).padStart(2, '0') + '-' + String(dia).padStart(2, '0');
-          var info = mapaAsist[fechaStr];
+          var fStr = fechaStr(dia);
+          var info = mapaAsist[fStr];
+          var tarDia = mapaTareas[fStr] || [];
           var cls = 'dh-cal-day';
           if (info) cls += ' ' + colorCategoria(info.categoria, info.es_falta, info.es_descanso);
           if (esHoy(dia)) cls += ' hoy';
+          if (tarDia.length > 0) cls += ' tiene-tareas';
 
           var tooltip = '';
           if (info) {
@@ -234,8 +334,18 @@ function CalendarioAsistencia(props) {
             if (info.hora_e) tooltip += '\nEntrada: ' + info.hora_e.substring(0, 5);
             if (info.hora_s) tooltip += '\nSalida: ' + info.hora_s.substring(0, 5);
           }
+          if (tarDia.length > 0) {
+            tooltip += (tooltip ? '\n' : '') + tarDia.length + ' tarea' + (tarDia.length > 1 ? 's' : '');
+          }
 
-          return <div className={cls} key={dia} title={tooltip}>{dia}</div>;
+          return (
+            <div className={cls} key={dia} title={tooltip} onClick={function () { abrirDia(dia); }} style={{ cursor: 'pointer' }}>
+              {dia}
+              {tarDia.length > 0 && (
+                <span className="dh-tarea-dot" style={{ background: tarDia[0].color || '#3b82f6' }}></span>
+              )}
+            </div>
+          );
         })}
       </div>
 
@@ -263,6 +373,107 @@ function CalendarioAsistencia(props) {
           <span className="dh-cal-stat-label">Faltas</span>
         </div>
       </div>
+
+      {/* Modal Tareas del día */}
+      {modalDia && createPortal(
+        <div className="dh-tarea-overlay" onClick={cerrarModal}>
+          <div className="dh-tarea-modal" onClick={function (e) { e.stopPropagation(); }}>
+            <div className="dh-tarea-modal-header">
+              <h3><IconoFa icono={faCalendarDays} /> Tareas del {formatDiaModal(modalDia)}</h3>
+              <button className="dh-tarea-cerrar" onClick={cerrarModal}><IconoFa icono={faTimes} /></button>
+            </div>
+
+            <div className="dh-tarea-modal-body">
+              {/* Lista de tareas existentes */}
+              {tareasDelDia.length > 0 && (
+                <div className="dh-tarea-lista">
+                  {tareasDelDia.map(function (t) {
+                    return (
+                      <div key={t.id} className={'dh-tarea-item' + (t.completada ? ' completada' : '')}>
+                        <div className="dh-tarea-color-bar" style={{ background: t.color || '#3b82f6' }}></div>
+                        <button className="dh-tarea-check" onClick={function () { toggleCompletada(t); }} title={t.completada ? 'Marcar pendiente' : 'Completar'}>
+                          <IconoFa icono={faCheck} />
+                        </button>
+                        <div className="dh-tarea-contenido">
+                          <span className="dh-tarea-titulo">{t.titulo}</span>
+                          {t.hora && <span className="dh-tarea-hora"><IconoFa icono={faClock} /> {t.hora}</span>}
+                          {t.descripcion && <span className="dh-tarea-desc">{t.descripcion}</span>}
+                        </div>
+                        <div className="dh-tarea-acciones">
+                          <span className={'dh-tarea-bell' + (t.recordatorio ? '' : ' off')} title={t.recordatorio ? 'Con recordatorio' : 'Sin recordatorio'}>
+                            <IconoFa icono={t.recordatorio ? faBell : faBellSlash} />
+                          </span>
+                          <button className="dh-tarea-btn-edit" onClick={function () { editarTarea(t); }} title="Editar">
+                            <IconoFa icono={faPen} />
+                          </button>
+                          <button className="dh-tarea-btn-del" onClick={function () { eliminarTarea(t.id); }} title="Eliminar">
+                            <IconoFa icono={faTrash} />
+                          </button>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+
+              {tareasDelDia.length === 0 && !editandoTarea && (
+                <p className="dh-tarea-vacio">No hay tareas para este día</p>
+              )}
+
+              {/* Formulario nueva/editar tarea */}
+              <form className="dh-tarea-form" onSubmit={guardarTarea}>
+                <div className="dh-tarea-form-titulo">
+                  <IconoFa icono={editandoTarea ? faPen : faPlus} />
+                  <span>{editandoTarea ? 'Editar tarea' : 'Nueva tarea'}</span>
+                </div>
+                <input type="text" placeholder="Título de la tarea *" value={formTarea.titulo}
+                  onChange={function (e) { setFormTarea(Object.assign({}, formTarea, { titulo: e.target.value })); }} required />
+                <textarea placeholder="Descripción (opcional)" value={formTarea.descripcion} rows="2"
+                  onChange={function (e) { setFormTarea(Object.assign({}, formTarea, { descripcion: e.target.value })); }} />
+                <div className="dh-tarea-form-row">
+                  <div className="dh-tarea-campo">
+                    <label><IconoFa icono={faClock} /> Hora</label>
+                    <input type="time" value={formTarea.hora}
+                      onChange={function (e) { setFormTarea(Object.assign({}, formTarea, { hora: e.target.value })); }} />
+                  </div>
+                  <div className="dh-tarea-campo">
+                    <label>Color</label>
+                    <div className="dh-tarea-colores">
+                      {COLORES_TAREA.map(function (c) {
+                        return (
+                          <button type="button" key={c} className={'dh-color-btn' + (formTarea.color === c ? ' activo' : '')}
+                            style={{ background: c }} onClick={function () { setFormTarea(Object.assign({}, formTarea, { color: c })); }}>
+                            {formTarea.color === c && <IconoFa icono={faCheck} />}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                </div>
+                <div className="dh-tarea-form-row">
+                  <label className="dh-tarea-recordatorio">
+                    <input type="checkbox" checked={formTarea.recordatorio}
+                      onChange={function (e) { setFormTarea(Object.assign({}, formTarea, { recordatorio: e.target.checked })); }} />
+                    <IconoFa icono={faBell} /> Recordatorio
+                  </label>
+                </div>
+                <div className="dh-tarea-form-btns">
+                  {editandoTarea && (
+                    <button type="button" className="dh-tarea-btn-cancelar" onClick={function () {
+                      setEditandoTarea(null);
+                      setFormTarea({ titulo: '', descripcion: '', hora: '', color: '#3b82f6', recordatorio: true });
+                    }}>Cancelar</button>
+                  )}
+                  <button type="submit" className="dh-tarea-btn-guardar" disabled={guardando}>
+                    {guardando ? 'Guardando...' : (editandoTarea ? 'Actualizar' : 'Agregar tarea')}
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>,
+        document.body
+      )}
     </div>
   );
 }

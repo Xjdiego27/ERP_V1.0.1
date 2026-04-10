@@ -45,9 +45,12 @@ def listar_chips(db: Session = Depends(get_db), token: dict = Depends(verificar_
     if not Chips:
         return []
 
-    # Filtrar por empresa del token
+    # Filtrar por empresa del token (solo activos)
     id_emp = token.get("id_emp", 1)
-    chips = db.query(Chips).filter(Chips.ID_EMP == id_emp).order_by(Chips.NUMERO).all()
+    q = db.query(Chips).filter(Chips.ID_EMP == id_emp)
+    if hasattr(Chips, 'ACTIVO'):
+        q = q.filter(Chips.ACTIVO == 1)
+    chips = q.order_by(Chips.NUMERO).all()
 
     # ── Precargar catálogos para evitar N+1 ──
     operadores_map = {}
@@ -360,10 +363,10 @@ def agregar_catalogo_chip(tabla: str, datos: dict, db: Session = Depends(get_db)
 
 
 # ═══════════════════════════════════════════
-#  ELIMINAR CHIP
+#  DESACTIVAR CHIP (soft-delete)
 # ═══════════════════════════════════════════
-@router.delete("/chips/{id_chip}")
-def eliminar_chip(id_chip: int, db: Session = Depends(get_db), _=Depends(verificar_token)):
+@router.put("/chips/{id_chip}/desactivar")
+def desactivar_chip(id_chip: int, db: Session = Depends(get_db), _=Depends(verificar_token)):
     if not Chips:
         raise HTTPException(status_code=500, detail="Tabla chips no disponible")
 
@@ -378,8 +381,8 @@ def eliminar_chip(id_chip: int, db: Session = Depends(get_db), _=Depends(verific
             AsignacionChip.FECHA_DEVOL == None
         ).first()
         if activa:
-            raise HTTPException(status_code=400, detail="No se puede eliminar un chip con asignación activa")
+            raise HTTPException(status_code=400, detail="No se puede desactivar un chip con asignación activa")
 
-    db.delete(chip)
+    chip.ACTIVO = 0
     db.commit()
-    return {"ok": True, "mensaje": "Línea eliminada correctamente"}
+    return {"ok": True, "mensaje": "Línea desactivada correctamente"}

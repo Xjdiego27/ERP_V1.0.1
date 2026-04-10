@@ -6,6 +6,13 @@ import '../styles/AsistenciasGeneral.css';
 
 // Módulo ASISTENCIAS — Vista general de asistencia de todos los empleados
 // Filtros: rango de fechas, fecha fija, nombre/DNI, área, departamento, cargo
+function formatFecha(iso) {
+  if (!iso) return '—';
+  var s = String(iso).substring(0, 10);
+  var p = s.split('-');
+  return p.length === 3 ? p[2] + '/' + p[1] + '/' + p[0] : s;
+}
+
 export default function AsistenciasGeneral() {
   var [empleados, setEmpleados] = useState([]);
   var [resumenGlobal, setResumenGlobal] = useState({ asistencias: 0, tardanzas: 0, faltas: 0, min_tardanza: 0 });
@@ -392,7 +399,7 @@ export default function AsistenciasGeneral() {
                                 else if (dia.hora_e) clase = 'fila-asistio';
                                 return (
                                   <tr key={dia.fecha} className={clase}>
-                                    <td>{dia.fecha}</td>
+                                    <td>{formatFecha(dia.fecha)}</td>
                                     <td>{dia.dia}</td>
                                     <td>{formatHora(dia.hora_e)}</td>
                                     <td>{formatHora(dia.hora_s)}</td>

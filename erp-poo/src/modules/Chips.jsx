@@ -4,8 +4,8 @@ import IconoFa from '../components/IconoFa';
 import PageContent from '../components/PageContent';
 import {
     faSimCard, faPlus, faSearch, faPen, faRotateLeft, faUserPlus,
-    faArrowsRotate, faTrash, faClockRotateLeft, faXmark, faFloppyDisk,
-    faPhone, faBuilding
+    faArrowsRotate, faClockRotateLeft, faXmark, faFloppyDisk,
+    faPhone, faBuilding, faBan
 } from '@fortawesome/free-solid-svg-icons';
 import '../styles/Chips.css';
 
@@ -209,18 +209,18 @@ export default function Chips() {
     }
 
     // ══════════════════════════════
-    //  ELIMINAR
+    //  DESACTIVAR
     // ══════════════════════════════
-    function handleEliminar(chip) {
-        if (!confirm('¿Eliminar la línea ' + chip.numero + '? Esta acción no se puede deshacer.')) return;
-        fetch(API_URL + '/chips/' + chip.id, {
-            method: 'DELETE',
+    function handleDesactivar(chip) {
+        if (!confirm('¿Desactivar la línea ' + chip.numero + '?')) return;
+        fetch(API_URL + '/chips/' + chip.id + '/desactivar', {
+            method: 'PUT',
             headers: headersConToken()
         })
         .then(function (r) { return r.json().then(function (d) { return { ok: r.ok, data: d }; }); })
         .then(function (res) {
             if (!res.ok) throw new Error(res.data.detail || 'Error');
-            mostrarMensaje('Línea eliminada', true);
+            mostrarMensaje('Línea desactivada', true);
             cargarDatos();
         })
         .catch(function (err) { mostrarMensaje(err.message, false); });
@@ -433,7 +433,7 @@ export default function Chips() {
                                     <td>{chip.descuento ? chip.descuento + ' (' + chip.descuento_pct + '%)' : '—'}</td>
                                     <td>S/ {(chip.precio_con_descuento || chip.precio || 0).toFixed(2)}</td>
                                     <td>{chip.asignacion ? chip.asignacion.empleado : <span className="chip-disponible-tag">Disponible</span>}</td>
-                                    <td>{chip.asignacion ? chip.asignacion.fecha_asig : '—'}</td>
+                                    <td>{chip.asignacion ? (function(f){ if(!f) return '—'; var s=f.substring(0,10); var p=s.split('-'); return p.length===3 ? p[2]+'/'+p[1]+'/'+p[0] : s; })(chip.asignacion.fecha_asig) : '—'}</td>
                                     <td>
                                         <span className={'chip-estado-badge ' + (chip.asignacion ? 'asignado' : 'disponible')}>
                                             {chip.asignacion ? 'ASIGNADO' : 'DISPONIBLE'}
@@ -451,7 +451,7 @@ export default function Chips() {
                                         <button className="chip-btn chip-btn-editar" onClick={function () { iniciarEdicion(chip); }} title="Editar"><IconoFa icono={faPen} /></button>
                                         <button className="chip-btn chip-btn-historial" onClick={function () { verHistorial(chip); }} title="Historial"><IconoFa icono={faClockRotateLeft} /></button>
                                         {!chip.asignacion && (
-                                            <button className="chip-btn chip-btn-eliminar" onClick={function () { handleEliminar(chip); }} title="Eliminar"><IconoFa icono={faTrash} /></button>
+                                            <button className="chip-btn chip-btn-eliminar" onClick={function () { handleDesactivar(chip); }} title="Desactivar"><IconoFa icono={faBan} /></button>
                                         )}
                                     </td>
                                 </tr>
@@ -523,8 +523,8 @@ export default function Chips() {
                                         return (
                                             <tr key={h.id}>
                                                 <td>{h.empleado}</td>
-                                                <td>{h.fecha_asig || '—'}</td>
-                                                <td>{h.fecha_devol || '—'}</td>
+                                                <td>{h.fecha_asig ? (function(f){ var s=f.substring(0,10); var p=s.split('-'); return p.length===3 ? p[2]+'/'+p[1]+'/'+p[0] : s; })(h.fecha_asig) : '—'}</td>
+                                                <td>{h.fecha_devol ? (function(f){ var s=f.substring(0,10); var p=s.split('-'); return p.length===3 ? p[2]+'/'+p[1]+'/'+p[0] : s; })(h.fecha_devol) : '—'}</td>
                                                 <td>
                                                     <span className={'chip-estado-badge ' + (h.activa ? 'asignado' : 'devuelto')}>
                                                         {h.activa ? 'ACTIVO' : 'DEVUELTO'}
