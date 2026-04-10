@@ -1,0 +1,890 @@
+/* ═══════════════════════════════════════════
+   DashboardHome — Panel de inicio rediseñado
+   ═══════════════════════════════════════════ */
+
+.dh-container {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+}
+
+.dh-content {
+  padding: 18px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  flex: 1;
+  overflow-y: auto;
+}
+
+.dh-loading {
+  text-align: center;
+  padding: 60px 20px;
+  color: var(--text-secondary);
+  font-size: 0.95rem;
+}
+
+/* ═══ ROW ITEMS: Equipos asignados (arriba) ═══ */
+.dh-row-items {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 18px;
+}
+
+/* ═══ ROW TOP: Calendario + Tickets ═══ */
+.dh-row-top {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+
+
+/* ═══════════════════════════════════════════
+   CALENDARIO DE ASISTENCIA
+   ═══════════════════════════════════════════ */
+.dh-calendario {
+  background: var(--glass-card-bg, rgba(255,255,255,0.6));
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--glass-border, rgba(255,255,255,0.3));
+  border-radius: var(--glass-radius, 14px);
+  padding: 14px;
+  box-shadow: var(--glass-shadow, 0 4px 24px rgba(31,38,135,0.08));
+}
+
+.dh-cal-header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: var(--text-primary, #1e293b);
+  margin-bottom: 8px;
+}
+
+.dh-cal-titulo { font-weight: 700; }
+
+.dh-cal-nav {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.dh-cal-btn {
+  background: rgba(59,130,246,0.1);
+  border: none;
+  border-radius: 6px;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: var(--text-primary, #334155);
+  font-size: 0.7rem;
+  transition: background 0.2s;
+}
+.dh-cal-btn:hover { background: rgba(59,130,246,0.2); }
+
+.dh-cal-mes {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--text-primary, #1e293b);
+  min-width: 120px;
+  text-align: center;
+}
+
+/* Grid del calendario */
+.dh-cal-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 2px;
+}
+
+.dh-cal-dow {
+  text-align: center;
+  font-size: 0.6rem;
+  font-weight: 600;
+  color: var(--text-secondary, #64748b);
+  padding: 2px 0;
+  text-transform: uppercase;
+}
+
+.dh-cal-empty {
+  aspect-ratio: 1;
+}
+
+.dh-cal-day {
+  aspect-ratio: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  font-size: 0.68rem;
+  font-weight: 500;
+  color: var(--text-primary, #334155);
+  cursor: default;
+  transition: transform 0.15s;
+  position: relative;
+}
+.dh-cal-day:hover { transform: scale(1.12); z-index: 2; }
+
+/* Colores por categoría */
+.dh-cal-day.puntual      { background: #22c55e; color: #fff; font-weight: 700; }
+.dh-cal-day.tardanza     { background: #f59e0b; color: #fff; font-weight: 700; }
+.dh-cal-day.falta        { background: #ef4444; color: #fff; font-weight: 700; }
+.dh-cal-day.feriado      { background: #3b82f6; color: #fff; font-weight: 700; }
+.dh-cal-day.licencia-dia { background: #a855f7; color: #fff; font-weight: 700; }
+.dh-cal-day.descanso     { background: rgba(148,163,184,0.25); color: var(--text-muted, #94a3b8); }
+
+.dh-cal-day.hoy {
+  box-shadow: 0 0 0 2px #3b82f6, 0 0 0 4px rgba(59,130,246,0.25);
+}
+
+/* Leyenda */
+.dh-cal-leyenda {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: center;
+  margin-top: 8px;
+  padding-top: 6px;
+  border-top: 1px solid var(--glass-border, rgba(255,255,255,0.2));
+}
+
+.dh-ley {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 0.6rem;
+  color: var(--text-secondary, #64748b);
+}
+
+.dh-ley-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 2px;
+  display: inline-block;
+}
+.dh-ley-dot.puntual  { background: #22c55e; }
+.dh-ley-dot.tardanza { background: #f59e0b; }
+.dh-ley-dot.falta    { background: #ef4444; }
+.dh-ley-dot.feriado  { background: #3b82f6; }
+.dh-ley-dot.descanso { background: rgba(148,163,184,0.4); }
+
+/* Resumen */
+.dh-cal-resumen {
+  display: flex;
+  justify-content: space-around;
+  margin-top: 8px;
+  padding-top: 6px;
+  border-top: 1px solid var(--glass-border, rgba(255,255,255,0.2));
+}
+
+.dh-cal-stat {
+  text-align: center;
+}
+
+.dh-cal-stat-num {
+  display: block;
+  font-size: 1.05rem;
+  font-weight: 800;
+  color: var(--text-primary, #1e293b);
+  line-height: 1.2;
+}
+
+.dh-cal-stat-label {
+  font-size: 0.58rem;
+  color: var(--text-secondary, #64748b);
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}
+
+
+/* ═══════════════════════════════════════════
+   TICKETS ACTIVOS
+   ═══════════════════════════════════════════ */
+.dh-tickets {
+  background: var(--glass-card-bg, rgba(255,255,255,0.6));
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--glass-border, rgba(255,255,255,0.3));
+  border-radius: var(--glass-radius, 14px);
+  padding: 14px;
+  box-shadow: var(--glass-shadow, 0 4px 24px rgba(31,38,135,0.08));
+  display: flex;
+  flex-direction: column;
+}
+
+.dh-tk-header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: var(--text-primary, #1e293b);
+  margin-bottom: 10px;
+}
+
+.dh-tk-titulo { font-weight: 700; }
+
+.dh-tk-badge {
+  background: #ef4444;
+  color: #fff;
+  font-size: 0.7rem;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 10px;
+  margin-left: auto;
+}
+
+.dh-tk-vacio {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-muted, #94a3b8);
+  font-size: 0.88rem;
+  font-style: italic;
+}
+
+.dh-tk-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  flex: 1;
+  overflow-y: auto;
+  max-height: 260px;
+}
+
+.dh-tk-card {
+  background: rgba(255,255,255,0.35);
+  border: 1px solid var(--glass-border, rgba(255,255,255,0.2));
+  border-radius: 10px;
+  padding: 8px 10px;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+.dh-tk-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(31,38,135,0.1);
+}
+
+.dh-tk-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 4px;
+}
+
+.dh-tk-id {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--text-secondary, #64748b);
+}
+
+.dh-tk-estado {
+  font-size: 0.65rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  padding: 2px 8px;
+  border-radius: 6px;
+  letter-spacing: 0.5px;
+}
+.dh-tk-estado.abierto  { background: rgba(239,68,68,0.12); color: #ef4444; }
+.dh-tk-estado.asignado { background: rgba(59,130,246,0.12); color: #3b82f6; }
+
+.dh-tk-asunto {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--text-primary, #1e293b);
+  margin-bottom: 4px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.dh-tk-bottom {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.dh-tk-cat {
+  font-size: 0.68rem;
+  color: var(--text-secondary, #64748b);
+  background: rgba(148,163,184,0.12);
+  padding: 2px 7px;
+  border-radius: 4px;
+}
+
+.dh-tk-prio {
+  font-size: 0.65rem;
+  font-weight: 600;
+  padding: 1px 7px;
+  border-radius: 4px;
+  text-transform: uppercase;
+}
+.dh-tk-prio.alta  { background: rgba(239,68,68,0.12); color: #ef4444; }
+.dh-tk-prio.media { background: rgba(245,158,11,0.12); color: #f59e0b; }
+.dh-tk-prio.baja  { background: rgba(34,197,94,0.12); color: #22c55e; }
+
+
+/* ═══════════════════════════════════════════
+   SECCIONES DE ITEMS ASIGNADOS
+   ═══════════════════════════════════════════ */
+.dh-seccion-items {
+  background: var(--glass-card-bg, rgba(255,255,255,0.6));
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--glass-border, rgba(255,255,255,0.3));
+  border-radius: var(--glass-radius, 14px);
+  padding: 14px;
+  box-shadow: var(--glass-shadow, 0 4px 24px rgba(31,38,135,0.08));
+}
+
+.dh-seccion-header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--text-primary, #1e293b);
+  margin-bottom: 8px;
+}
+
+.dh-items-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.dh-item-card {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: rgba(255,255,255,0.3);
+  border: 1px solid var(--glass-border, rgba(255,255,255,0.2));
+  border-radius: 10px;
+  padding: 10px 12px;
+  transition: transform 0.2s;
+}
+.dh-item-card:hover { transform: translateX(3px); }
+
+.dh-item-icon {
+  width: 34px;
+  height: 34px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.95rem;
+  flex-shrink: 0;
+}
+.dh-item-icon.equipo   { background: rgba(59,130,246,0.12); color: #3b82f6; }
+.dh-item-icon.telefono { background: rgba(16,185,129,0.12); color: #10b981; }
+.dh-item-icon.licencia { background: rgba(168,85,247,0.12); color: #a855f7; }
+
+.dh-item-body {
+  flex: 1;
+  min-width: 0;
+}
+
+.dh-item-name {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--text-primary, #1e293b);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.dh-item-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.dh-item-meta span {
+  font-size: 0.68rem;
+  color: var(--text-secondary, #64748b);
+}
+
+.dh-item-meta strong {
+  color: var(--text-primary, #334155);
+  font-weight: 500;
+}
+
+/* ═══ Equipo specs badges ═══ */
+.dh-equipo-specs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-top: 4px;
+}
+.dh-spec-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: 0.62rem;
+  font-weight: 500;
+  background: rgba(67, 97, 238, 0.1);
+  color: var(--text-secondary, #475569);
+  border: 1px solid rgba(67, 97, 238, 0.18);
+  white-space: nowrap;
+}
+.dh-spec-badge svg {
+  font-size: 0.55rem;
+  opacity: 0.7;
+}
+.dh-spec-badge.gama {
+  background: rgba(245, 158, 11, 0.12);
+  border-color: rgba(245, 158, 11, 0.2);
+  color: #b45309;
+}
+body.dark-mode .dh-spec-badge {
+  background: rgba(99, 130, 255, 0.12);
+  color: var(--text-secondary, #94a3b8);
+  border-color: rgba(99, 130, 255, 0.2);
+}
+body.dark-mode .dh-spec-badge.gama {
+  background: rgba(245, 158, 11, 0.15);
+  color: #f5d97e;
+  border-color: rgba(245, 158, 11, 0.25);
+}
+
+
+/* ═══════════════════════════════════════════
+   DARK MODE
+   ═══════════════════════════════════════════ */
+body.dark-mode .dh-calendario,
+body.dark-mode .dh-tickets,
+body.dark-mode .dh-seccion-items {
+  background: var(--glass-card-bg, rgba(30,41,59,0.7));
+  border-color: var(--glass-border, rgba(255,255,255,0.08));
+}
+
+body.dark-mode .dh-tk-card,
+body.dark-mode .dh-item-card {
+  background: rgba(255,255,255,0.05);
+  border-color: rgba(255,255,255,0.08);
+}
+
+body.dark-mode .dh-cal-btn {
+  background: rgba(59,130,246,0.15);
+  color: #94a3b8;
+}
+
+body.dark-mode .dh-cal-day.descanso {
+  background: rgba(148,163,184,0.12);
+}
+
+body.dark-mode .dh-item-icon.equipo   { background: rgba(59,130,246,0.18); color: #60a5fa; }
+body.dark-mode .dh-item-icon.telefono { background: rgba(16,185,129,0.18); color: #34d399; }
+body.dark-mode .dh-item-icon.licencia { background: rgba(168,85,247,0.18); color: #c084fc; }
+
+
+/* ═══════════════════════════════════════════
+   GLASS OFF
+   ═══════════════════════════════════════════ */
+body.glass-off .dh-container {
+  background-image: url('/oficinas.webp');
+  background-size: cover;
+  background-position: center;
+  background-attachment: fixed;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+body.glass-off .dh-calendario,
+body.glass-off .dh-tickets,
+body.glass-off .dh-seccion-items {
+  background: var(--bg-card, #ffffff);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  border: 1px solid var(--border-color, #ddd);
+  box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+}
+
+body.glass-off .dh-tk-card,
+body.glass-off .dh-item-card {
+  background: rgba(0,0,0,0.03);
+  border-color: var(--border-color, #ddd);
+}
+
+body.glass-off.dark-mode .dh-calendario,
+body.glass-off.dark-mode .dh-tickets,
+body.glass-off.dark-mode .dh-seccion-items {
+  background: var(--bg-card, #1e293b);
+  border-color: var(--border-color, #334155);
+}
+
+body.glass-off.dark-mode .dh-tk-card,
+body.glass-off.dark-mode .dh-item-card {
+  background: rgba(255,255,255,0.04);
+  border-color: var(--border-color, #334155);
+}
+
+
+/* ═══════════════════════════════════════════
+   RESPONSIVE
+   ═══════════════════════════════════════════ */
+@media (max-width: 900px) {
+  .dh-row-top {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 768px) {
+  .dh-content {
+    padding: 16px 12px;
+    gap: 14px;
+  }
+  .dh-row-items {
+    grid-template-columns: 1fr;
+  }
+}
+
+
+/* ═══════════════════════════════════════════
+   TAREAS EN CALENDARIO
+   ═══════════════════════════════════════════ */
+
+/* Dot de tarea en celda de calendario */
+.dh-tarea-dot {
+  position: absolute;
+  bottom: 2px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+}
+.dh-cal-day.tiene-tareas {
+  box-shadow: inset 0 -2px 0 0 rgba(59,130,246,0.5);
+}
+
+/* Overlay modal */
+.dh-tarea-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9000;
+  padding: 20px;
+}
+
+.dh-tarea-modal {
+  background: #fff;
+  border-radius: 16px;
+  width: 100%;
+  max-width: 440px;
+  max-height: 85vh;
+  overflow-y: auto;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.25);
+}
+
+.dh-tarea-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  border-bottom: 1px solid #e2e8f0;
+}
+.dh-tarea-modal-header h3 {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #1e293b;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.dh-tarea-cerrar {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #94a3b8;
+  font-size: 1.1rem;
+  padding: 4px;
+  border-radius: 6px;
+  transition: background 0.15s;
+}
+.dh-tarea-cerrar:hover { background: #f1f5f9; color: #64748b; }
+
+.dh-tarea-modal-body {
+  padding: 16px 20px 20px;
+}
+
+/* Lista de tareas del día */
+.dh-tarea-lista {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.dh-tarea-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 10px 12px;
+  background: #f8fafc;
+  border-radius: 10px;
+  border: 1px solid #e2e8f0;
+  position: relative;
+  overflow: hidden;
+  transition: opacity 0.2s;
+}
+.dh-tarea-item.completada { opacity: 0.55; }
+.dh-tarea-item.completada .dh-tarea-titulo { text-decoration: line-through; }
+
+.dh-tarea-color-bar {
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 4px;
+  border-radius: 4px 0 0 4px;
+}
+
+.dh-tarea-check {
+  flex-shrink: 0;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  border: 2px solid #cbd5e1;
+  background: #fff;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.55rem;
+  color: transparent;
+  transition: all 0.15s;
+  margin-top: 1px;
+}
+.dh-tarea-item.completada .dh-tarea-check {
+  background: #22c55e;
+  border-color: #22c55e;
+  color: #fff;
+}
+.dh-tarea-check:hover {
+  border-color: #22c55e;
+  color: #22c55e;
+}
+
+.dh-tarea-contenido {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.dh-tarea-titulo {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: #1e293b;
+}
+.dh-tarea-hora {
+  font-size: 0.7rem;
+  color: #64748b;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.dh-tarea-desc {
+  font-size: 0.72rem;
+  color: #94a3b8;
+  line-height: 1.3;
+}
+
+.dh-tarea-acciones {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-shrink: 0;
+}
+.dh-tarea-bell {
+  font-size: 0.65rem;
+  color: #3b82f6;
+}
+.dh-tarea-bell.off { color: #cbd5e1; }
+
+.dh-tarea-btn-edit,
+.dh-tarea-btn-del {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 4px;
+  font-size: 0.7rem;
+  color: #94a3b8;
+  transition: all 0.15s;
+}
+.dh-tarea-btn-edit:hover { color: #3b82f6; background: #eff6ff; }
+.dh-tarea-btn-del:hover { color: #ef4444; background: #fef2f2; }
+
+.dh-tarea-vacio {
+  text-align: center;
+  color: #94a3b8;
+  font-size: 0.8rem;
+  padding: 12px 0 16px;
+}
+
+/* Formulario tarea */
+.dh-tarea-form {
+  border-top: 1px solid #e2e8f0;
+  padding-top: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.dh-tarea-form-titulo {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: #64748b;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.dh-tarea-form input[type="text"],
+.dh-tarea-form textarea {
+  width: 100%;
+  padding: 8px 12px;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  font-size: 0.82rem;
+  font-family: inherit;
+  color: #1e293b;
+  background: #f8fafc;
+  resize: vertical;
+  box-sizing: border-box;
+}
+.dh-tarea-form input[type="text"]:focus,
+.dh-tarea-form textarea:focus {
+  outline: none;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59,130,246,0.1);
+}
+.dh-tarea-form-row {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+}
+.dh-tarea-campo {
+  flex: 1;
+}
+.dh-tarea-campo label {
+  display: block;
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: #64748b;
+  margin-bottom: 4px;
+}
+.dh-tarea-campo input[type="time"] {
+  width: 100%;
+  padding: 6px 10px;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  font-size: 0.8rem;
+  color: #1e293b;
+  background: #f8fafc;
+  box-sizing: border-box;
+}
+.dh-tarea-colores {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+.dh-color-btn {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  border: 2px solid transparent;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.55rem;
+  color: #fff;
+  transition: transform 0.15s;
+}
+.dh-color-btn.activo { border-color: #1e293b; transform: scale(1.15); }
+.dh-color-btn:hover { transform: scale(1.1); }
+
+.dh-tarea-recordatorio {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.78rem;
+  color: #64748b;
+  cursor: pointer;
+}
+.dh-tarea-recordatorio input[type="checkbox"] {
+  accent-color: #3b82f6;
+}
+
+.dh-tarea-form-btns {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+}
+.dh-tarea-btn-cancelar {
+  padding: 8px 16px;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  background: #fff;
+  color: #64748b;
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.dh-tarea-btn-cancelar:hover { background: #f1f5f9; }
+.dh-tarea-btn-guardar {
+  padding: 8px 18px;
+  border: none;
+  border-radius: 8px;
+  background: #3b82f6;
+  color: #fff;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.dh-tarea-btn-guardar:hover { background: #2563eb; }
+.dh-tarea-btn-guardar:disabled { opacity: 0.6; cursor: not-allowed; }
+
+/* Dark mode - Tareas */
+body.dark-mode .dh-tarea-modal { background: #1e293b; }
+body.dark-mode .dh-tarea-modal-header { border-color: #334155; }
+body.dark-mode .dh-tarea-modal-header h3 { color: #e2e8f0; }
+body.dark-mode .dh-tarea-cerrar { color: #64748b; }
+body.dark-mode .dh-tarea-cerrar:hover { background: #334155; color: #94a3b8; }
+body.dark-mode .dh-tarea-item { background: #0f172a; border-color: #334155; }
+body.dark-mode .dh-tarea-titulo { color: #e2e8f0; }
+body.dark-mode .dh-tarea-hora { color: #94a3b8; }
+body.dark-mode .dh-tarea-desc { color: #64748b; }
+body.dark-mode .dh-tarea-check { background: #0f172a; border-color: #475569; }
+body.dark-mode .dh-tarea-btn-edit:hover { background: #1e3a5f; }
+body.dark-mode .dh-tarea-btn-del:hover { background: #3b1111; }
+body.dark-mode .dh-tarea-vacio { color: #64748b; }
+body.dark-mode .dh-tarea-form { border-color: #334155; }
+body.dark-mode .dh-tarea-form-titulo { color: #94a3b8; }
+body.dark-mode .dh-tarea-form input[type="text"],
+body.dark-mode .dh-tarea-form textarea {
+  background: #0f172a; border-color: #334155; color: #e2e8f0;
+}
+body.dark-mode .dh-tarea-campo input[type="time"] {
+  background: #0f172a; border-color: #334155; color: #e2e8f0;
+}
+body.dark-mode .dh-tarea-btn-cancelar { background: #0f172a; border-color: #334155; color: #94a3b8; }
+body.dark-mode .dh-tarea-btn-cancelar:hover { background: #334155; }
+body.dark-mode .dh-tarea-recordatorio { color: #94a3b8; }

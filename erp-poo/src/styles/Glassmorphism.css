@@ -1,0 +1,3390 @@
+/* ═══════════════════════════════════════════════════════
+   Glassmorphism.css — Efecto vidrio moderno (frosted glass)
+   Paneles redondeados, semi-transparentes con blur
+   ═══════════════════════════════════════════════════════ */
+
+/* ── Variables glass para light mode ── */
+:root {
+  --glass-bg: rgba(255, 255, 255, 0.45);
+  --glass-border: rgba(255, 255, 255, 0.35);
+  --glass-shadow: 0 8px 32px rgba(31, 38, 135, 0.10);
+  --glass-blur: 10px;
+  --glass-radius: 18px;
+  --glass-radius-sm: 14px;
+  --glass-radius-xs: 10px;
+  --glass-input-bg: rgba(255, 255, 255, 0.38);
+  --glass-hover: rgba(255, 255, 255, 0.62);
+  --glass-card-bg: rgba(255, 255, 255, 0.38);
+  --glass-stat-bg: rgba(255, 255, 255, 0.33);
+  --glass-inset-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.45);
+}
+
+body.dark-mode {
+  --glass-bg: rgba(30, 34, 42, 0.55);
+  --glass-border: rgba(255, 255, 255, 0.06);
+  --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.30);
+  --glass-hover: rgba(40, 46, 58, 0.68);
+  --glass-card-bg: rgba(35, 39, 46, 0.53);
+  --glass-stat-bg: rgba(35, 39, 46, 0.48);
+  --glass-input-bg: rgba(44, 48, 56, 0.53);
+  --glass-inset-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.03);
+}
+
+
+/* ═══════════════════════════════════════════
+   HEADER — barra superior con efecto glass
+   ═══════════════════════════════════════════ */
+.erp-header {
+  background: var(--glass-bg) !important;
+  backdrop-filter: blur(var(--glass-blur));
+  -webkit-backdrop-filter: blur(var(--glass-blur));
+  border-bottom: 1px solid var(--glass-border) !important;
+  box-shadow: var(--glass-shadow);
+}
+
+
+/* ═══════════════════════════════════════════
+   SIDEBAR — menú lateral con efecto glass
+   ═══════════════════════════════════════════ */
+.sidebar {
+  background: var(--glass-bg) !important;
+  backdrop-filter: blur(var(--glass-blur));
+  -webkit-backdrop-filter: blur(var(--glass-blur));
+  border-right: 1px solid var(--glass-border) !important;
+  box-shadow: var(--glass-shadow);
+}
+
+.sidebar .menu-link {
+  border-radius: var(--glass-radius-xs);
+  margin: 2px 8px;
+  transition: background 0.2s, transform 0.15s;
+}
+
+.sidebar .menu-link:hover {
+  background: var(--glass-hover);
+  transform: translateX(2px);
+}
+
+.sidebar .menu-link.active {
+  background: rgba(26, 115, 232, 0.15);
+  border-radius: var(--glass-radius-xs);
+}
+
+.sidebar .submenu-link {
+  border-radius: var(--glass-radius-xs) !important;
+  margin: 1px 12px !important;
+}
+
+/* Submenu desplegable — transparente para heredar glass del sidebar */
+.sidebar .submenu {
+  background: transparent !important;
+}
+
+.sidebar .submenu-link.active {
+  background: rgba(26, 115, 232, 0.18) !important;
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+}
+
+.sidebar .submenu-link:hover {
+  background: var(--glass-hover) !important;
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+}
+
+.sidebar .toggle-btn {
+  border-bottom: 1px solid var(--glass-border);
+}
+
+.sidebar-logout {
+  border-radius: var(--glass-radius-xs) !important;
+  margin: 4px 8px !important;
+}
+
+
+/* ═══════════════════════════════════════════
+   ASIDE PANEL (Company Panel) — panel derecho
+   ═══════════════════════════════════════════ */
+.aside-right-panel {
+  background: var(--glass-bg) !important;
+  backdrop-filter: blur(var(--glass-blur));
+  -webkit-backdrop-filter: blur(var(--glass-blur));
+  border-left: 1px solid var(--glass-border) !important;
+  box-shadow: -4px 0 24px rgba(0, 0, 0, 0.06);
+  border-radius: var(--glass-radius) 0 0 var(--glass-radius);
+}
+
+
+/* ═══════════════════════════════════════════
+   WORKSPACE AREA — transparente para mostrar el fondo
+   ═══════════════════════════════════════════ */
+.workspace-area {
+  background: transparent !important;
+}
+
+
+/* ═══════════════════════════════════════════
+   TABLA GLOBAL — filas con vidrio para legibilidad
+   Todas las tablas obtienen fondo glass en sus filas
+   para que el texto se lea sobre la foto de fondo
+   ═══════════════════════════════════════════ */
+.chip-tabla-wrap,
+.eq-almc-tabla-wrap,
+.tickets-tabla-wrap {
+  border: 1px solid var(--glass-border) !important;
+  border-radius: var(--glass-radius-sm) !important;
+  overflow-x: auto;
+  background: var(--glass-card-bg) !important;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  box-shadow: var(--glass-shadow);
+}
+
+.chip-tabla thead,
+.tickets-tabla thead,
+.eq-almc-tabla thead,
+.horarios-tabla thead,
+.asist-tabla thead,
+.asistg-detalle-tabla thead,
+.det-cuentas-tabla thead,
+.permisos-tabla thead {
+  background: var(--glass-bg) !important;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+.chip-tabla tbody tr,
+.tickets-tabla tbody tr,
+.eq-almc-tabla tbody tr,
+.horarios-tabla tbody tr,
+.asist-tabla tbody tr,
+.asistg-detalle-tabla tbody tr,
+.det-cuentas-tabla tbody tr,
+.permisos-tabla tbody tr {
+  background: var(--glass-card-bg) !important;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border-bottom: 1px solid var(--glass-border);
+}
+
+.chip-tabla tbody tr:hover,
+.tickets-tabla tbody tr:hover,
+.eq-almc-tabla tbody tr:hover,
+.horarios-tabla tbody tr:hover,
+.asist-tabla tbody tr:hover,
+.asistg-detalle-tabla tbody tr:hover,
+.det-cuentas-tabla tbody tr:hover,
+.permisos-tabla tbody tr:hover {
+  background: var(--glass-hover) !important;
+}
+
+
+/* ═══════════════════════════════════════════
+   WHITE-CARD (PageContent) — tarjeta principal
+   ═══════════════════════════════════════════ */
+.white-card {
+  background: var(--glass-card-bg) !important;
+  backdrop-filter: blur(var(--glass-blur));
+  -webkit-backdrop-filter: blur(var(--glass-blur));
+  border: 1px solid var(--glass-border);
+  border-radius: var(--glass-radius) !important;
+  box-shadow: var(--glass-shadow), var(--glass-inset-shadow);
+}
+
+
+/* ═══════════════════════════════════════════
+   STAT CARDS — tarjetas de estadísticas
+   ═══════════════════════════════════════════ */
+.stat-card,
+.chip-stat,
+.eqa-stat,
+.eq-stat-card {
+  background: var(--glass-stat-bg) !important;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid var(--glass-border) !important;
+  border-radius: var(--glass-radius-sm) !important;
+  box-shadow: var(--glass-shadow);
+  transition: transform 0.2s, box-shadow 0.25s, background 0.2s;
+}
+
+.stat-card:hover,
+.chip-stat:hover,
+.eqa-stat:hover,
+.eq-stat-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 40px rgba(31, 38, 135, 0.15);
+  background: var(--glass-hover) !important;
+}
+
+/* Mantener los border-left de colores en chips stats */
+.chip-stat.asignado { border-left: 4px solid #2563eb !important; }
+.chip-stat.disponible { border-left: 4px solid #16a34a !important; }
+.chip-stat.costo { border-left: 4px solid #d97706 !important; }
+.chip-stat.costo.descuento { border-left-color: #16a34a !important; }
+.chip-stat.costo.ahorro { border-left-color: #7c3aed !important; }
+
+
+/* ═══════════════════════════════════════════
+   FORMULARIOS — inputs, selects, textareas
+   ═══════════════════════════════════════════ */
+.det-input,
+.det-select,
+.chip-busqueda,
+.tickets-search-box,
+.ticket-form input,
+.ticket-form select,
+.ticket-form textarea,
+.filtro-date,
+.asistg-buscador input {
+  background: var(--glass-input-bg) !important;
+  border: 1px solid var(--glass-border) !important;
+  border-radius: var(--glass-radius-xs) !important;
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  transition: border-color 0.25s, box-shadow 0.25s;
+}
+
+.det-input:focus,
+.det-select:focus,
+.ticket-form input:focus,
+.ticket-form select:focus,
+.ticket-form textarea:focus {
+  border-color: var(--active-color, #1a73e8) !important;
+  box-shadow: 0 0 0 3px rgba(26, 115, 232, 0.12);
+}
+
+
+/* ═══════════════════════════════════════════
+   BOTONES — estilo redondeado moderno
+   ═══════════════════════════════════════════ */
+.det-btn,
+.chip-btn-nueva,
+.chip-btn-crear,
+.chip-btn-asignar,
+.chip-btn-reasignar,
+.chip-btn-devolver,
+.chip-btn-editar,
+.chip-btn-confirmar,
+.chip-btn-eliminar,
+.eqa-btn-nueva,
+.eqa-btn-asignar,
+.eqa-btn-devolver,
+.eq-btn-add,
+.eq-btn-crear,
+.eq-btn-edit,
+.eq-btn-del,
+.personal-btn-nuevo,
+.btn-crear-ticket,
+.btn-cerrar-ticket,
+.btn-estado-cambio,
+.btn-exportar,
+.masivo-btn {
+  border-radius: var(--glass-radius-xs) !important;
+  transition: transform 0.15s, box-shadow 0.2s, background 0.2s;
+}
+
+.det-btn:hover,
+.chip-btn-nueva:hover,
+.eqa-btn-nueva:hover,
+.eq-btn-add:hover,
+.personal-btn-nuevo:hover,
+.btn-crear-ticket:hover:not(:disabled),
+.btn-exportar:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+}
+
+
+/* ═══════════════════════════════════════════
+   TABLAS — bordes suaves
+   ═══════════════════════════════════════════ */
+.tickets-tabla th {
+  background: var(--glass-stat-bg) !important;
+  backdrop-filter: blur(8px);
+  color: var(--text-secondary) !important;
+}
+
+.ticket-detalle-panel {
+  background: var(--glass-card-bg) !important;
+  backdrop-filter: blur(var(--glass-blur));
+  -webkit-backdrop-filter: blur(var(--glass-blur));
+  border: 1px solid var(--glass-border) !important;
+  border-radius: var(--glass-radius) !important;
+  box-shadow: var(--glass-shadow);
+}
+
+
+/* ═══════════════════════════════════════════
+   MODALES — overlay + panel glass
+   ═══════════════════════════════════════════ */
+.asist-modal,
+.valoracion-modal,
+.cumple-modal,
+.reapertura-modal,
+.modal-crear-grupo {
+  background: var(--glass-bg) !important;
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--glass-radius) !important;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.18);
+}
+
+
+/* ═══════════════════════════════════════════
+   DOC-CARD — tarjetas de documentos
+   ═══════════════════════════════════════════ */
+.doc-card {
+  background: var(--glass-card-bg) !important;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid var(--glass-border) !important;
+  border-radius: var(--glass-radius-sm) !important;
+  box-shadow: var(--glass-shadow);
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.doc-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 10px 30px rgba(31, 38, 135, 0.14);
+}
+
+.doc-form-panel {
+  background: var(--glass-stat-bg) !important;
+  backdrop-filter: blur(10px);
+  border: 1px solid var(--glass-border) !important;
+  border-radius: var(--glass-radius-sm) !important;
+}
+
+
+/* ═══════════════════════════════════════════
+   EQUIPOS — tarjetas de asignación
+   ═══════════════════════════════════════════ */
+.eqa-card,
+.eq-card {
+  background: var(--glass-card-bg) !important;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid var(--glass-border) !important;
+  border-radius: var(--glass-radius-sm) !important;
+  box-shadow: var(--glass-shadow);
+  transition: transform 0.2s, box-shadow 0.25s;
+}
+
+.eqa-card:hover,
+.eq-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 36px rgba(31, 38, 135, 0.14);
+}
+
+
+/* ═══════════════════════════════════════════
+   CHIPS — tarjetas de líneas corporativas
+   ═══════════════════════════════════════════ */
+.chip-card {
+  background: var(--glass-card-bg) !important;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid var(--glass-border) !important;
+  border-radius: var(--glass-radius-sm) !important;
+  box-shadow: var(--glass-shadow);
+  transition: transform 0.2s, box-shadow 0.25s;
+}
+
+.chip-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 10px 30px rgba(31, 38, 135, 0.14);
+}
+
+.chip-form-nuevo,
+.chip-historial-modal {
+  background: var(--glass-bg) !important;
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--glass-border) !important;
+  border-radius: var(--glass-radius) !important;
+}
+
+
+/* ═══════════════════════════════════════════
+   PERSONAL — tarjetas de empleados
+   ═══════════════════════════════════════════ */
+.tarjeta-personal {
+  background: var(--glass-card-bg) !important;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid var(--glass-border) !important;
+  border-radius: var(--glass-radius-sm) !important;
+  box-shadow: var(--glass-shadow);
+  transition: transform 0.2s, box-shadow 0.25s;
+}
+
+.tarjeta-personal:hover {
+  transform: translateY(-4px) scale(1.01);
+  box-shadow: 0 12px 36px rgba(31, 38, 135, 0.14);
+}
+
+
+/* ═══════════════════════════════════════════
+   DETALLE PERSONAL — panel de detalle
+   ═══════════════════════════════════════════ */
+.detalle-header {
+  border-radius: var(--glass-radius-sm) !important;
+  overflow: hidden;
+}
+
+.detalle-tabs {
+  background: var(--glass-stat-bg) !important;
+  backdrop-filter: blur(8px);
+  border-radius: var(--glass-radius-xs) !important;
+}
+
+.detalle-tab-contenido {
+  border-radius: var(--glass-radius-xs) !important;
+}
+
+
+/* ═══════════════════════════════════════════
+   TICKETS — tarjetas y panel de tickets
+   ═══════════════════════════════════════════ */
+.ticket-card-mini,
+.ticket-vigente-card {
+  background: var(--glass-card-bg) !important;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid var(--glass-border) !important;
+  border-radius: var(--glass-radius-sm) !important;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.ticket-card-mini:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(31, 38, 135, 0.12);
+}
+
+.mis-tickets-panel {
+  background: var(--glass-card-bg) !important;
+  backdrop-filter: blur(10px);
+  border: 1px solid var(--glass-border) !important;
+  border-radius: var(--glass-radius) !important;
+}
+
+
+/* ═══════════════════════════════════════════
+   PERMISOS — panel de gestión
+   ═══════════════════════════════════════════ */
+.permisos-card,
+.permiso-detalle {
+  background: var(--glass-card-bg) !important;
+  backdrop-filter: blur(10px);
+  border: 1px solid var(--glass-border) !important;
+  border-radius: var(--glass-radius-sm) !important;
+  box-shadow: var(--glass-shadow);
+}
+
+
+/* ═══════════════════════════════════════════
+   HORARIOS — panel
+   ═══════════════════════════════════════════ */
+.horario-card {
+  background: var(--glass-card-bg) !important;
+  backdrop-filter: blur(10px);
+  border: 1px solid var(--glass-border) !important;
+  border-radius: var(--glass-radius-sm) !important;
+  box-shadow: var(--glass-shadow);
+  transition: transform 0.2s;
+}
+
+.horario-card:hover {
+  transform: translateY(-3px);
+}
+
+
+/* ═══════════════════════════════════════════
+   SCROLLBAR — estilo moderno redondeado
+   ═══════════════════════════════════════════ */
+::-webkit-scrollbar {
+  width: 7px;
+  height: 7px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.15);
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 0, 0, 0.25);
+}
+
+body.dark-mode ::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.12);
+}
+
+body.dark-mode ::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.22);
+}
+
+
+/* ═══════════════════════════════════════════
+   DASHBOARD HOME — tarjeta de bienvenida
+   ═══════════════════════════════════════════ */
+.home-welcome-card {
+  animation: fadeInGlass 0.4s ease-out;
+}
+
+
+/* ═══════════════════════════════════════════
+   DASHBOARD MIS-ITEMS — equipos y chips asignados
+   ═══════════════════════════════════════════ */
+.mi-panel-seccion {
+  margin-top: 20px;
+}
+
+.mi-panel-titulo {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.mi-panel-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 14px;
+}
+
+.mi-panel-card {
+  background: var(--glass-card-bg);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--glass-radius-sm);
+  padding: 16px;
+  box-shadow: var(--glass-shadow), var(--glass-inset-shadow);
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.mi-panel-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 10px 30px rgba(31, 38, 135, 0.15);
+}
+
+.mi-panel-card-icono {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2rem;
+  flex-shrink: 0;
+}
+
+.mi-panel-card-icono.equipo {
+  background: rgba(59, 130, 246, 0.12);
+  color: #3b82f6;
+}
+
+.mi-panel-card-icono.telefono {
+  background: rgba(16, 185, 129, 0.12);
+  color: #10b981;
+}
+
+body.dark-mode .mi-panel-card-icono.equipo {
+  background: rgba(59, 130, 246, 0.18);
+  color: #60a5fa;
+}
+
+body.dark-mode .mi-panel-card-icono.telefono {
+  background: rgba(16, 185, 129, 0.18);
+  color: #34d399;
+}
+
+.mi-panel-card-body {
+  flex: 1;
+  min-width: 0;
+}
+
+.mi-panel-card-titulo {
+  font-size: 0.92rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0 0 4px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.mi-panel-card-detalle {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.mi-panel-card-detalle span {
+  font-size: 0.78rem;
+  color: var(--text-secondary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.mi-panel-card-detalle strong {
+  color: var(--text-primary);
+  font-weight: 500;
+}
+
+.mi-panel-card-fecha {
+  font-size: 0.72rem !important;
+  color: var(--text-muted) !important;
+  margin-top: 4px !important;
+}
+
+.mi-panel-vacio {
+  text-align: center;
+  padding: 20px;
+  color: var(--text-muted);
+  font-size: 0.85rem;
+  font-style: italic;
+}
+
+
+/* ═══════════════════════════════════════════
+   NOTIFICACIONES — dropdown glass
+   ═══════════════════════════════════════════ */
+.noti-dropdown {
+  background: var(--glass-bg) !important;
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  border: 1px solid var(--glass-border) !important;
+  border-radius: var(--glass-radius-sm) !important;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
+}
+
+
+/* ═══════════════════════════════════════════
+   USER MENU — dropdown del usuario glass
+   ═══════════════════════════════════════════ */
+.user-dropdown {
+  background: var(--glass-bg) !important;
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  border: 1px solid var(--glass-border) !important;
+  border-radius: var(--glass-radius-sm) !important;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
+}
+
+
+/* ═══════════════════════════════════════════
+   MENSAJES — alertas de éxito/error
+   ═══════════════════════════════════════════ */
+.chip-mensaje,
+.ticket-mensaje,
+.tickets-msg-exito {
+  border-radius: var(--glass-radius-xs) !important;
+  backdrop-filter: blur(6px);
+}
+
+
+/* ═══════════════════════════════════════════
+   BADGES — etiquetas de estado
+   ═══════════════════════════════════════════ */
+.estado-badge,
+.doc-badge-vigente,
+.doc-badge-vencido,
+.ticket-estado-badge {
+  border-radius: 20px !important;
+}
+
+
+/* ═══════════════════════════════════════════
+   CUMPLEAÑOS — panel lateral y cards
+   ═══════════════════════════════════════════ */
+.saludos-cumple-card {
+  background: var(--glass-card-bg) !important;
+  border-radius: var(--glass-radius-sm) !important;
+  backdrop-filter: blur(6px);
+  border: 1px solid var(--glass-border) !important;
+}
+
+.saludos-detalle {
+  background: var(--glass-card-bg) !important;
+  border-radius: var(--glass-radius-sm) !important;
+  backdrop-filter: blur(8px);
+  border: 1px solid var(--glass-border) !important;
+}
+
+.saludo-card {
+  background: var(--glass-stat-bg) !important;
+  backdrop-filter: blur(6px);
+  border: 1px solid var(--glass-border) !important;
+  border-radius: var(--glass-radius-xs) !important;
+}
+
+/* Cumpleaños — textos legibles en glass */
+.saludos-titulo {
+  color: var(--text-primary) !important;
+}
+.saludos-header-icono {
+  color: #f59e0b !important;
+  filter: drop-shadow(0 0 4px rgba(245,158,11,0.3));
+}
+.saludos-cumple-nombre {
+  color: var(--text-primary) !important;
+}
+.saludos-cumple-progreso {
+  color: var(--text-secondary) !important;
+}
+.saludos-cumple-etiqueta {
+  color: #f59e0b !important;
+}
+.saludos-cargando,
+.saludos-vacio {
+  color: var(--text-secondary) !important;
+}
+.saludos-vacio-sub {
+  color: var(--text-muted) !important;
+}
+.saludos-tab {
+  color: var(--text-secondary) !important;
+}
+.saludos-tab:hover {
+  color: var(--text-primary) !important;
+  background: var(--glass-stat-bg) !important;
+}
+.saludos-tab.activo {
+  color: #f59e0b !important;
+}
+.saludos-tabs {
+  border-bottom-color: var(--glass-border) !important;
+}
+.saludo-card-nombre {
+  color: var(--text-primary) !important;
+}
+.saludo-card-mensaje {
+  color: var(--text-secondary) !important;
+}
+.saludo-copiar-btn {
+  background: var(--glass-input-bg) !important;
+  border-color: var(--glass-border) !important;
+  color: var(--text-secondary) !important;
+}
+.saludos-grid-vacio {
+  color: var(--text-secondary) !important;
+}
+.faltante-item {
+  background: var(--glass-input-bg) !important;
+  border: 1px solid var(--glass-border) !important;
+  border-radius: var(--glass-radius-xs) !important;
+  backdrop-filter: blur(4px);
+}
+.faltante-nombre {
+  color: var(--text-primary) !important;
+}
+
+/* Cumpleaños modal — glass */
+.cumple-modal {
+  background: var(--glass-bg) !important;
+  backdrop-filter: blur(20px);
+  border: 1px solid var(--glass-border) !important;
+}
+.cumple-modal-titulo {
+  color: var(--text-primary) !important;
+}
+.cumple-modal-desc {
+  color: var(--text-secondary) !important;
+}
+.cumple-modal-textarea {
+  background: var(--glass-input-bg) !important;
+  border-color: var(--glass-border) !important;
+  color: var(--text-primary) !important;
+}
+.cumple-modal-chars {
+  color: var(--text-muted) !important;
+}
+.cumple-modal-sticker-btn {
+  color: var(--text-secondary) !important;
+  border-color: var(--glass-border) !important;
+}
+.cumple-modal-sticker-preview {
+  background: var(--glass-stat-bg) !important;
+  border-color: var(--glass-border) !important;
+}
+.cumple-modal-btn-cerrar {
+  color: var(--text-secondary) !important;
+}
+
+
+/* ═══════════════════════════════════════════
+   ASISTENCIAS — tabla y cards
+   ═══════════════════════════════════════════ */
+.asistg-card,
+.asistg-resumen-card {
+  background: var(--glass-card-bg) !important;
+  backdrop-filter: blur(10px);
+  border: 1px solid var(--glass-border) !important;
+  border-radius: var(--glass-radius-sm) !important;
+}
+
+
+/* ═══════════════════════════════════════════
+   DOCUMENTOS GENERADOS — sección de archivos
+   ═══════════════════════════════════════════ */
+.doc-generados-seccion {
+  margin-top: 24px;
+}
+
+.doc-generados-titulo {
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.doc-gen-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 12px;
+}
+
+.doc-gen-card {
+  background: var(--glass-card-bg);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--glass-radius-sm);
+  padding: 14px;
+  box-shadow: var(--glass-shadow);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  transition: transform 0.2s, box-shadow 0.2s;
+  cursor: pointer;
+}
+
+.doc-gen-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(31, 38, 135, 0.14);
+}
+
+.doc-gen-icono {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.1rem;
+  flex-shrink: 0;
+}
+
+.doc-gen-icono.docx {
+  background: rgba(37, 99, 235, 0.12);
+  color: #2563eb;
+}
+
+.doc-gen-icono.pdf {
+  background: rgba(220, 38, 38, 0.12);
+  color: #dc2626;
+}
+
+body.dark-mode .doc-gen-icono.docx {
+  background: rgba(37, 99, 235, 0.18);
+  color: #60a5fa;
+}
+
+body.dark-mode .doc-gen-icono.pdf {
+  background: rgba(220, 38, 38, 0.18);
+  color: #f87171;
+}
+
+.doc-gen-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.doc-gen-nombre {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.doc-gen-fecha {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+
+.doc-gen-descargar {
+  color: var(--active-color, #1a73e8);
+  font-size: 0.9rem;
+  flex-shrink: 0;
+  opacity: 0.7;
+  transition: opacity 0.2s;
+}
+
+.doc-gen-card:hover .doc-gen-descargar {
+  opacity: 1;
+}
+
+
+/* ═══════════════════════════════════════════
+   TOGGLE PANEL BTN — botón redondeado
+   ═══════════════════════════════════════════ */
+.toggle-panel-btn {
+  border-radius: 12px 0 0 12px !important;
+  backdrop-filter: blur(8px);
+}
+
+
+/* ═══════════════════════════════════════════
+   DARK TOGGLE — botón de tema
+   ═══════════════════════════════════════════ */
+.dark-toggle {
+  border-radius: 12px !important;
+  backdrop-filter: blur(6px);
+}
+
+
+/* ═══════════════════════════════════════════
+   LOGIN — efecto glass en la tarjeta de login
+   ═══════════════════════════════════════════ */
+.login-card {
+  backdrop-filter: blur(18px) saturate(160%) !important;
+  -webkit-backdrop-filter: blur(18px) saturate(160%) !important;
+  border: 1px solid var(--glass-border) !important;
+  box-shadow: var(--glass-shadow), var(--glass-inset-shadow) !important;
+  border-radius: var(--glass-radius) !important;
+}
+
+.login-field input,
+.login-field select {
+  border-radius: var(--glass-radius-xs) !important;
+}
+
+
+/* ═══════════════════════════════════════════
+   PÁGINAS INTERNAS — fondo transparente
+   para que se vea la imagen de fondo
+   ═══════════════════════════════════════════ */
+.personal-pagina,
+.detalle-pagina,
+.horarios-pagina,
+.asistg-pagina {
+  background: transparent !important;
+}
+
+
+/* ═══════════════════════════════════════════
+   CHAT — panel y ventanas glass
+   ═══════════════════════════════════════════ */
+.chat-panel {
+  background: var(--glass-bg) !important;
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  border: 1px solid var(--glass-border) !important;
+  border-radius: var(--glass-radius) !important;
+  box-shadow: var(--glass-shadow);
+}
+
+.chat-ventana {
+  background: var(--glass-card-bg) !important;
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border: 1px solid var(--glass-border) !important;
+  border-radius: var(--glass-radius) !important;
+}
+
+.chat-ventana-body,
+.mi-espacio-body {
+  background: transparent !important;
+}
+
+.chat-ventana-input,
+.mi-espacio-footer {
+  background: var(--glass-stat-bg) !important;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border-top: 1px solid var(--glass-border) !important;
+}
+
+.mi-espacio-crear {
+  background: var(--glass-card-bg) !important;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid var(--glass-border) !important;
+  border-radius: var(--glass-radius-sm) !important;
+}
+
+.chat-modal-crear-grupo {
+  background: var(--glass-bg) !important;
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid var(--glass-border) !important;
+  border-radius: var(--glass-radius) !important;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.18);
+}
+
+.chat-contacto-item:hover {
+  background: var(--glass-hover) !important;
+}
+
+.chat-btn-cancelar {
+  background: var(--glass-input-bg) !important;
+  border-radius: var(--glass-radius-xs) !important;
+}
+
+.chat-msg-descargar-btn {
+  background: var(--glass-input-bg) !important;
+  border-radius: var(--glass-radius-xs) !important;
+}
+
+
+/* ═══════════════════════════════════════════
+   CAMBIO PASSWORD — modal glass
+   ═══════════════════════════════════════════ */
+.cambio-pw-modal {
+  background: var(--glass-bg) !important;
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid var(--glass-border) !important;
+  border-radius: var(--glass-radius) !important;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.18);
+}
+
+
+/* ═══════════════════════════════════════════
+   REAPERTURA — subpaneles glass
+   ═══════════════════════════════════════════ */
+.reapertura-info {
+  background: var(--glass-stat-bg) !important;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid var(--glass-border) !important;
+  border-radius: var(--glass-radius-xs) !important;
+}
+
+.reapertura-motivo {
+  background: var(--glass-card-bg) !important;
+  backdrop-filter: blur(8px);
+  border: 1px solid var(--glass-border) !important;
+  border-radius: var(--glass-radius-xs) !important;
+}
+
+
+/* ═══════════════════════════════════════════
+   PERSONAL — buscador, stats, tarjetas
+   ═══════════════════════════════════════════ */
+.personal-buscador {
+  background: var(--glass-card-bg) !important;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid var(--glass-border) !important;
+  border-radius: var(--glass-radius-sm) !important;
+}
+
+.personal-stats {
+  background: var(--glass-card-bg) !important;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid var(--glass-border) !important;
+  border-radius: var(--glass-radius-sm) !important;
+}
+
+.tarjeta-empleado {
+  background: var(--glass-card-bg) !important;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid var(--glass-border) !important;
+  border-radius: var(--glass-radius-sm) !important;
+  box-shadow: var(--glass-shadow);
+  transition: transform 0.2s, box-shadow 0.25s;
+}
+
+.tarjeta-empleado:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 10px 30px rgba(31, 38, 135, 0.14);
+}
+
+.tarjeta-foto {
+  border-radius: var(--glass-radius-xs) !important;
+}
+
+.filtro-select {
+  background: var(--glass-input-bg) !important;
+  border: 1px solid var(--glass-border) !important;
+  border-radius: var(--glass-radius-xs) !important;
+  backdrop-filter: blur(6px);
+}
+
+
+/* ═══════════════════════════════════════════
+   DETALLE PERSONAL — volver, tarjeta, foto
+   ═══════════════════════════════════════════ */
+.detalle-volver {
+  background: var(--glass-card-bg) !important;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid var(--glass-border) !important;
+  border-radius: var(--glass-radius-xs) !important;
+}
+
+.detalle-tarjeta {
+  background: var(--glass-card-bg) !important;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--glass-border) !important;
+  border-radius: var(--glass-radius-sm) !important;
+  box-shadow: var(--glass-shadow);
+}
+
+.detalle-foto {
+  background: var(--glass-stat-bg) !important;
+  border-radius: var(--glass-radius-xs) !important;
+}
+
+.det-cuenta-fila {
+  background: var(--glass-stat-bg) !important;
+  backdrop-filter: blur(6px);
+  border-radius: var(--glass-radius-xs) !important;
+  border: 1px solid var(--glass-border) !important;
+}
+
+
+/* ═══════════════════════════════════════════
+   TICKETS — donut, stepper, informe, cierre
+   ═══════════════════════════════════════════ */
+.donut-card {
+  background: var(--glass-card-bg) !important;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid var(--glass-border) !important;
+  border-radius: var(--glass-radius-sm) !important;
+  box-shadow: var(--glass-shadow);
+}
+
+.detalle-stepper-card {
+  background: var(--glass-card-bg) !important;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid var(--glass-border) !important;
+  border-radius: var(--glass-radius-sm) !important;
+}
+
+.detalle-mensaje-cierre {
+  background: var(--glass-stat-bg) !important;
+  backdrop-filter: blur(6px);
+  border: 1px solid var(--glass-border) !important;
+  border-radius: var(--glass-radius-xs) !important;
+}
+
+.informe-select {
+  background: var(--glass-input-bg) !important;
+  border: 1px solid var(--glass-border) !important;
+  border-radius: var(--glass-radius-xs) !important;
+  backdrop-filter: blur(6px);
+}
+
+
+/* ═══════════════════════════════════════════
+   PERMISOS — buscador, tabla, banner
+   ═══════════════════════════════════════════ */
+.permisos-buscador {
+  background: var(--glass-card-bg) !important;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid var(--glass-border) !important;
+  border-radius: var(--glass-radius-sm) !important;
+}
+
+.permisos-tabla-wrapper {
+  background: var(--glass-card-bg) !important;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid var(--glass-border) !important;
+  border-radius: var(--glass-radius-sm) !important;
+  overflow-x: auto;
+}
+
+.permisos-info-banner {
+  background: var(--glass-stat-bg) !important;
+  backdrop-filter: blur(6px);
+  border: 1px solid var(--glass-border) !important;
+  border-radius: var(--glass-radius-xs) !important;
+}
+
+.rol-select {
+  background: var(--glass-input-bg) !important;
+  border: 1px solid var(--glass-border) !important;
+  border-radius: var(--glass-radius-xs) !important;
+}
+
+.check-btn {
+  background: var(--glass-input-bg) !important;
+  border: 2px solid rgba(148,163,184,0.5) !important;
+  border-radius: var(--glass-radius-xs) !important;
+  color: rgba(148,163,184,0.6);
+}
+.check-btn.activo {
+  background: #22c55e !important;
+  border-color: #22c55e !important;
+  color: #fff !important;
+}
+.check-btn.activo:disabled {
+  background: #3b82f6 !important;
+  border-color: #3b82f6 !important;
+  color: #fff !important;
+  opacity: .7;
+}
+.estado-indicador.si {
+  color: #22c55e !important;
+  filter: drop-shadow(0 0 2px rgba(34,197,94,0.4));
+}
+.estado-indicador.no {
+  color: rgba(148,163,184,0.5) !important;
+}
+
+
+/* ═══════════════════════════════════════════
+   HORARIOS — buscador, tabla, modal, masivo
+   ═══════════════════════════════════════════ */
+.horarios-buscador {
+  background: var(--glass-card-bg) !important;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid var(--glass-border) !important;
+  border-radius: var(--glass-radius-sm) !important;
+}
+
+.horarios-tabla-wrapper {
+  background: var(--glass-card-bg) !important;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid var(--glass-border) !important;
+  border-radius: var(--glass-radius-sm) !important;
+  overflow-x: auto;
+}
+
+.modal-horario {
+  background: var(--glass-bg) !important;
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid var(--glass-border) !important;
+  border-radius: var(--glass-radius) !important;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.18);
+}
+
+.masivo-select,
+.select-horario {
+  background: var(--glass-input-bg) !important;
+  border: 1px solid var(--glass-border) !important;
+  border-radius: var(--glass-radius-xs) !important;
+}
+
+.horarios-masivo {
+  background: var(--glass-stat-bg) !important;
+  backdrop-filter: blur(6px);
+  border: 1px solid var(--glass-border) !important;
+  border-radius: var(--glass-radius-xs) !important;
+}
+
+
+/* ═══════════════════════════════════════════
+   ASISTENCIAS GENERAL — stats, filtros, tabla
+   ═══════════════════════════════════════════ */
+.asistg-stat-card {
+  background: var(--glass-stat-bg) !important;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid var(--glass-border) !important;
+  border-radius: var(--glass-radius-sm) !important;
+  box-shadow: var(--glass-shadow);
+}
+
+.asistg-filtros-barra {
+  background: var(--glass-card-bg) !important;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid var(--glass-border) !important;
+  border-radius: var(--glass-radius-sm) !important;
+}
+
+.asistg-tabla-wrapper {
+  background: var(--glass-card-bg) !important;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid var(--glass-border) !important;
+  border-radius: var(--glass-radius-sm) !important;
+  overflow-x: auto;
+}
+
+
+/* ═══════════════════════════════════════════
+   CHIPS — formulario y modal glass
+   ═══════════════════════════════════════════ */
+.chip-form {
+  background: var(--glass-card-bg) !important;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid var(--glass-border) !important;
+  border-radius: var(--glass-radius-sm) !important;
+}
+
+.chip-modal {
+  background: var(--glass-bg) !important;
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid var(--glass-border) !important;
+  border-radius: var(--glass-radius) !important;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.18);
+}
+
+
+/* ═══════════════════════════════════════════
+   EQUIPOS CREAR — foto area glass
+   ═══════════════════════════════════════════ */
+.eq-foto-area {
+  background: var(--glass-stat-bg) !important;
+  backdrop-filter: blur(6px);
+  border: 1px solid var(--glass-border) !important;
+  border-radius: var(--glass-radius-xs) !important;
+}
+
+/* Equipos Crear — textos y labels legibles en glass */
+.eq-campo label,
+.eq-estado-label {
+  color: var(--text-primary) !important;
+  text-shadow: 0 0 6px rgba(0,0,0,0.08);
+}
+.eq-subtitulo {
+  color: var(--text-secondary) !important;
+}
+.eq-almc-header {
+  color: var(--text-primary) !important;
+}
+.eq-foto-placeholder {
+  color: var(--text-secondary) !important;
+}
+.eq-almc-vacio {
+  color: var(--text-secondary) !important;
+}
+.eq-almc-tabla th {
+  color: var(--text-primary) !important;
+  background: var(--glass-stat-bg) !important;
+  backdrop-filter: blur(4px);
+}
+.eq-loading {
+  color: var(--text-secondary) !important;
+}
+
+
+/* ═══════════════════════════════════════════
+   EQUIPOS ASIGNAR — búsqueda, asignación, form
+   ═══════════════════════════════════════════ */
+.eqa-busqueda {
+  background: var(--glass-input-bg) !important;
+  border: 1px solid var(--glass-border) !important;
+  border-radius: var(--glass-radius-xs) !important;
+  backdrop-filter: blur(6px);
+}
+
+.eqa-card-asignacion {
+  background: var(--glass-stat-bg) !important;
+  backdrop-filter: blur(6px);
+  border: 1px solid var(--glass-border) !important;
+  border-radius: var(--glass-radius-xs) !important;
+}
+
+.eqa-card-form {
+  background: var(--glass-stat-bg) !important;
+  backdrop-filter: blur(6px);
+  border: 1px solid var(--glass-border) !important;
+  border-radius: var(--glass-radius-xs) !important;
+}
+
+
+/* ═══════════════════════════════════════════
+   SUBMENU POPUP — glass en submenú flotante
+   ═══════════════════════════════════════════ */
+.submenu-popup {
+  background: var(--glass-bg) !important;
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  border: 1px solid var(--glass-border) !important;
+  border-radius: var(--glass-radius-sm) !important;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
+}
+
+
+/* ═══════════════════════════════════════════
+   SECCIÓN IMAGEN — área vacía glass
+   ═══════════════════════════════════════════ */
+.seccion-imagen-vacia {
+  background: var(--glass-stat-bg) !important;
+  backdrop-filter: blur(6px);
+  border: 1px solid var(--glass-border) !important;
+  border-radius: var(--glass-radius-xs) !important;
+}
+
+
+/* ═══════════════════════════════════════════
+   CUMPLEAÑOS — items glass
+   ═══════════════════════════════════════════ */
+.cumple-item {
+  background: var(--glass-input-bg) !important;
+  backdrop-filter: blur(6px);
+  border: 1px solid var(--glass-border) !important;
+  border-radius: var(--glass-radius-xs) !important;
+}
+.cumple-titulo {
+  color: var(--text-primary) !important;
+}
+.cumple-nombre {
+  color: var(--text-primary) !important;
+}
+.cumple-vacio {
+  color: var(--text-secondary) !important;
+}
+
+
+/* ═══════════════════════════════════════════
+   CHAT — textos y elementos adicionales glass
+   ═══════════════════════════════════════════ */
+.chat-busqueda {
+  border-bottom: 1px solid var(--glass-border) !important;
+}
+
+.chat-busqueda input {
+  color: var(--text-primary) !important;
+}
+
+.chat-busqueda svg {
+  color: var(--text-muted) !important;
+}
+
+.chat-contacto-nombre {
+  color: var(--text-primary) !important;
+}
+
+.chat-contacto-cargo {
+  color: var(--text-secondary) !important;
+}
+
+.chat-grupo-titulo {
+  color: var(--text-muted) !important;
+}
+
+.chat-header-nombre {
+  color: var(--text-primary) !important;
+}
+
+.chat-header-cargo,
+.chat-header-status {
+  color: var(--text-secondary) !important;
+}
+
+.chat-msg.suyo .chat-msg-burbuja {
+  background: var(--glass-stat-bg) !important;
+  backdrop-filter: blur(6px);
+  border: 1px solid var(--glass-border);
+}
+
+.chat-msg.suyo .chat-msg-texto {
+  color: var(--text-primary) !important;
+}
+.chat-msg.mio .chat-msg-texto {
+  color: #fff !important;
+}
+.chat-msg.mio .chat-msg-burbuja {
+  color: #fff !important;
+}
+
+.chat-msg.suyo .chat-msg-hora {
+  color: var(--text-muted) !important;
+}
+.chat-msg.mio .chat-msg-hora {
+  color: rgba(255,255,255,0.7) !important;
+}
+/* Visto checks — glass overrides */
+.chat-msg.mio .chat-visto { color: rgba(255,255,255,0.45) !important; }
+.chat-msg.mio .chat-visto-leido { color: #60cfff !important; }
+.chat-visto-panel {
+  background: var(--glass-card-bg) !important;
+  border-color: var(--glass-border) !important;
+  backdrop-filter: blur(var(--glass-blur)) !important;
+}
+.chat-visto-panel-header {
+  background: rgba(255,255,255,0.06) !important;
+  border-color: var(--glass-border) !important;
+  color: var(--color-primario) !important;
+}
+.chat-visto-panel-nombre { color: var(--text-primary) !important; }
+.chat-visto-panel-hora { color: var(--text-muted) !important; }
+.chat-visto-panel-item { border-color: var(--glass-border) !important; }
+
+.chat-ventana-header {
+  border-bottom: 1px solid var(--glass-border) !important;
+}
+
+.chat-crear-grupo-btn {
+  background: var(--glass-input-bg) !important;
+  border: 1px solid var(--glass-border) !important;
+  border-radius: var(--glass-radius-xs) !important;
+  color: var(--text-primary) !important;
+}
+
+.chat-contacto-item:hover {
+  background: var(--glass-hover) !important;
+}
+
+
+/* ── Sticker Picker glass ── */
+.sticker-picker-retro {
+  background: var(--glass-bg) !important;
+  backdrop-filter: blur(18px) !important;
+  -webkit-backdrop-filter: blur(18px) !important;
+  border: 1px solid var(--glass-border) !important;
+  border-radius: var(--glass-radius-sm) !important;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15) !important;
+}
+
+.sticker-picker-retro-header {
+  background: var(--glass-stat-bg) !important;
+  backdrop-filter: blur(8px);
+  border-bottom: 1px solid var(--glass-border) !important;
+}
+
+.sticker-picker-retro-header strong {
+  color: var(--text-primary) !important;
+}
+
+.sticker-picker-retro-header span {
+  color: var(--text-secondary) !important;
+}
+
+.sticker-picker-retro-close {
+  background: var(--glass-input-bg) !important;
+  border: 1px solid var(--glass-border) !important;
+  color: var(--text-secondary) !important;
+}
+
+.sticker-picker-retro-search {
+  background: transparent !important;
+  border-bottom: 1px solid var(--glass-border) !important;
+  color: var(--text-muted) !important;
+}
+
+.sticker-picker-retro-search input {
+  background: var(--glass-input-bg) !important;
+  border: 1px solid var(--glass-border) !important;
+  color: var(--text-primary) !important;
+}
+
+.sticker-picker-retro-body {
+  background: transparent !important;
+}
+
+.sticker-picker-retro-tabs {
+  background: var(--glass-stat-bg) !important;
+  backdrop-filter: blur(6px);
+  border-top: 1px solid var(--glass-border) !important;
+}
+
+.sticker-picker-retro-tab {
+  color: var(--text-muted) !important;
+}
+
+.sticker-picker-retro-tab:hover:not(.active) {
+  color: var(--text-primary) !important;
+}
+
+.sticker-picker-retro-empty {
+  color: var(--text-muted) !important;
+}
+
+.sticker-picker-retro-item {
+  color: var(--text-secondary) !important;
+}
+
+
+/* ── Mi Espacio (notas) textos ── */
+.mi-espacio-nota-texto {
+  color: var(--text-primary) !important;
+}
+
+.mi-espacio-nota-fecha {
+  color: var(--text-muted) !important;
+}
+
+.mi-espacio-crear textarea {
+  color: var(--text-primary) !important;
+  background: var(--glass-input-bg) !important;
+}
+
+.mi-espacio-header {
+  border-bottom: 1px solid var(--glass-border) !important;
+}
+
+.mi-espacio-header span {
+  color: var(--text-primary) !important;
+}
+
+
+/* ═══════════════════════════════════════════
+   TICKETS — elementos adicionales glass
+   ═══════════════════════════════════════════ */
+.tickets-msg-exito {
+  background: rgba(220, 252, 231, 0.6) !important;
+  backdrop-filter: blur(6px);
+  border: 1px solid var(--glass-border);
+}
+
+.detalle-valoracion {
+  background: rgba(254, 252, 232, 0.5) !important;
+  backdrop-filter: blur(6px);
+  border: 1px solid var(--glass-border) !important;
+  border-radius: var(--glass-radius-xs) !important;
+}
+
+.btn-exportar {
+  background: var(--glass-card-bg) !important;
+  backdrop-filter: blur(6px);
+  border: 1px solid var(--glass-border) !important;
+  color: var(--text-primary) !important;
+}
+
+.tickets-dash-title h2 {
+  color: var(--text-primary) !important;
+}
+
+.stat-num {
+  color: var(--text-primary) !important;
+}
+
+.tickets-tabla td {
+  color: var(--text-primary) !important;
+}
+
+.donut-leg-pct {
+  color: var(--text-primary) !important;
+}
+
+.donut-leg-label {
+  color: var(--text-secondary) !important;
+}
+
+.tickets-search-box {
+  background: var(--glass-input-bg) !important;
+  border: 1px solid var(--glass-border) !important;
+  backdrop-filter: blur(6px);
+}
+
+.tickets-search-box input {
+  color: var(--text-primary) !important;
+  background: transparent !important;
+}
+
+.detalle-asunto,
+.detalle-asunto-stepper {
+  color: var(--text-primary) !important;
+}
+
+.detalle-valor {
+  color: var(--text-primary) !important;
+}
+
+.detalle-label {
+  color: var(--text-secondary) !important;
+}
+
+.vigente-asunto {
+  color: var(--text-primary) !important;
+}
+
+.vigente-fecha {
+  color: var(--text-muted) !important;
+}
+
+.btn-cerrar-vigente {
+  background: var(--glass-input-bg) !important;
+  border: 1px solid var(--glass-border) !important;
+}
+
+
+/* ═══════════════════════════════════════════
+   EQUIPOS — inputs, badges, selectores glass
+   ═══════════════════════════════════════════ */
+.eqa-filtro-tipo {
+  background: var(--glass-input-bg) !important;
+  border: 1px solid var(--glass-border) !important;
+  border-radius: var(--glass-radius-xs) !important;
+  backdrop-filter: blur(6px);
+  color: var(--text-primary) !important;
+}
+
+.eqa-card-icono {
+  background: var(--glass-stat-bg) !important;
+  backdrop-filter: blur(6px);
+}
+
+.eqa-gama-badge {
+  background: var(--glass-input-bg) !important;
+  border: 1px solid var(--glass-border) !important;
+  color: var(--text-secondary) !important;
+}
+
+.eqa-titulo {
+  color: var(--text-primary) !important;
+}
+
+.eqa-stat-num {
+  color: var(--text-primary) !important;
+}
+
+.eqa-stat-label {
+  color: var(--text-secondary) !important;
+}
+
+.eqa-card-tipo {
+  color: var(--text-primary) !important;
+}
+
+.eqa-card-marca,
+.eqa-card-modelo {
+  color: var(--text-secondary) !important;
+}
+
+.eqa-asig-nombre {
+  color: var(--active-color) !important;
+}
+
+.eqa-busqueda input {
+  color: var(--text-primary) !important;
+}
+
+.eqa-card-form select {
+  background: var(--glass-input-bg) !important;
+  border: 1px solid var(--glass-border) !important;
+  color: var(--text-primary) !important;
+}
+
+.eq-campo input,
+.eq-campo select {
+  background: var(--glass-input-bg) !important;
+  border: 1px solid var(--glass-border) !important;
+  border-radius: var(--glass-radius-xs) !important;
+  color: var(--text-primary) !important;
+}
+
+.eq-titulo {
+  color: var(--text-primary) !important;
+}
+
+.eq-almc-tabla th {
+  background: var(--glass-stat-bg) !important;
+  backdrop-filter: blur(6px);
+  color: var(--text-secondary) !important;
+}
+
+.eq-almc-tabla td {
+  color: var(--text-primary) !important;
+}
+
+.eq-almc-tabla input,
+.eq-almc-tabla select {
+  background: var(--glass-input-bg) !important;
+  border: 1px solid var(--glass-border) !important;
+  color: var(--text-primary) !important;
+}
+
+.eq-estado-select {
+  background: var(--glass-input-bg) !important;
+  border: 1px solid var(--glass-border) !important;
+  color: var(--text-primary) !important;
+}
+
+
+/* ═══════════════════════════════════════════
+   CHIPS — campos, tabla, modal-info glass
+   ═══════════════════════════════════════════ */
+.chip-filtro-select {
+  background: var(--glass-input-bg) !important;
+  border: 1px solid var(--glass-border) !important;
+  border-radius: var(--glass-radius-xs) !important;
+  backdrop-filter: blur(6px);
+  color: var(--text-primary) !important;
+}
+
+.chip-campo select,
+.chip-campo input {
+  background: var(--glass-input-bg) !important;
+  border: 1px solid var(--glass-border) !important;
+  border-radius: var(--glass-radius-xs) !important;
+  color: var(--text-primary) !important;
+}
+
+.chip-tabla th {
+  background: var(--glass-stat-bg) !important;
+  backdrop-filter: blur(6px);
+  color: var(--text-secondary) !important;
+}
+
+.chip-tabla td {
+  color: var(--text-primary) !important;
+}
+
+.chip-modal-info {
+  background: var(--glass-stat-bg) !important;
+  backdrop-filter: blur(6px);
+  border: 1px solid var(--glass-border) !important;
+  border-radius: var(--glass-radius-xs) !important;
+}
+
+.chip-titulo {
+  color: var(--text-primary) !important;
+}
+
+.chip-stat-num {
+  color: var(--text-primary) !important;
+}
+
+.chip-stat-label {
+  color: var(--text-secondary) !important;
+}
+
+.chip-busqueda input {
+  color: var(--text-primary) !important;
+}
+
+.chip-fila-edit td {
+  background: var(--glass-input-bg) !important;
+}
+
+.chip-fila-edit input,
+.chip-fila-edit select {
+  background: var(--glass-input-bg) !important;
+  border: 1px solid var(--glass-border) !important;
+  color: var(--text-primary) !important;
+}
+
+.chip-modal h3 {
+  color: var(--text-primary) !important;
+}
+
+
+/* ═══════════════════════════════════════════
+   HORARIOS — días, thead, textos
+   ═══════════════════════════════════════════ */
+.horario-dia {
+  background: var(--glass-input-bg) !important;
+  backdrop-filter: blur(4px);
+  border: 1px solid var(--glass-border) !important;
+  border-radius: var(--glass-radius-xs) !important;
+}
+
+.horarios-tabla thead {
+  background: var(--glass-stat-bg) !important;
+  backdrop-filter: blur(6px);
+}
+
+.horarios-tabla thead th {
+  color: var(--text-secondary) !important;
+}
+
+.horarios-titulo {
+  color: var(--text-primary) !important;
+}
+
+.horarios-tabla td {
+  color: var(--text-primary) !important;
+}
+
+.modal-campo input {
+  background: var(--glass-input-bg) !important;
+  border: 1px solid var(--glass-border) !important;
+  color: var(--text-primary) !important;
+}
+
+.modal-campo label {
+  color: var(--text-secondary) !important;
+}
+
+.modal-header h3 {
+  color: var(--text-primary) !important;
+}
+
+.modal-tabla-dias input[type="time"] {
+  background: var(--glass-input-bg) !important;
+  border: 1px solid var(--glass-border) !important;
+  color: var(--text-primary) !important;
+}
+
+
+/* ═══════════════════════════════════════════
+   ASISTENCIAS — buscador, header, buttons
+   ═══════════════════════════════════════════ */
+.modo-btn {
+  background: var(--glass-input-bg) !important;
+  border: 1px solid var(--glass-border) !important;
+  border-radius: var(--glass-radius-xs) !important;
+  color: var(--text-primary) !important;
+}
+
+.filtro-date {
+  background: var(--glass-input-bg) !important;
+  border: 1px solid var(--glass-border) !important;
+  border-radius: var(--glass-radius-xs) !important;
+  color: var(--text-primary) !important;
+}
+
+.asistg-buscador {
+  background: var(--glass-input-bg) !important;
+  border: 1px solid var(--glass-border) !important;
+  border-radius: var(--glass-radius-xs) !important;
+  backdrop-filter: blur(6px);
+}
+
+.asistg-buscador input {
+  color: var(--text-primary) !important;
+  background: transparent !important;
+}
+
+.asistg-header-row {
+  background: var(--glass-stat-bg) !important;
+  backdrop-filter: blur(6px);
+}
+
+.asistg-detalle-tabla thead th {
+  background: var(--glass-stat-bg) !important;
+  backdrop-filter: blur(4px);
+  color: var(--text-secondary) !important;
+}
+
+.asistg-titulo {
+  color: var(--text-primary) !important;
+}
+
+.asistg-emp-nombre {
+  color: var(--text-primary) !important;
+}
+
+.asistg-detalle-tabla tbody td {
+  color: var(--text-primary) !important;
+}
+
+.filtro-estado-btn {
+  background: var(--glass-input-bg) !important;
+  border: 1px solid var(--glass-border) !important;
+  border-radius: var(--glass-radius-xs) !important;
+  color: var(--text-primary) !important;
+}
+
+.asistg-selects .filtro-select {
+  background: var(--glass-input-bg) !important;
+  border: 1px solid var(--glass-border) !important;
+  color: var(--text-primary) !important;
+}
+
+
+/* ═══════════════════════════════════════════
+   PERSONAL DETALLE — tabs, contactos, textos
+   ═══════════════════════════════════════════ */
+.detalle-tab-contenido {
+  background: var(--glass-card-bg) !important;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid var(--glass-border) !important;
+  border-radius: var(--glass-radius-xs) !important;
+}
+
+.detalle-tab-contenido h3 {
+  color: var(--text-primary) !important;
+}
+
+.det-contactos-lista li {
+  background: var(--glass-input-bg) !important;
+  border: 1px solid var(--glass-border) !important;
+  border-radius: var(--glass-radius-xs) !important;
+}
+
+.detalle-area-texto {
+  background: var(--glass-input-bg) !important;
+  border: 1px solid var(--glass-border) !important;
+  border-radius: var(--glass-radius-xs) !important;
+  color: var(--text-primary) !important;
+}
+
+.detalle-genero {
+  background: var(--glass-input-bg) !important;
+  border: 1px solid var(--glass-border) !important;
+  border-radius: var(--glass-radius-xs) !important;
+  color: var(--text-primary) !important;
+}
+
+.det-valor {
+  color: var(--text-primary) !important;
+}
+
+.det-label {
+  color: var(--text-secondary) !important;
+}
+
+.det-btn-editar {
+  background: var(--glass-input-bg) !important;
+  border: 1px solid var(--glass-border) !important;
+  color: var(--active-color) !important;
+}
+
+.det-btn-guardar {
+  background: rgba(223, 240, 228, 0.6) !important;
+  border: 1px solid var(--glass-border) !important;
+}
+
+.det-btn-cancelar {
+  background: var(--glass-input-bg) !important;
+  border: 1px solid var(--glass-border) !important;
+  color: var(--text-secondary) !important;
+}
+
+.det-btn-desactivar {
+  background: rgba(253, 232, 212, 0.6) !important;
+  border: 1px solid var(--glass-border) !important;
+}
+
+.det-btn-reactivar {
+  background: rgba(223, 240, 228, 0.6) !important;
+  border: 1px solid var(--glass-border) !important;
+}
+
+.det-btn-sync {
+  background: var(--glass-input-bg) !important;
+  border: 1px solid var(--glass-border) !important;
+}
+
+.det-btn-filtrar {
+  background: var(--glass-input-bg) !important;
+  border: 1px solid var(--glass-border) !important;
+  color: var(--active-color) !important;
+}
+
+.det-btn-justificar {
+  background: rgba(255, 243, 224, 0.6) !important;
+  border: 1px solid var(--glass-border) !important;
+}
+
+.det-btn-nuevo {
+  border-radius: var(--glass-radius-xs) !important;
+}
+
+.det-cuentas-tabla th {
+  background: var(--glass-stat-bg) !important;
+  backdrop-filter: blur(4px);
+  color: var(--text-secondary) !important;
+}
+
+.det-cuentas-tabla td {
+  color: var(--text-primary) !important;
+}
+
+.asist-tabla thead th {
+  background: var(--glass-stat-bg) !important;
+  backdrop-filter: blur(4px);
+  color: var(--text-secondary) !important;
+}
+
+.asist-tabla tbody td {
+  color: var(--text-primary) !important;
+}
+
+.asist-cat {
+  background: var(--glass-input-bg) !important;
+  border: 1px solid var(--glass-border) !important;
+  border-radius: var(--glass-radius-xs) !important;
+}
+
+.asist-rango-info {
+  background: var(--glass-stat-bg) !important;
+  backdrop-filter: blur(6px);
+  border: 1px solid var(--glass-border) !important;
+  border-radius: var(--glass-radius-xs) !important;
+  color: var(--text-primary) !important;
+}
+
+
+/* ═══════════════════════════════════════════
+   PERMISOS — tabla hover, badges, misc
+   ═══════════════════════════════════════════ */
+.permisos-tabla thead th {
+  color: var(--text-secondary) !important;
+}
+
+.permisos-tabla tbody tr:hover {
+  background: var(--glass-hover) !important;
+}
+
+.permisos-tabla tbody tr.fila-con-cambios {
+  background: rgba(255, 251, 235, 0.5) !important;
+}
+
+.avatar-placeholder {
+  background: var(--glass-stat-bg) !important;
+  backdrop-filter: blur(4px);
+  border: 1px solid var(--glass-border) !important;
+}
+
+.seccion-titulo {
+  color: var(--text-primary) !important;
+}
+
+.usuario-code {
+  color: var(--text-secondary) !important;
+}
+
+.info-nombre {
+  color: var(--text-primary) !important;
+}
+
+.permisos-buscador input {
+  color: var(--text-primary) !important;
+}
+
+
+/* ═══════════════════════════════════════════
+   PERSONAL (RRHH) — titulo, buscador, stats
+   ═══════════════════════════════════════════ */
+.personal-titulo {
+  color: var(--text-primary) !important;
+}
+
+.buscador-input {
+  color: var(--text-primary) !important;
+}
+
+.tarjeta-nombre {
+  color: var(--text-primary) !important;
+}
+
+.tarjeta-apellidos {
+  color: var(--text-secondary) !important;
+  font-size: 14px !important;
+  font-weight: 500 !important;
+}
+
+.tarjeta-valor {
+  color: var(--text-primary) !important;
+}
+
+.tarjeta-label {
+  color: var(--text-secondary) !important;
+}
+
+.tarjeta-superior {
+  border-radius: var(--glass-radius-sm) var(--glass-radius-sm) 0 0 !important;
+}
+
+
+/* ═══════════════════════════════════════════
+   LOGIN — contenedor, formulario, campos glass
+   ═══════════════════════════════════════════ */
+.login-container {
+  background: transparent !important;
+}
+
+.login-form-container {
+  background: transparent !important;
+}
+
+.login-field input,
+.login-field select {
+  background: var(--glass-input-bg) !important;
+  border: 1px solid var(--glass-border) !important;
+  color: var(--text-primary) !important;
+  backdrop-filter: blur(6px);
+}
+
+.login-field label {
+  color: var(--text-secondary) !important;
+}
+
+.login-error-msg {
+  background: rgba(255, 240, 240, 0.6) !important;
+  backdrop-filter: blur(4px);
+  border: 1px solid rgba(220, 53, 69, 0.2) !important;
+  border-radius: var(--glass-radius-xs) !important;
+}
+
+.denied-msg {
+  background: rgba(255, 235, 238, 0.6) !important;
+  backdrop-filter: blur(4px);
+}
+
+.login-titulo {
+  color: var(--text-primary) !important;
+}
+
+.login-subtitulo {
+  color: var(--text-secondary) !important;
+}
+
+
+/* ═══════════════════════════════════════════
+   CAMBIO PASSWORD — inputs glass
+   ═══════════════════════════════════════════ */
+.cpw-input-wrap input {
+  background: var(--glass-input-bg) !important;
+  border: 1px solid var(--glass-border) !important;
+  color: var(--text-primary) !important;
+}
+
+.cambio-pw-titulo {
+  color: var(--text-primary) !important;
+}
+
+.cambio-pw-msg.error {
+  background: rgba(255, 235, 238, 0.6) !important;
+  backdrop-filter: blur(4px);
+}
+
+.cambio-pw-msg.exito {
+  background: rgba(232, 245, 233, 0.6) !important;
+  backdrop-filter: blur(4px);
+}
+
+
+/* ═══════════════════════════════════════════
+   REAPERTURA — textos
+   ═══════════════════════════════════════════ */
+.reapertura-asunto {
+  color: var(--text-primary) !important;
+}
+
+.reapertura-valor {
+  color: var(--text-primary) !important;
+}
+
+.reapertura-label {
+  color: var(--text-secondary) !important;
+}
+
+
+/* ═══════════════════════════════════════════
+   ASIDE PANEL — textos internos legibles
+   ═══════════════════════════════════════════ */
+.aside-right-panel h3 {
+  color: var(--text-primary) !important;
+}
+
+.seccion-imagen-titulo {
+  color: var(--text-primary) !important;
+}
+
+.cumple-titulo {
+  color: var(--text-primary) !important;
+}
+
+.cumple-nombre {
+  color: var(--text-primary) !important;
+}
+
+.cumple-vacio {
+  color: var(--text-muted) !important;
+}
+
+
+/* ═══════════════════════════════════════════
+   GLOBAL TEXT LEGIBILITY — asegurar visibilidad
+   ═══════════════════════════════════════════ */
+.panel-close-btn {
+  color: var(--text-secondary) !important;
+}
+
+.panel-close-btn:hover {
+  color: #ef4444 !important;
+}
+
+.toggle-panel-btn {
+  backdrop-filter: blur(8px) !important;
+  border-radius: 12px 0 0 12px !important;
+}
+
+
+/* ═══════════════════════════════════════════
+   ANIMACIONES SUAVES
+   ═══════════════════════════════════════════ */
+@keyframes fadeInGlass {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.white-card,
+.mi-panel-card,
+.doc-gen-card,
+.doc-card,
+.eqa-card,
+.chip-card,
+.tarjeta-personal,
+.tarjeta-empleado,
+.stat-card,
+.chip-stat,
+.donut-card,
+.asistg-stat-card,
+.permisos-card,
+.horario-card,
+.detalle-tarjeta,
+.ticket-vigente-card {
+  animation: fadeInGlass 0.35s ease-out;
+}
+
+
+/* ═══════════════════════════════════════════
+   RESPONSIVE — ajustes mobile
+   ═══════════════════════════════════════════ */
+@media (max-width: 768px) {
+  :root {
+    --glass-radius: 14px;
+    --glass-radius-sm: 10px;
+    --glass-radius-xs: 8px;
+  }
+
+  .mi-panel-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .doc-gen-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .aside-right-panel {
+    border-radius: var(--glass-radius) 0 0 0 !important;
+  }
+}
+
+
+/* ═══════════════════════════════════════════════════════
+   LICENCIAS — tarjetas, stats, formulario, equipos
+   ═══════════════════════════════════════════════════════ */
+.lic-card {
+  background: var(--glass-card-bg) !important;
+  backdrop-filter: blur(var(--glass-blur));
+  -webkit-backdrop-filter: blur(var(--glass-blur));
+  border: 1px solid var(--glass-border) !important;
+  box-shadow: var(--glass-shadow);
+}
+.lic-stat {
+  background: var(--glass-stat-bg) !important;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid var(--glass-border) !important;
+}
+.lic-busqueda {
+  background: var(--glass-input-bg) !important;
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  border: 1px solid var(--glass-border) !important;
+}
+.lic-form-panel,
+.lic-card-edit-inline {
+  background: var(--glass-card-bg) !important;
+  backdrop-filter: blur(var(--glass-blur));
+  -webkit-backdrop-filter: blur(var(--glass-blur));
+  border: 1px solid var(--glass-border) !important;
+}
+.lic-card-detalle {
+  background: transparent !important;
+}
+.lic-equipo-row {
+  background: var(--glass-input-bg) !important;
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+}
+.lic-form-campo input {
+  background: var(--glass-input-bg) !important;
+  border: 1px solid var(--glass-border) !important;
+}
+.lic-mensaje.exito {
+  background: rgba(34,197,94,0.15) !important;
+}
+.lic-mensaje.error {
+  background: rgba(239,68,68,0.15) !important;
+}
+.lic-btn-desasignar {
+  background: rgba(239,68,68,0.12) !important;
+}
+
+
+/* ═══════════════════════════════════════════════════════
+   MANTENIMIENTO — stats, tabla, modal, filtros
+   ═══════════════════════════════════════════════════════ */
+.mnt-stat-card {
+  background: var(--glass-stat-bg) !important;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid var(--glass-border) !important;
+}
+.mnt-tabla-wrap {
+  background: var(--glass-card-bg) !important;
+  backdrop-filter: blur(var(--glass-blur));
+  -webkit-backdrop-filter: blur(var(--glass-blur));
+  border: 1px solid var(--glass-border) !important;
+  box-shadow: var(--glass-shadow);
+}
+.mnt-tabla thead th {
+  background: rgba(255,255,255,0.04) !important;
+}
+.mnt-busqueda {
+  background: var(--glass-input-bg) !important;
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  border: 1px solid var(--glass-border) !important;
+}
+.mnt-filtro-group select {
+  background: var(--glass-input-bg) !important;
+  border: 1px solid var(--glass-border) !important;
+}
+.mnt-btn-limpiar {
+  background: var(--glass-input-bg) !important;
+  border: 1px solid var(--glass-border) !important;
+}
+.mnt-modal {
+  background: var(--glass-card-bg) !important;
+  backdrop-filter: blur(var(--glass-blur));
+  -webkit-backdrop-filter: blur(var(--glass-blur));
+  border: 1px solid var(--glass-border) !important;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.35);
+}
+.mnt-modal-overlay {
+  background: rgba(0,0,0,0.55) !important;
+}
+.mnt-campo input,
+.mnt-campo select,
+.mnt-campo textarea {
+  background: var(--glass-input-bg) !important;
+  border: 1px solid var(--glass-border) !important;
+}
+.mnt-btn-acc {
+  background: var(--glass-input-bg) !important;
+  border: 1px solid var(--glass-border) !important;
+}
+.mnt-msg-ok {
+  background: rgba(34,197,94,0.15) !important;
+}
+.mnt-msg-error {
+  background: rgba(239,68,68,0.15) !important;
+}
+
+
+/* ═══════════════════════════════════════════════════════
+   ASISTENCIAS GENERAL — filas grupo, estados de fila
+   ═══════════════════════════════════════════════════════ */
+.asistg-fila-grupo {
+  background: var(--glass-card-bg) !important;
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+}
+.asistg-header-row {
+  background: var(--glass-stat-bg) !important;
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+}
+.asistg-emp-horario {
+  background: rgba(232,245,233,0.55) !important;
+  backdrop-filter: blur(4px);
+}
+.fila-emp-asistio {
+  background: rgba(39,174,96,0.08) !important;
+}
+.fila-emp-tardanza {
+  background: rgba(243,156,18,0.08) !important;
+}
+.fila-emp-falta {
+  background: rgba(231,76,60,0.08) !important;
+}
+.fila-descanso {
+  background: rgba(92,107,192,0.1) !important;
+}
+.fila-falta {
+  background: rgba(231,76,60,0.1) !important;
+}
+.fila-tardanza {
+  background: rgba(243,156,18,0.1) !important;
+}
+.fila-pendiente {
+  background: rgba(200,200,200,0.1) !important;
+}
+.fila-asistio {
+  background: rgba(39,174,96,0.1) !important;
+}
+
+/* Categorías asistencia general */
+.catga-descanso { background: rgba(92,107,192,0.12) !important; }
+.catga-ausentismo { background: rgba(231,76,60,0.12) !important; }
+.catga-normal, .catga-puntual { background: rgba(39,174,96,0.12) !important; }
+.catga-vacio { background: rgba(200,200,200,0.1) !important; }
+.catga-tardanza { background: rgba(243,156,18,0.12) !important; }
+.catga-vacaciones { background: rgba(33,150,243,0.12) !important; }
+.catga-permiso, .catga-permisopersonal { background: rgba(156,39,176,0.12) !important; }
+.catga-licencia { background: rgba(0,150,136,0.12) !important; }
+.catga-falta { background: rgba(231,76,60,0.12) !important; }
+.catga-inconsistencia { background: rgba(255,193,7,0.12) !important; }
+.catga-compensacionhoras { background: rgba(0,188,212,0.12) !important; }
+.catga-comision { background: rgba(233,30,99,0.12) !important; }
+.catga-viajelaboral { background: rgba(92,107,192,0.12) !important; }
+.catga-dialibre { background: rgba(139,195,74,0.12) !important; }
+
+/* Filtro estado botones */
+.filtro-estado-btn.fest-asist.activo { background: rgba(39,174,96,0.85) !important; }
+.filtro-estado-btn.fest-tard.activo { background: rgba(243,156,18,0.85) !important; }
+.filtro-estado-btn.fest-falta.activo { background: rgba(231,76,60,0.85) !important; }
+
+
+/* ═══════════════════════════════════════════════════════
+   CHAT — paneles, ventana, burbujas, inputs
+   ═══════════════════════════════════════════════════════ */
+.chat-panel {
+  background: var(--glass-card-bg) !important;
+  backdrop-filter: blur(var(--glass-blur));
+  -webkit-backdrop-filter: blur(var(--glass-blur));
+  border: 1px solid var(--glass-border) !important;
+}
+.chat-ventana {
+  background: var(--glass-card-bg) !important;
+  backdrop-filter: blur(var(--glass-blur));
+  -webkit-backdrop-filter: blur(var(--glass-blur));
+  border: 1px solid var(--glass-border) !important;
+}
+.chat-ventana-body {
+  background: var(--glass-bg) !important;
+}
+.chat-ventana-input {
+  background: var(--glass-input-bg) !important;
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  border-top: 1px solid var(--glass-border) !important;
+}
+.chat-msg.suyo .chat-msg-burbuja {
+  background: rgba(226,232,240,0.75) !important;
+  backdrop-filter: blur(6px);
+  border: 1px solid var(--glass-border) !important;
+}
+body.dark-mode .chat-msg.suyo .chat-msg-burbuja {
+  background: rgba(51,65,85,0.75) !important;
+}
+.chat-contacto-item:hover {
+  background: var(--glass-hover) !important;
+}
+.chat-modal-crear-grupo {
+  background: var(--glass-bg) !important;
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid var(--glass-border) !important;
+}
+.chat-grupo-contacto-item:hover {
+  background: var(--glass-hover) !important;
+}
+.chat-grupo-contacto-item.seleccionado {
+  background: rgba(99,102,241,0.12) !important;
+}
+.chat-crear-grupo-btn {
+  background: rgba(59,130,246,0.1) !important;
+}
+.chat-crear-grupo-btn:hover {
+  background: rgba(59,130,246,0.18) !important;
+}
+.chat-btn-cancelar {
+  background: var(--glass-input-bg) !important;
+}
+.chat-msg-descargar-btn {
+  background: var(--glass-input-bg) !important;
+}
+.mi-espacio-body {
+  background: var(--glass-bg) !important;
+}
+.mi-espacio-footer {
+  background: var(--glass-input-bg) !important;
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+}
+.mi-espacio-crear {
+  background: var(--glass-card-bg) !important;
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+}
+.mi-espacio-crear textarea {
+  background: var(--glass-input-bg) !important;
+}
+.mi-espacio-btn-nueva:hover {
+  background: rgba(245,158,11,0.15) !important;
+}
+.mi-espacio-btn-cancelar:hover {
+  background: var(--glass-hover) !important;
+}
+.sticker-picker-retro {
+  background: var(--glass-bg) !important;
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--glass-border) !important;
+}
+.sticker-picker-retro-tabs {
+  background: var(--glass-stat-bg) !important;
+}
+.chat-ventana-tools {
+  background: var(--glass-input-bg) !important;
+}
+
+
+/* ═══════════════════════════════════════════════════════
+   PERSONAL DETALLE — botones, badges, tablas asistencia
+   ═══════════════════════════════════════════════════════ */
+.det-btn-editar {
+  background: rgba(59,130,246,0.12) !important;
+}
+.det-btn-editar:hover {
+  background: rgba(59,130,246,0.22) !important;
+}
+.det-btn-guardar, .det-btn-reactivar {
+  background: rgba(34,197,94,0.12) !important;
+}
+.det-btn-guardar:hover, .det-btn-reactivar:hover {
+  background: rgba(34,197,94,0.22) !important;
+}
+.det-btn-cancelar {
+  background: var(--glass-input-bg) !important;
+}
+.det-btn-cancelar:hover {
+  background: var(--glass-hover) !important;
+}
+.det-btn-desactivar {
+  background: rgba(249,115,22,0.12) !important;
+}
+.det-btn-desactivar:hover {
+  background: rgba(249,115,22,0.22) !important;
+}
+.det-btn-sync {
+  background: rgba(59,130,246,0.1) !important;
+}
+.det-btn-sync:hover {
+  background: rgba(59,130,246,0.2) !important;
+}
+.det-btn-filtrar {
+  background: rgba(59,130,246,0.1) !important;
+}
+.det-btn-filtrar:hover {
+  background: rgba(59,130,246,0.2) !important;
+}
+.det-btn-justificar {
+  background: rgba(245,158,11,0.12) !important;
+}
+.det-btn-justificar:hover {
+  background: rgba(245,158,11,0.22) !important;
+}
+.detalle-horario-badge,
+.asist-horario-badge {
+  background: rgba(34,197,94,0.12) !important;
+}
+.detalle-estado-badge.estado-activo {
+  background: rgba(34,197,94,0.12) !important;
+}
+.detalle-estado-badge.estado-inactivo {
+  background: rgba(231,76,60,0.12) !important;
+}
+.asist-rango-info {
+  background: rgba(33,150,243,0.1) !important;
+}
+.asist-res-asist { background: rgba(34,197,94,0.12) !important; }
+.asist-res-tard { background: rgba(255,193,7,0.12) !important; }
+.asist-res-min { background: rgba(233,30,99,0.12) !important; }
+.asist-res-falt { background: rgba(255,87,34,0.12) !important; }
+.asist-fila-descanso td { background: rgba(200,200,200,0.1) !important; }
+.asist-fila-falta td { background: rgba(231,76,60,0.08) !important; }
+.asist-fila-tardanza td { background: rgba(255,193,7,0.08) !important; }
+
+/* Categorías asistencia detalle */
+.asist-cat-asistio { background: rgba(34,197,94,0.12) !important; }
+.asist-cat-ausentismo { background: rgba(231,76,60,0.12) !important; }
+.asist-cat-feriado { background: rgba(33,150,243,0.12) !important; }
+.asist-cat-vacaciones { background: rgba(92,107,192,0.12) !important; }
+.asist-cat-descanso { background: rgba(200,200,200,0.1) !important; }
+.asist-cat-permisodesalud { background: rgba(245,158,11,0.12) !important; }
+.asist-cat-compensacionhoras { background: rgba(0,150,136,0.12) !important; }
+.asist-cat-comision { background: rgba(156,39,176,0.12) !important; }
+.asist-cat-licencia { background: rgba(233,30,99,0.12) !important; }
+.asist-cat-viajelaboral { background: rgba(33,150,243,0.12) !important; }
+
+
+/* ═══════════════════════════════════════════════════════
+   PERMISOS — badges, filas, banner, checks
+   ═══════════════════════════════════════════════════════ */
+.permisos-mensaje.exito {
+  background: rgba(34,197,94,0.15) !important;
+}
+.permisos-mensaje.error {
+  background: rgba(239,68,68,0.15) !important;
+}
+.permisos-tabla tbody tr:hover {
+  background: var(--glass-hover) !important;
+}
+.permisos-tabla tbody tr.fila-con-cambios {
+  background: rgba(245,158,11,0.08) !important;
+}
+.avatar-placeholder {
+  background: var(--glass-input-bg) !important;
+}
+.badge-administrador, .badge-admin, .admin-badge {
+  background: rgba(59,130,246,0.12) !important;
+}
+.badge-soporte {
+  background: rgba(245,158,11,0.12) !important;
+}
+.badge-usuario {
+  background: var(--glass-input-bg) !important;
+}
+.badge-recursoshumanos, .badge-rrhh {
+  background: rgba(34,197,94,0.12) !important;
+}
+.badge-supervisor {
+  background: rgba(99,102,241,0.12) !important;
+}
+.check-btn {
+  background: var(--glass-input-bg) !important;
+  border: 2px solid var(--glass-border) !important;
+}
+.btn-todos {
+  background: rgba(59,130,246,0.1) !important;
+}
+.btn-todos:hover {
+  background: rgba(59,130,246,0.18) !important;
+}
+.btn-ninguno {
+  background: rgba(239,68,68,0.08) !important;
+}
+.btn-ninguno:hover {
+  background: rgba(239,68,68,0.15) !important;
+}
+.permisos-info-banner {
+  background: rgba(59,130,246,0.08) !important;
+  backdrop-filter: blur(4px);
+}
+.rol-select {
+  background: var(--glass-input-bg) !important;
+  border: 1px solid var(--glass-border) !important;
+}
+.rol-select.cambiado {
+  background: rgba(245,158,11,0.1) !important;
+}
+
+
+/* ═══════════════════════════════════════════════════════
+   HORARIOS — día descanso, masivo, badge, modals
+   ═══════════════════════════════════════════════════════ */
+.horario-dia.dia-descanso {
+  background: rgba(254,243,226,0.55) !important;
+}
+.masivo-select {
+  background: var(--glass-input-bg) !important;
+  border: 1px solid var(--glass-border) !important;
+}
+.horarios-tabla .fila-seleccionada {
+  background: rgba(74,144,217,0.1) !important;
+}
+.badge-horario {
+  background: rgba(34,197,94,0.12) !important;
+}
+.modal-tabla-dias .fila-descanso {
+  background: rgba(254,243,226,0.4) !important;
+}
+.feriado-msg.exito {
+  background: rgba(34,197,94,0.15) !important;
+}
+.feriado-msg.error {
+  background: rgba(239,68,68,0.15) !important;
+}
+
+
+/* ═══════════════════════════════════════════════════════
+   TICKETS — mensajes, estados, valoración
+   ═══════════════════════════════════════════════════════ */
+.ticket-mensaje.exito, .tickets-msg-exito {
+  background: rgba(34,197,94,0.15) !important;
+}
+.ticket-mensaje.error {
+  background: rgba(239,68,68,0.15) !important;
+}
+.ticket-estado-badge[data-estado="abierto"] {
+  background: rgba(245,158,11,0.15) !important;
+}
+.ticket-estado-badge[data-estado="cerrado"] {
+  background: rgba(34,197,94,0.15) !important;
+}
+.val-lento { background: rgba(239,68,68,0.1) !important; }
+.val-lento:hover { background: rgba(239,68,68,0.18) !important; }
+.val-normal { background: rgba(250,204,21,0.1) !important; }
+.val-normal:hover { background: rgba(250,204,21,0.18) !important; }
+.val-rapido { background: rgba(34,197,94,0.1) !important; }
+.val-rapido:hover { background: rgba(34,197,94,0.18) !important; }
+.btn-reabrir-ticket { background: rgba(239,68,68,0.1) !important; }
+.btn-cerrar-vigente:hover { background: rgba(239,68,68,0.1) !important; }
+.detalle-valoracion { background: rgba(250,204,21,0.08) !important; }
+
+
+/* ═══════════════════════════════════════════════════════
+   CHIPS — badges, mensajes
+   ═══════════════════════════════════════════════════════ */
+.chip-mensaje.exito { background: rgba(34,197,94,0.15) !important; }
+.chip-mensaje.error { background: rgba(239,68,68,0.15) !important; }
+.chip-estado-badge.asignado { background: rgba(59,130,246,0.12) !important; }
+.chip-estado-badge.disponible { background: rgba(34,197,94,0.12) !important; }
+.chip-estado-badge.devuelto { background: var(--glass-input-bg) !important; }
+
+
+/* ═══════════════════════════════════════════════════════
+   EQUIPOS — mensajes, asignación, historial, estado
+   ═══════════════════════════════════════════════════════ */
+.eqa-mensaje.exito { background: rgba(34,197,94,0.15) !important; }
+.eqa-mensaje.error { background: rgba(239,68,68,0.15) !important; }
+.eqa-card-asignacion {
+  background: var(--glass-stat-bg) !important;
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  border: 1px solid var(--glass-border) !important;
+}
+.eqa-asig-avatar { background: rgba(59,130,246,0.12) !important; }
+.eqa-hist-toggle { background: rgba(59,130,246,0.12) !important; }
+.eqa-historial { background: rgba(59,130,246,0.06) !important; }
+.eqa-hist-avatar { background: rgba(59,130,246,0.1) !important; }
+.eqa-btn-card.devolver { background: rgba(245,158,11,0.12) !important; color: #d97706 !important; }
+.estado-disponible { background: rgba(34,197,94,0.12) !important; }
+.estado-asignado { background: rgba(245,158,11,0.12) !important; }
+.estado-baja { background: rgba(239,68,68,0.12) !important; }
+
+
+/* ═══════════════════════════════════════════════════════
+   PERSONAL — badges
+   ═══════════════════════════════════════════════════════ */
+.personal-badge-activo { background: rgba(34,197,94,0.12) !important; }
+.personal-badge-inactivo { background: rgba(239,68,68,0.12) !important; }
+
+
+/* ═══════════════════════════════════════════════════════
+   NOTIFICACIONES — item urgente, iconos tipo
+   ═══════════════════════════════════════════════════════ */
+.noti-item.noti-urgente { background: rgba(231,76,60,0.08) !important; }
+.noti-tipo-contrato .noti-item-icono { background: rgba(245,158,11,0.12) !important; }
+.noti-tipo-cumpleanos .noti-item-icono { background: rgba(233,30,99,0.12) !important; }
+.noti-tipo-menu .noti-item-icono { background: rgba(34,197,94,0.12) !important; }
+.noti-tipo-evento .noti-item-icono { background: rgba(33,150,243,0.12) !important; }
+.noti-tipo-falta .noti-item-icono { background: rgba(231,76,60,0.12) !important; }
+
+
+/* ═══════════════════════════════════════════════════════
+   PASSWORD — mensajes
+   ═══════════════════════════════════════════════════════ */
+.cambio-pw-msg.error { background: rgba(239,68,68,0.15) !important; }
+.cambio-pw-msg.exito { background: rgba(34,197,94,0.15) !important; }
+
+
+/* ═══════════════════════════════════════════════════════
+   LOGIN — error
+   ═══════════════════════════════════════════════════════ */
+.login-error-msg { background: rgba(239,68,68,0.1) !important; }
+
+
+/* ═══════════════════════════════════════════════════════
+   GLASS-OFF — desactiva todo efecto vidrio
+   Cuando body tiene .glass-off se restauran fondos sólidos
+   ═══════════════════════════════════════════════════════ */
+body.glass-off .erp-header,
+body.glass-off .sidebar,
+body.glass-off .aside-right-panel,
+body.glass-off .white-card,
+body.glass-off .stat-card,
+body.glass-off .chip-stat,
+body.glass-off .eqa-stat,
+body.glass-off .eq-stat-card,
+body.glass-off .det-input,
+body.glass-off .det-select,
+body.glass-off .chip-busqueda,
+body.glass-off .tickets-search-box,
+body.glass-off .ticket-form input,
+body.glass-off .ticket-form select,
+body.glass-off .ticket-form textarea,
+body.glass-off .filtro-date,
+body.glass-off .asistg-buscador input,
+body.glass-off .det-btn,
+body.glass-off .chip-btn-nueva,
+body.glass-off .chip-btn-crear,
+body.glass-off .chip-btn-asignar,
+body.glass-off .chip-btn-reasignar,
+body.glass-off .chip-btn-devolver,
+body.glass-off .chip-btn-editar,
+body.glass-off .chip-btn-confirmar,
+body.glass-off .chip-btn-eliminar,
+body.glass-off .eqa-btn-nueva,
+body.glass-off .eqa-btn-asignar,
+body.glass-off .eqa-btn-devolver,
+body.glass-off .eq-btn-add,
+body.glass-off .mi-panel-card,
+body.glass-off .doc-gen-card,
+body.glass-off .doc-card,
+body.glass-off .eqa-card,
+body.glass-off .chip-card,
+body.glass-off .lic-card,
+body.glass-off .lic-stat,
+body.glass-off .lic-busqueda,
+body.glass-off .lic-form-panel,
+body.glass-off .lic-card-edit-inline,
+body.glass-off .lic-equipo-row,
+body.glass-off .mnt-stat-card,
+body.glass-off .mnt-tabla-wrap,
+body.glass-off .mnt-busqueda,
+body.glass-off .mnt-modal,
+body.glass-off .mnt-btn-acc,
+body.glass-off .asistg-fila-grupo,
+body.glass-off .chat-panel,
+body.glass-off .chat-ventana,
+body.glass-off .chat-ventana-input,
+body.glass-off .tarjeta-personal,
+body.glass-off .tarjeta-empleado,
+body.glass-off .donut-card,
+body.glass-off .asistg-stat-card,
+body.glass-off .permisos-card,
+body.glass-off .horario-card,
+body.glass-off .detalle-tarjeta,
+body.glass-off .ticket-vigente-card,
+body.glass-off .user-dropdown,
+body.glass-off .chat-window,
+body.glass-off .chat-sidebar,
+body.glass-off .modal-content,
+body.glass-off .modal-overlay > div,
+body.glass-off .permiso-modal-overlay > div,
+body.glass-off .cumple-modal-content,
+body.glass-off .saludos-cumple-card,
+body.glass-off .saludos-detalle,
+body.glass-off .saludo-card,
+body.glass-off .faltante-item,
+body.glass-off .cumple-item,
+body.glass-off .cumple-modal,
+body.glass-off .eq-foto-area,
+body.glass-off .valoracion-content,
+body.glass-off .reapertura-content,
+body.glass-off table,
+body.glass-off thead,
+body.glass-off tbody tr,
+body.glass-off .asistg-tabla th,
+body.glass-off .dashboard-card {
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+body.glass-off .erp-header {
+  background: var(--bg-card, #ffffff) !important;
+  border-bottom: 1px solid var(--border-color, #ddd) !important;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.06);
+}
+
+body.glass-off .sidebar .submenu {
+  background: var(--bg-page, #f8f9fa) !important;
+}
+body.glass-off .sidebar .submenu-link.active {
+  background: var(--active-bg, #e8f0fe) !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+body.glass-off .sidebar .submenu-link:hover {
+  background: var(--bg-hover, #eef1f4) !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+body.glass-off .sidebar {
+  background: var(--bg-card, #ffffff) !important;
+  border-right: 1px solid var(--border-color, #ddd) !important;
+  box-shadow: 2px 0 4px rgba(0,0,0,0.04);
+}
+
+body.glass-off .aside-right-panel {
+  background: var(--bg-card, #ffffff) !important;
+  border-left: 1px solid var(--border-color, #ddd) !important;
+  box-shadow: -2px 0 4px rgba(0,0,0,0.04);
+}
+
+body.glass-off .white-card,
+body.glass-off .mi-panel-card,
+body.glass-off .doc-gen-card,
+body.glass-off .doc-card,
+body.glass-off .eqa-card,
+body.glass-off .chip-card,
+body.glass-off .lic-card,
+body.glass-off .lic-form-panel,
+body.glass-off .lic-card-edit-inline,
+body.glass-off .tarjeta-personal,
+body.glass-off .tarjeta-empleado,
+body.glass-off .donut-card,
+body.glass-off .asistg-stat-card,
+body.glass-off .permisos-card,
+body.glass-off .horario-card,
+body.glass-off .detalle-tarjeta,
+body.glass-off .ticket-vigente-card,
+body.glass-off .mnt-stat-card,
+body.glass-off .mnt-tabla-wrap,
+body.glass-off .mnt-modal,
+body.glass-off .dashboard-card {
+  background: var(--bg-card, #ffffff) !important;
+  border: 1px solid var(--border-color, #ddd);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+}
+
+body.glass-off .stat-card,
+body.glass-off .chip-stat,
+body.glass-off .eqa-stat,
+body.glass-off .eq-stat-card,
+body.glass-off .lic-stat {
+  background: var(--bg-card, #ffffff) !important;
+  border: 1px solid var(--border-color, #ddd) !important;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+}
+
+body.glass-off .det-input,
+body.glass-off .det-select,
+body.glass-off .chip-busqueda,
+body.glass-off .lic-busqueda,
+body.glass-off .lic-form-campo input,
+body.glass-off .lic-equipo-row,
+body.glass-off .tickets-search-box,
+body.glass-off .ticket-form input,
+body.glass-off .ticket-form select,
+body.glass-off .ticket-form textarea,
+body.glass-off .filtro-date,
+body.glass-off .asistg-buscador input {
+  background: var(--bg-input, #fff) !important;
+  border: 1px solid var(--border-color, #ccc) !important;
+}
+
+body.glass-off .user-dropdown {
+  background: var(--bg-card, #ffffff) !important;
+  border: 1px solid var(--border-color, #ddd);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+/* ── Glass-off + Dark mode: diferenciar tarjetas del fondo ── */
+body.dark-mode.glass-off .white-card,
+body.dark-mode.glass-off .mi-panel-card,
+body.dark-mode.glass-off .doc-gen-card,
+body.dark-mode.glass-off .doc-card,
+body.dark-mode.glass-off .eqa-card,
+body.dark-mode.glass-off .chip-card,
+body.dark-mode.glass-off .tarjeta-personal,
+body.dark-mode.glass-off .tarjeta-empleado,
+body.dark-mode.glass-off .donut-card,
+body.dark-mode.glass-off .asistg-stat-card,
+body.dark-mode.glass-off .permisos-card,
+body.dark-mode.glass-off .horario-card,
+body.dark-mode.glass-off .detalle-tarjeta,
+body.dark-mode.glass-off .ticket-vigente-card,
+body.dark-mode.glass-off .dashboard-card {
+  background: var(--bg-card, #1e2640) !important;
+  border: 1px solid var(--border-color, #2e3650) !important;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.25) !important;
+}
+
+body.dark-mode.glass-off .stat-card,
+body.dark-mode.glass-off .chip-stat,
+body.dark-mode.glass-off .eqa-stat,
+body.dark-mode.glass-off .eq-stat-card {
+  background: var(--bg-card, #1e2640) !important;
+  border: 1px solid var(--border-color, #2e3650) !important;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.22) !important;
+}
+
+body.dark-mode.glass-off .erp-header {
+  background: var(--bg-card, #1e2640) !important;
+  border-bottom: 1px solid var(--border-color, #2e3650) !important;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+}
+
+body.dark-mode.glass-off .sidebar {
+  background: var(--bg-card, #1e2640) !important;
+  border-right: 1px solid var(--border-color, #2e3650) !important;
+  box-shadow: 2px 0 8px rgba(0,0,0,0.25);
+}
+
+body.dark-mode.glass-off .aside-right-panel {
+  background: var(--bg-card, #1e2640) !important;
+  border-left: 1px solid var(--border-color, #2e3650) !important;
+  box-shadow: -2px 0 8px rgba(0,0,0,0.25);
+}
+
+body.dark-mode.glass-off .workspace-area {
+  background: var(--bg-page, #0e1017) !important;
+}
+
+body.glass-off .workspace-area {
+  background: var(--bg-page, #f5f7fa) !important;
+}
+
+body.glass-off .chip-tabla-wrap,
+body.glass-off .eq-almc-tabla-wrap,
+body.glass-off .tickets-tabla-wrap {
+  background: var(--bg-card, #ffffff) !important;
+  border: 1px solid var(--border-color, #ddd) !important;
+}
+
+body.glass-off .chip-tabla tbody tr,
+body.glass-off .tickets-tabla tbody tr,
+body.glass-off .eq-almc-tabla tbody tr,
+body.glass-off .horarios-tabla tbody tr,
+body.glass-off .asist-tabla tbody tr,
+body.glass-off .asistg-detalle-tabla tbody tr,
+body.glass-off .det-cuentas-tabla tbody tr,
+body.glass-off .permisos-tabla tbody tr {
+  background: var(--bg-card, #ffffff) !important;
+}
+
+body.glass-off .chip-tabla tbody tr:hover,
+body.glass-off .tickets-tabla tbody tr:hover,
+body.glass-off .eq-almc-tabla tbody tr:hover,
+body.glass-off .horarios-tabla tbody tr:hover,
+body.glass-off .asist-tabla tbody tr:hover,
+body.glass-off .asistg-detalle-tabla tbody tr:hover,
+body.glass-off .det-cuentas-tabla tbody tr:hover,
+body.glass-off .permisos-tabla tbody tr:hover {
+  background: var(--bg-hover, #f0f0f5) !important;
+}
+
+body.glass-off .chip-tabla thead,
+body.glass-off .tickets-tabla thead,
+body.glass-off .eq-almc-tabla thead,
+body.glass-off .horarios-tabla thead,
+body.glass-off .asist-tabla thead,
+body.glass-off .asistg-detalle-tabla thead,
+body.glass-off .det-cuentas-tabla thead,
+body.glass-off .permisos-tabla thead {
+  background: var(--bg-subtle, #f0f0f5) !important;
+}
+
+body.glass-off .dashboard-layout {
+  background-image: none !important;
+  background-color: var(--bg-page, #f0f2f5) !important;
+}
+
+/* ── Glass-off: checkboxes de permisos ── */
+body.glass-off .check-btn {
+  background: var(--bg-input, #f8fafc) !important;
+  border: 2px solid var(--border-color, #cbd5e1) !important;
+  color: var(--border-color, #cbd5e1);
+}
+body.glass-off .check-btn.activo {
+  background: #22c55e !important;
+  border-color: #22c55e !important;
+  color: #fff !important;
+}
+body.glass-off .check-btn.activo:disabled {
+  background: #3b82f6 !important;
+  border-color: #3b82f6 !important;
+  color: #fff !important;
+}
+body.dark-mode.glass-off .check-btn {
+  background: var(--bg-input, #334155) !important;
+  border-color: var(--border-color, #475569) !important;
+  color: #475569;
+}
+body.dark-mode.glass-off .check-btn.activo {
+  background: #22c55e !important;
+  border-color: #22c55e !important;
+  color: #fff !important;
+}
+
+/* ── Glass-off: Asistencias General filas y rows ── */
+body.glass-off .asistg-fila-grupo {
+  background: var(--bg-card, #fff) !important;
+}
+body.glass-off .asistg-header-row {
+  background: var(--bg-subtle, #f5f7fa) !important;
+}
+body.glass-off .asistg-emp-horario {
+  background: #e8f5e9 !important;
+}
+body.glass-off .fila-emp-asistio { background: #f0faf3 !important; }
+body.glass-off .fila-emp-tardanza { background: #fffaf0 !important; }
+body.glass-off .fila-emp-falta { background: #fef5f5 !important; }
+body.glass-off .fila-descanso { background: #e8edf8 !important; }
+body.glass-off .fila-falta { background: #fce4e4 !important; }
+body.glass-off .fila-tardanza { background: #fff3e0 !important; }
+body.glass-off .fila-pendiente { background: #f5f5f5 !important; }
+body.glass-off .fila-asistio { background: #f0faf3 !important; }
+
+/* ── Glass-off: Chat ── */
+body.glass-off .chat-panel,
+body.glass-off .chat-ventana,
+body.glass-off .chat-modal-crear-grupo {
+  background: var(--bg-card, #fff) !important;
+}
+body.glass-off .chat-ventana-body {
+  background: var(--bg-page, #f8fafc) !important;
+}
+body.glass-off .chat-ventana-input {
+  background: var(--bg-card, #fff) !important;
+}
+
+/* ── Glass-off: Licencias ── */
+body.glass-off .lic-card,
+body.glass-off .lic-form-panel,
+body.glass-off .lic-card-edit-inline {
+  background: var(--bg-card, #fff) !important;
+}
+body.glass-off .lic-stat {
+  background: var(--bg-card, #fff) !important;
+}
+body.glass-off .lic-busqueda,
+body.glass-off .lic-form-campo input {
+  background: var(--bg-input, #f8fafc) !important;
+}
+body.glass-off .lic-equipo-row {
+  background: var(--bg-hover, #f1f5f9) !important;
+}
+
+/* ── Glass-off + Dark mode: TODAS las áreas oscuras ── */
+body.dark-mode.glass-off .lic-card,
+body.dark-mode.glass-off .lic-form-panel,
+body.dark-mode.glass-off .lic-card-edit-inline {
+  background: var(--bg-card, #1e2640) !important;
+  border: 1px solid var(--border-color, #2e3650) !important;
+}
+body.dark-mode.glass-off .lic-stat {
+  background: var(--bg-card, #1e2640) !important;
+  border: 1px solid var(--border-color, #2e3650) !important;
+}
+body.dark-mode.glass-off .lic-busqueda,
+body.dark-mode.glass-off .lic-form-campo input {
+  background: var(--bg-input, #1a1f35) !important;
+  border-color: var(--border-color, #2e3650) !important;
+}
+body.dark-mode.glass-off .lic-equipo-row {
+  background: var(--bg-subtle, #1a1f35) !important;
+}
+
+body.dark-mode.glass-off .asistg-tabla-wrapper {
+  background: var(--bg-card, #1e2640) !important;
+  border: 1px solid var(--border-color, #2e3650) !important;
+}
+body.dark-mode.glass-off .asistg-fila-grupo {
+  background: var(--bg-card, #1e2640) !important;
+}
+body.dark-mode.glass-off .asistg-header-row {
+  background: var(--bg-subtle, #151a2e) !important;
+}
+body.dark-mode.glass-off .asistg-emp-horario {
+  background: #1b3a2a !important;
+  color: #5cae7b;
+}
+body.dark-mode.glass-off .fila-emp-asistio { background: #0d2818 !important; }
+body.dark-mode.glass-off .fila-emp-tardanza { background: #2a1f0a !important; }
+body.dark-mode.glass-off .fila-emp-falta { background: #2a0f0f !important; }
+body.dark-mode.glass-off .fila-descanso { background: #1a1d3a !important; }
+body.dark-mode.glass-off .fila-falta { background: #2a0f0f !important; }
+body.dark-mode.glass-off .fila-tardanza { background: #2a1f0a !important; }
+body.dark-mode.glass-off .fila-pendiente { background: #1a1d2a !important; }
+body.dark-mode.glass-off .fila-asistio { background: #0d2818 !important; }
+
+body.dark-mode.glass-off .chat-panel,
+body.dark-mode.glass-off .chat-ventana,
+body.dark-mode.glass-off .chat-modal-crear-grupo {
+  background: var(--bg-card, #1e2640) !important;
+  border: 1px solid var(--border-color, #2e3650) !important;
+}
+body.dark-mode.glass-off .chat-ventana-body {
+  background: var(--bg-page, #0e1017) !important;
+}
+body.dark-mode.glass-off .chat-ventana-input {
+  background: var(--bg-card, #1e2640) !important;
+}
+
+body.dark-mode.glass-off .chip-tabla-wrap,
+body.dark-mode.glass-off .eq-almc-tabla-wrap,
+body.dark-mode.glass-off .tickets-tabla-wrap {
+  background: var(--bg-card, #1e2640) !important;
+  border: 1px solid var(--border-color, #2e3650) !important;
+}
+
+body.dark-mode.glass-off .chip-tabla tbody tr,
+body.dark-mode.glass-off .tickets-tabla tbody tr,
+body.dark-mode.glass-off .eq-almc-tabla tbody tr,
+body.dark-mode.glass-off .horarios-tabla tbody tr,
+body.dark-mode.glass-off .asist-tabla tbody tr,
+body.dark-mode.glass-off .asistg-detalle-tabla tbody tr,
+body.dark-mode.glass-off .det-cuentas-tabla tbody tr,
+body.dark-mode.glass-off .permisos-tabla tbody tr {
+  background: var(--bg-card, #1e2640) !important;
+}
+
+body.dark-mode.glass-off .chip-tabla tbody tr:hover,
+body.dark-mode.glass-off .tickets-tabla tbody tr:hover,
+body.dark-mode.glass-off .eq-almc-tabla tbody tr:hover,
+body.dark-mode.glass-off .horarios-tabla tbody tr:hover,
+body.dark-mode.glass-off .asist-tabla tbody tr:hover,
+body.dark-mode.glass-off .asistg-detalle-tabla tbody tr:hover,
+body.dark-mode.glass-off .det-cuentas-tabla tbody tr:hover,
+body.dark-mode.glass-off .permisos-tabla tbody tr:hover,
+body.dark-mode.glass-off .mnt-tabla tbody tr:hover {
+  background: var(--bg-hover, #252d48) !important;
+}
+
+body.dark-mode.glass-off .chip-tabla thead,
+body.dark-mode.glass-off .tickets-tabla thead,
+body.dark-mode.glass-off .eq-almc-tabla thead,
+body.dark-mode.glass-off .horarios-tabla thead,
+body.dark-mode.glass-off .asist-tabla thead,
+body.dark-mode.glass-off .asistg-detalle-tabla thead,
+body.dark-mode.glass-off .det-cuentas-tabla thead,
+body.dark-mode.glass-off .permisos-tabla thead,
+body.dark-mode.glass-off .mnt-tabla thead {
+  background: var(--bg-subtle, #151a2e) !important;
+}
+
+body.dark-mode.glass-off .det-input,
+body.dark-mode.glass-off .det-select,
+body.dark-mode.glass-off .chip-busqueda,
+body.dark-mode.glass-off .lic-busqueda,
+body.dark-mode.glass-off .mnt-busqueda,
+body.dark-mode.glass-off .mnt-filtro-group select,
+body.dark-mode.glass-off .mnt-campo input,
+body.dark-mode.glass-off .mnt-campo select,
+body.dark-mode.glass-off .mnt-campo textarea,
+body.dark-mode.glass-off .tickets-search-box,
+body.dark-mode.glass-off .ticket-form input,
+body.dark-mode.glass-off .ticket-form select,
+body.dark-mode.glass-off .ticket-form textarea,
+body.dark-mode.glass-off .filtro-date,
+body.dark-mode.glass-off .asistg-buscador input {
+  background: var(--bg-input, #1a1f35) !important;
+  border: 1px solid var(--border-color, #2e3650) !important;
+  color: var(--text-primary, #e2e8f0) !important;
+}
+
+body.dark-mode.glass-off .asistg-filtros-barra {
+  background: var(--bg-card, #1e2640) !important;
+  border: 1px solid var(--border-color, #2e3650) !important;
+}

@@ -1,0 +1,214 @@
+/* ═══════════════════════════════════════════════════════
+   LICENCIAS — Módulo de control de licencias de software
+   ═══════════════════════════════════════════════════════ */
+
+.lic-container { max-width: 960px; margin: 0 auto; padding: 0 8px; }
+.lic-titulo { font-size: 1.35rem; font-weight: 800; color: var(--texto-primario, #1e293b); display: flex; align-items: center; gap: 10px; margin-bottom: 2px; }
+.lic-subtitulo { font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--texto-secundario, #64748b); margin-bottom: 18px; font-weight: 600; }
+.lic-loading { text-align: center; color: var(--texto-secundario, #64748b); padding: 40px; font-size: 0.95rem; }
+
+/* Mensaje */
+.lic-mensaje { padding: 10px 16px; border-radius: 8px; font-size: 0.85rem; font-weight: 600; text-align: center; animation: licFadeIn 0.3s; }
+.lic-mensaje.exito { background: #dcfce7; color: #15803d; }
+.lic-mensaje.error { background: #fee2e2; color: #b91c1c; }
+@keyframes licFadeIn { from { opacity: 0; transform: translateY(-6px); } to { opacity: 1; transform: translateY(0); } }
+
+/* Stats */
+.lic-stats { display: flex; gap: 10px; margin-bottom: 16px; flex-wrap: wrap; }
+.lic-stat {
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    padding: 10px 18px; border-radius: 10px; min-width: 80px;
+    background: var(--fondo-card, #fff); border: 1.5px solid var(--borde, #e2e8f0);
+    cursor: default; transition: all 0.2s;
+}
+.lic-stat-num { font-size: 1.3rem; font-weight: 800; color: var(--texto-primario, #1e293b); }
+.lic-stat-label { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.04em; color: var(--texto-secundario, #64748b); font-weight: 600; }
+.lic-stat.total { border-color: #3b82f6; }
+.lic-stat.total .lic-stat-num { color: #3b82f6; }
+.lic-stat.asignado { border-color: #f59e0b; }
+.lic-stat.asignado .lic-stat-num { color: #f59e0b; }
+.lic-stat.disponible { border-color: #22c55e; }
+.lic-stat.disponible .lic-stat-num { color: #22c55e; }
+
+/* Toolbar */
+.lic-toolbar { display: flex; gap: 10px; margin-bottom: 16px; flex-wrap: wrap; align-items: center; }
+.lic-busqueda {
+    display: flex; align-items: center; gap: 8px; flex: 1; min-width: 200px;
+    background: var(--fondo-card, #fff); border: 1.5px solid var(--borde, #e2e8f0);
+    border-radius: 10px; padding: 8px 14px; transition: border-color 0.2s;
+}
+.lic-busqueda:focus-within { border-color: var(--color-primario, #3b82f6); }
+.lic-busqueda input { border: none; outline: none; background: transparent; flex: 1; font-size: 0.88rem; color: var(--texto-primario, #1e293b); }
+.lic-btn-crear {
+    display: flex; align-items: center; gap: 6px; padding: 9px 18px;
+    background: var(--color-primario, #3b82f6); color: #fff;
+    border: none; border-radius: 10px; font-size: 0.85rem; font-weight: 700;
+    cursor: pointer; transition: background 0.2s, transform 0.15s;
+}
+.lic-btn-crear:hover { filter: brightness(1.1); transform: translateY(-1px); }
+
+/* Form panel */
+.lic-form-panel {
+    background: var(--fondo-card, #fff); border: 1.5px solid var(--color-primario, #3b82f6);
+    border-radius: 12px; padding: 20px; margin-bottom: 18px; animation: licFadeIn 0.3s;
+}
+.lic-form-titulo { font-size: 0.95rem; font-weight: 700; color: var(--color-primario, #3b82f6); margin-bottom: 14px; }
+.lic-form-grid { display: grid; grid-template-columns: 2fr 2fr 1fr; gap: 12px; margin-bottom: 14px; }
+.lic-form-campo label { display: block; font-size: 0.75rem; font-weight: 700; color: var(--texto-secundario, #64748b); text-transform: uppercase; margin-bottom: 4px; }
+.lic-form-campo input {
+    width: 100%; padding: 8px 12px; border: 1.5px solid var(--borde, #e2e8f0); border-radius: 8px;
+    font-size: 0.88rem; color: var(--texto-primario, #1e293b); background: var(--fondo-input, #f8fafc);
+    transition: border-color 0.2s; box-sizing: border-box;
+}
+.lic-form-campo input:focus { outline: none; border-color: var(--color-primario, #3b82f6); }
+.lic-form-btns { display: flex; gap: 10px; }
+
+.lic-btn {
+    display: flex; align-items: center; gap: 5px; padding: 7px 16px;
+    border: none; border-radius: 8px; font-size: 0.82rem; font-weight: 700;
+    cursor: pointer; transition: all 0.2s;
+}
+.lic-btn.guardar { background: #22c55e; color: #fff; }
+.lic-btn.guardar:hover { background: #16a34a; }
+.lic-btn.cancelar { background: #94a3b8; color: #fff; }
+.lic-btn.cancelar:hover { background: #64748b; }
+.lic-btn.editar { background: #3b82f6; color: #fff; }
+.lic-btn.editar:hover { background: #2563eb; }
+.lic-btn.eliminar { background: #ef4444; color: #fff; }
+.lic-btn.eliminar:hover { background: #dc2626; }
+
+/* Grid de tarjetas */
+.lic-grid { display: flex; flex-direction: column; gap: 10px; }
+.lic-vacio { text-align: center; color: var(--texto-secundario, #64748b); padding: 30px; font-size: 0.9rem; }
+
+/* Card */
+.lic-card {
+    background: var(--fondo-card, #fff); border: 1.5px solid var(--borde, #e2e8f0);
+    border-radius: 12px; overflow: hidden; transition: all 0.2s;
+}
+.lic-card:hover { border-color: var(--color-primario, #3b82f6); box-shadow: 0 2px 12px rgba(0,0,0,0.06); }
+.lic-card.expandida { border-color: var(--color-primario, #3b82f6); }
+
+.lic-card-header {
+    display: flex; align-items: center; gap: 12px; padding: 14px 16px;
+    cursor: pointer; user-select: none;
+}
+.lic-card-icono {
+    width: 38px; height: 38px; border-radius: 10px;
+    background: color-mix(in srgb, var(--color-primario, #3b82f6) 12%, transparent);
+    color: var(--color-primario, #3b82f6);
+    display: flex; align-items: center; justify-content: center; font-size: 1rem; flex-shrink: 0;
+}
+.lic-card-info { flex: 1; display: flex; flex-direction: column; gap: 2px; overflow: hidden; }
+.lic-card-nombre { font-size: 0.92rem; font-weight: 700; color: var(--texto-primario, #1e293b); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-family: 'Courier New', monospace; letter-spacing: 0.02em; }
+.lic-card-serial { font-size: 0.75rem; color: var(--texto-secundario, #64748b); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.lic-card-conteo { text-align: center; flex-shrink: 0; }
+.lic-card-disp { font-size: 1.1rem; font-weight: 800; display: block; }
+.lic-card-disp-label { font-size: 0.65rem; text-transform: uppercase; color: var(--texto-secundario, #64748b); font-weight: 600; }
+.lic-card-flecha { color: var(--texto-secundario, #64748b); font-size: 0.75rem; flex-shrink: 0; }
+
+/* Progress bar */
+.lic-barra-wrap { height: 4px; background: var(--borde, #e2e8f0); }
+.lic-barra { height: 100%; border-radius: 0 0 4px 4px; transition: width 0.4s ease; min-width: 0; }
+
+/* Detalle expandido */
+.lic-card-detalle { padding: 14px 16px; border-top: 1px solid var(--borde, #e2e8f0); animation: licFadeIn 0.2s; }
+.lic-detalle-nums { display: flex; gap: 16px; margin-bottom: 14px; }
+.lic-detalle-item { display: flex; flex-direction: column; align-items: center; gap: 2px; }
+.lic-detalle-item span:last-child { font-size: 0.7rem; text-transform: uppercase; color: var(--texto-secundario, #64748b); font-weight: 600; }
+.lic-detalle-num { font-size: 1.2rem; font-weight: 800; }
+.lic-detalle-num.total { color: #3b82f6; }
+.lic-detalle-num.asignado { color: #f59e0b; }
+.lic-detalle-num.disponible { color: #22c55e; }
+
+/* Equipos asignados */
+.lic-equipos-lista { margin-bottom: 12px; }
+.lic-equipos-titulo { font-size: 0.78rem; font-weight: 700; color: var(--texto-secundario, #64748b); text-transform: uppercase; margin-bottom: 8px; display: block; }
+.lic-equipo-row {
+    display: flex; align-items: center; gap: 10px; padding: 6px 10px;
+    background: var(--fondo-hover, #f1f5f9); border-radius: 8px; margin-bottom: 4px;
+}
+.lic-equipo-icono { font-size: 0.85rem; color: var(--color-primario, #3b82f6); width: 20px; text-align: center; }
+.lic-equipo-tipo { font-size: 0.82rem; font-weight: 700; color: var(--texto-primario, #1e293b); min-width: 80px; }
+.lic-equipo-codigo {
+    font-size: 0.72rem; font-weight: 700; color: #6366f1; background: rgba(99,102,241,0.1);
+    padding: 2px 8px; border-radius: 6px; font-family: 'Courier New', monospace; letter-spacing: 0.02em;
+}
+.lic-equipo-serie { font-size: 0.8rem; color: var(--texto-secundario, #64748b); font-family: 'Courier New', monospace; flex: 1; }
+.lic-btn-desasignar {
+    width: 22px; height: 22px; border-radius: 50%; border: none;
+    background: #fee2e2; color: #ef4444; font-size: 0.65rem;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer; transition: all 0.2s; flex-shrink: 0;
+}
+.lic-btn-desasignar:hover { background: #ef4444; color: #fff; }
+.lic-sin-equipos { font-size: 0.82rem; color: var(--texto-secundario, #94a3b8); font-style: italic; margin-bottom: 12px; }
+
+/* Acciones en detalle */
+.lic-card-acciones { display: flex; gap: 8px; padding-top: 10px; border-top: 1px solid var(--borde, #e2e8f0); }
+
+/* Inline editing within card */
+.lic-card-edit-inline {
+    padding: 14px 16px;
+    animation: licFadeIn 0.2s;
+    border-left: 3px solid var(--color-primario, #3b82f6);
+}
+.lic-edit-inline-grid {
+    display: grid; grid-template-columns: 2fr 2fr 1fr; gap: 10px; margin-bottom: 12px;
+}
+
+@media (max-width: 768px) {
+    .lic-edit-inline-grid { grid-template-columns: 1fr; }
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .lic-form-grid { grid-template-columns: 1fr; }
+    .lic-stats { gap: 6px; }
+    .lic-stat { min-width: 60px; padding: 8px 12px; }
+    .lic-card-header { padding: 10px 12px; gap: 8px; }
+    .lic-card-serial { font-size: 0.68rem; }
+}
+
+@media (max-width: 480px) {
+    .lic-toolbar { flex-direction: column; }
+    .lic-btn-crear { width: 100%; justify-content: center; }
+}
+
+/* ═══ Dark Mode ═══ */
+body.dark-mode .lic-titulo { color: var(--text-primary); }
+body.dark-mode .lic-subtitulo { color: var(--text-secondary); }
+body.dark-mode .lic-mensaje.exito { background: rgba(34,197,94,0.15); color: #4ade80; }
+body.dark-mode .lic-mensaje.error { background: rgba(239,68,68,0.15); color: #f87171; }
+body.dark-mode .lic-stat { background: var(--bg-card); border-color: var(--border-color); }
+body.dark-mode .lic-stat-num { color: var(--text-primary); }
+body.dark-mode .lic-stat-label { color: var(--text-secondary); }
+body.dark-mode .lic-stat.total .lic-stat-num { color: #60a5fa; }
+body.dark-mode .lic-stat.asignado .lic-stat-num { color: #fbbf24; }
+body.dark-mode .lic-stat.disponible .lic-stat-num { color: #4ade80; }
+body.dark-mode .lic-busqueda { background: var(--bg-card); border-color: var(--border-color); }
+body.dark-mode .lic-busqueda input { color: var(--text-primary); }
+body.dark-mode .lic-form-panel { background: var(--bg-card); border-color: var(--primary-color); }
+body.dark-mode .lic-form-titulo { color: var(--active-color); }
+body.dark-mode .lic-form-campo label { color: var(--text-secondary); }
+body.dark-mode .lic-form-campo input { background: var(--bg-subtle); border-color: var(--border-color); color: var(--text-primary); }
+body.dark-mode .lic-card { background: var(--bg-card); border-color: var(--border-color); }
+body.dark-mode .lic-card:hover { border-color: var(--primary-color); }
+body.dark-mode .lic-card-icono { background: rgba(96,165,250,0.12); color: var(--active-color); }
+body.dark-mode .lic-card-nombre { color: var(--text-primary); }
+body.dark-mode .lic-card-serial { color: var(--text-secondary); }
+body.dark-mode .lic-card-disp-label { color: var(--text-secondary); }
+body.dark-mode .lic-card-flecha { color: var(--text-secondary); }
+body.dark-mode .lic-barra-wrap { background: var(--border-color); }
+body.dark-mode .lic-card-detalle { border-color: var(--border-color); }
+body.dark-mode .lic-detalle-item span:last-child { color: var(--text-secondary); }
+body.dark-mode .lic-equipo-row { background: var(--bg-subtle); }
+body.dark-mode .lic-equipo-tipo { color: var(--text-primary); }
+body.dark-mode .lic-equipo-codigo { background: rgba(129,140,248,0.15); color: #a5b4fc; }
+body.dark-mode .lic-equipo-serie { color: var(--text-secondary); }
+body.dark-mode .lic-card-acciones { border-color: var(--border-color); }
+body.dark-mode .lic-card-edit-inline { border-left-color: var(--active-color); }
+body.dark-mode .lic-sin-equipos { color: var(--text-secondary); }
+body.dark-mode .lic-equipos-titulo { color: var(--text-secondary); }
+body.dark-mode .lic-vacio { color: var(--text-secondary); }
+body.dark-mode .lic-loading { color: var(--text-secondary); }

@@ -1,0 +1,71 @@
+// auth.js
+// Responsabilidad: Gestión del token JWT y configuración de headers HTTP.
+// Se usa en todos los fetch() que necesitan autenticación.
+
+// URL base de la API — dinámica para acceso LAN
+// window.location.origin incluye protocolo + host + puerto (ej: http://intraneteq:3000)
+// En dev (Vite :3000) el proxy de Vite reenvía /api/ → backend:4000
+// En producción (Nginx :80) /api/ → backend:4000
+function getApiUrl() {
+  if (typeof window !== 'undefined') {
+    const host = window.location.hostname;
+    if (host !== 'localhost' && host !== '127.0.0.1') {
+      return window.location.origin + '/api';
+    }
+  }
+  return import.meta.env.VITE_API_URL || 'http://localhost:4000';
+}
+
+// URL del chat para REST — dinámica para acceso LAN
+function getChatUrl() {
+  if (typeof window !== 'undefined') {
+    const host = window.location.hostname;
+    if (host !== 'localhost' && host !== '127.0.0.1') {
+      return window.location.origin + '/chat';
+    }
+  }
+  return import.meta.env.VITE_CHAT_URL || 'http://localhost:4001';
+}
+
+// URL del chat para Socket.IO
+function getChatSocketUrl() {
+  if (typeof window !== 'undefined') {
+    const host = window.location.hostname;
+    if (host !== 'localhost' && host !== '127.0.0.1') {
+      return window.location.origin;
+    }
+  }
+  return import.meta.env.VITE_CHAT_URL || 'http://localhost:4001';
+}
+
+const API_URL = getApiUrl();
+const CHAT_URL = getChatUrl();
+const CHAT_SOCKET_URL = getChatSocketUrl();
+
+// Obtener el token del localStorage
+function obtenerToken() {
+  try {
+    const session = JSON.parse(localStorage.getItem('session'));
+    return session?.access_token ?? null;
+  } catch (_) {
+    localStorage.removeItem('session');
+    return null;
+  }
+}
+
+// Headers con el token para peticiones JSON
+function headersConToken() {
+  return {
+    'Content-Type': 'application/json',
+    'Authorization': `Bearer ${obtenerToken()}`,
+  };
+}
+
+// Headers solo con Authorization (para FormData, sin Content-Type)
+function headersAuth() {
+  return {
+    'Authorization': `Bearer ${obtenerToken()}`,
+  };
+}
+
+export { obtenerToken, headersConToken, headersAuth, API_URL, CHAT_URL, CHAT_SOCKET_URL };

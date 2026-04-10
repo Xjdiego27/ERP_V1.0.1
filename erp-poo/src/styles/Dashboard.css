@@ -1,0 +1,212 @@
+html, body {
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+    height: 100%;
+}
+
+.dashboard-layout {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    max-width: 100vw;
+    height: 100vh;
+    overflow: hidden;
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    background-image: url('/oficinas.webp');
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
+}
+
+.erp-header {
+    flex-shrink: 0;
+    width: 100%;
+    z-index: 100;
+}
+
+.dashboard-body {
+    display: flex;
+    flex-direction: row;
+    flex-grow: 1;
+    min-height: 0;
+    overflow: hidden;
+}
+
+.workspace-area {
+    flex-grow: 1;
+    overflow-y: auto;
+    overflow-x: auto;
+    padding: 20px;
+    min-width: 0;
+    position: relative;
+    background: var(--bg-page, #f5f7fa);
+    transition: background-color 0.3s;
+}
+
+.toggle-panel-btn {
+    position: absolute;
+    right: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    background-color: var(--accent-btn, #007bff);
+    color: white;
+    border: none;
+    padding: 10px 5px;
+    border-radius: 10px 0 0 10px;
+    cursor: pointer;
+    z-index: 10;
+}
+
+.toggle-panel-btn:hover {
+    background-color: var(--accent-btn-hover, #0056b3);
+}
+
+@media (max-width: 768px) {
+    .dashboard-body {
+        position: relative;
+    }
+
+    .sidebar {
+        position: fixed;
+        top: 54px;
+        left: 0;
+        height: calc(100vh - 54px);
+        z-index: 90;
+        box-shadow: 4px 0 20px rgba(0,0,0,0.15);
+    }
+
+    .sidebar.collapsed {
+        width: 0;
+        overflow: hidden;
+        border: none;
+        box-shadow: none;
+    }
+
+    .sidebar.open {
+        width: 240px;
+    }
+
+    .sidebar-overlay {
+        display: block;
+        position: fixed;
+        top: 54px;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0,0,0,0.35);
+        z-index: 85;
+    }
+
+    .workspace-area {
+        padding: 12px;
+        width: 100%;
+    }
+
+    .toggle-panel-btn {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: fixed;
+        right: 0;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 30px;
+        height: 48px;
+        border-radius: 10px 0 0 10px;
+        font-size: 14px;
+        z-index: 88;
+        box-shadow: -2px 0 8px rgba(0,0,0,0.15);
+    }
+}
+
+/* Ocultar overlay en desktop */
+.sidebar-overlay {
+    display: none;
+}
+
+/* ═══ MODO LECTURA (rol SUPERVISOR) — deshabilita botones y selects CRUD ═══ */
+.modo-lectura .personal-btn-nuevo,
+.modo-lectura .det-btn-agregar-contacto,
+.modo-lectura .det-btn-nuevo,
+.modo-lectura .det-btn-editar,
+.modo-lectura .det-btn-guardar,
+.modo-lectura .det-btn-quitar,
+.modo-lectura .det-btn-desactivar,
+.modo-lectura .det-btn-reactivar,
+.modo-lectura .det-btn-justificar,
+.modo-lectura .horarios-btn-crear,
+.modo-lectura .horario-btn-edit,
+.modo-lectura .modal-btn-guardar,
+.modo-lectura .eq-btn-add,
+.modo-lectura .eq-btn-crear,
+.modo-lectura .eq-btn-edit,
+.modo-lectura .eq-btn-del,
+.modo-lectura .eqa-btn-nueva,
+.modo-lectura .eqa-btn-asignar,
+.modo-lectura .eqa-btn-devolver,
+.modo-lectura .masivo-btn,
+.modo-lectura .seccion-btn-eliminar,
+.modo-lectura .seccion-btn-subir,
+.modo-lectura .doc-btn-eliminar,
+.modo-lectura .btn-guardar,
+.modo-lectura .btn-todos,
+.modo-lectura .btn-ninguno,
+.modo-lectura .btn-cerrar-ticket,
+.modo-lectura .btn-estado-cambio,
+.modo-lectura .chip-btn-nueva,
+.modo-lectura .chip-btn-crear,
+.modo-lectura .chip-btn-asignar,
+.modo-lectura .chip-btn-reasignar,
+.modo-lectura .chip-btn-devolver,
+.modo-lectura .chip-btn-editar,
+.modo-lectura .chip-btn-eliminar,
+.modo-lectura .chip-btn-confirmar {
+    pointer-events: none;
+    opacity: 0.35;
+    cursor: not-allowed;
+    filter: grayscale(40%);
+}
+/* Deshabilitar TODOS los selects, inputs editables y textareas dentro de módulos */
+.modo-lectura select,
+.modo-lectura textarea,
+.modo-lectura input[type="text"],
+.modo-lectura input[type="number"],
+.modo-lectura input[type="date"],
+.modo-lectura input[type="file"],
+.modo-lectura input[type="email"],
+.modo-lectura input[type="tel"],
+.modo-lectura .foto-upload,
+.modo-lectura .check-btn,
+.modo-lectura .rol-select,
+.modo-lectura .detalle-asignar select {
+    pointer-events: none;
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+/* El SUPERVISOR sí puede crear tickets (IngresarTicket) */
+.modo-lectura .ticket-form select,
+.modo-lectura .ticket-form textarea,
+.modo-lectura .ticket-form input[type="text"],
+.modo-lectura .ticket-form .foto-upload,
+.modo-lectura .btn-crear-ticket {
+    pointer-events: auto;
+    opacity: 1;
+    cursor: pointer;
+    filter: none;
+}
+/* Permitir el buscador/filtros (solo lectura pero navegación) */
+.modo-lectura .tickets-search-box input,
+.modo-lectura .permisos-buscador input,
+.modo-lectura .filtro-activo-badge,
+.modo-lectura .asistg-buscador input,
+.modo-lectura .chip-busqueda input,
+.modo-lectura .chip-filtro-select,
+.modo-lectura .chip-stat,
+.modo-lectura .stat-card {
+    pointer-events: auto;
+    opacity: 1;
+    cursor: pointer;
+}

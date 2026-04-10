@@ -1,0 +1,621 @@
+import { useState, useEffect, useRef } from 'react';
+import { API_URL, headersConToken, headersAuth } from '../auth';
+import IconoFa from '../components/IconoFa';
+import PageContent from '../components/PageContent';
+import { faTicket, faCamera, faPaperPlane, faCheckCircle, faCircle, faSpinner, faClockRotateLeft, faBolt } from '@fortawesome/free-solid-svg-icons';
+import '../styles/IngresarTicket.css';
+
+var PRIORIDADES = [
+    { valor: 'BAJA', color: '#16a34a' },
+    { valor: 'MEDIA', color: '#d97706' },
+    { valor: 'ALTA', color: '#ea580c' },
+    { valor: 'URGENTE', color: '#dc2626' },
+];
+
+var ESTADOS_FLUJO = ['ABIERTO', 'ASIGNADO', 'RESUELTO', 'CERRADO'];
+var ETIQUETAS_FLUJO = ['SIN ASIGNAR', 'ASIGNADO', 'EN PROGRESO', 'CERRADO'];
+
+// IDs de subcategorías SAP (de la BD)
+var SUB_SOCIO = 4;   // CREAR SOCIO DE NEGOCIO
+var SUB_ARTICULO = 5; // CREAR ARTICULO
+var SUB_SERVICIO = 6; // CREAR SERVICIO
+
+export default function IngresarTicket() {
+    var [categorias, setCategorias] = useState([]);
+    var [subcategorias, setSubcategorias] = useState([]);
+    var [form, setForm] = useState({
+        asunto: '',
+        id_categoria: '',
+        id_subcategoria: '',
+        prioridad: 'MEDIA',
+        descripcion: '',
+    });
+    var [foto, setFoto] = useState(null);
+    var [fotoPreview, setFotoPreview] = useState(null);
+    var [enviando, setEnviando] = useState(false);
+    var [mensaje, setMensaje] = useState('');
+    var [exito, setExito] = useState(false);
+    var [ticketCreado, setTicketCreado] = useState(null);
+    var [misTickets, setMisTickets] = useState([]);
+    var [tabTickets, setTabTickets] = useState('atencion');
+    var fotoInput = useRef(null);
+
+    // SAP catalogs
+    var [sapCatalogos, setSapCatalogos] = useState(null);
+    var [sapItems, setSapItems] = useState([{}]);
+
+    // Cargar catálogos y tickets del usuario
+    useEffect(function () {
+        // Categorías y subcategorías son independientes → Promise.all
+        Promise.all([
+            fetch(API_URL + '/tickets/categorias', { headers: headersConToken() }).then(function (r) { return r.json(); }),
+            fetch(API_URL + '/tickets/subcategorias', { headers: headersConToken() }).then(function (r) { return r.json(); }),
+        ]).then(function (res) {
+            setCategorias(res[0]);
+            setSubcategorias(res[1]);
+        }).catch(function () {});
+
+        cargarMisTickets();
+
+        // Polling cada 3s para detectar cambios (valoración, estado, mensajes)
+        var intervalo = setInterval(function () {
+            cargarMisTickets();
+        }, 3000);
+        return function () { clearInterval(intervalo); };
+    }, []);
+
+    // Detectar si la categoría seleccionada es SAP
+    var categoriaSAP = categorias.find(function (c) { return String(c.id) === String(form.id_categoria); });
+    var esSAP = categoriaSAP && categoriaSAP.nombre.toUpperCase() === 'SAP';
+
+    // Cargar catálogos SAP cuando se selecciona SAP
+    useEffect(function () {
+        if (esSAP && !sapCatalogos) {
+            fetch(API_URL + '/tickets/sap/catalogos', { headers: headersConToken() })
+                .then(function (r) { return r.json(); })
+                .then(function (data) { setSapCatalogos(data); });
+        }
+    }, [esSAP]);
+
+    function cargarMisTickets() {
+        fetch(API_URL + '/tickets', { headers: headersConToken() })
+            .then(function (r) {
+                if (r.status === 401) { localStorage.removeItem('session'); window.location.href = '/'; return []; }
+                return r.json();
+            })
+            .then(function (data) { setMisTickets(Array.isArray(data) ? data : []); });
+    }
+
+    function handleChange(campo, valor) {
+        setForm(function (prev) {
+            var nuevo = Object.assign({}, prev, { [campo]: valor });
+            if (campo === 'id_categoria') {
+                nuevo.id_subcategoria = '';
+                setSapItems([{}]);
+            }
+            if (campo === 'id_subcategoria') {
+                setSapItems([{}]);
+            }
+            return nuevo;
+        });
+    }
+
+    function handleSapChange(index, campo, valor) {
+        setSapItems(function (prev) {
+            return prev.map(function (item, i) {
+                if (i !== index) return item;
+                return Object.assign({}, item, { [campo]: valor });
+            });
+        });
+    }
+
+    function agregarSapItem() {
+        setSapItems(function (prev) { return prev.concat([{}]); });
+    }
+
+    function quitarSapItem(index) {
+        setSapItems(function (prev) { return prev.filter(function (_, i) { return i !== index; }); });
+    }
+
+    function handleFoto(e) {
+        var archivo = e.target.files[0];
+        if (archivo) {
+            if (fotoPreview) URL.revokeObjectURL(fotoPreview);
+            setFoto(archivo);
+            setFotoPreview(URL.createObjectURL(archivo));
+        }
+    }
+
+    // Subcategorías filtradas por categoría seleccionada
+    var subsFiltradas = form.id_categoria
+        ? subcategorias.filter(function (s) { return String(s.id_categoria) === String(form.id_categoria); })
+        : [];
+
+    // Subfamilias filtradas por familia seleccionada (para SAP artículos) — ya no global, se calcula por item
+    // var subfsFiltradas = ... (movido dentro del render)
+
+    // Determinar tipo SAP por subcategoría
+    var subId = parseInt(form.id_subcategoria);
+
+    async function handleSubmit(e) {
+        e.preventDefault();
+        if (!form.asunto.trim()) { setMensaje('El asunto es obligatorio'); return; }
+        if (!form.id_categoria) { setMensaje('Selecciona una categoría'); return; }
+
+        setEnviando(true);
+        setMensaje('');
+        try {
+            var formData = new FormData();
+            formData.append('asunto', form.asunto);
+            formData.append('id_categoria', form.id_categoria);
+            if (form.id_subcategoria) formData.append('id_subcategoria', form.id_subcategoria);
+            formData.append('prioridad', form.prioridad);
+            if (form.descripcion) formData.append('descripcion', form.descripcion);
+            if (!esSAP && foto) formData.append('foto', foto);
+
+            var resp = await fetch(API_URL + '/tickets', {
+                method: 'POST',
+                headers: headersAuth(),
+                body: formData,
+            });
+            var data = await resp.json();
+            if (!resp.ok) throw new Error(data.detail || 'Error al crear ticket');
+
+            // Si es SAP, guardar datos extra vinculados al ticket (múltiples items)
+            if (esSAP && form.id_subcategoria) {
+                var tipoSap = '';
+                if (subId === SUB_ARTICULO) tipoSap = 'articulo';
+                else if (subId === SUB_SERVICIO) tipoSap = 'servicio';
+                else if (subId === SUB_SOCIO) tipoSap = 'socio';
+
+                if (tipoSap) {
+                    var itemsToSend = sapItems.map(function (item) {
+                        return Object.assign({}, item, { tipo: tipoSap });
+                    });
+                    await fetch(API_URL + '/tickets/' + data.id_ticket + '/sap', {
+                        method: 'POST',
+                        headers: headersConToken(),
+                        body: JSON.stringify({ items: itemsToSend }),
+                    });
+                }
+            }
+
+            setExito(true);
+            setTicketCreado(data);
+            setMensaje('¡Ticket creado exitosamente!');
+            setForm({ asunto: '', id_categoria: '', id_subcategoria: '', prioridad: 'MEDIA', descripcion: '' });
+            setSapItems([{}]);
+            setFoto(null);
+            setFotoPreview(null);
+            cargarMisTickets();
+
+            setTimeout(function () { setExito(false); setMensaje(''); }, 4000);
+        } catch (err) {
+            setMensaje(err.message);
+        } finally {
+            setEnviando(false);
+        }
+    }
+
+    // Formatear fecha a dd/mm/yyyy HH:mm
+    function formatearFechaHora(fechaStr) {
+        if (!fechaStr) return '';
+        var fecha = new Date(fechaStr);
+        if (isNaN(fecha.getTime())) return fechaStr;
+        var d = String(fecha.getDate()).padStart(2, '0');
+        var m = String(fecha.getMonth() + 1).padStart(2, '0');
+        var y = fecha.getFullYear();
+        var hh = String(fecha.getHours()).padStart(2, '0');
+        var mm = String(fecha.getMinutes()).padStart(2, '0');
+        return d + '/' + m + '/' + y + ' ' + hh + ':' + mm;
+    }
+
+    function colorPrioridad(p) {
+        var pr = PRIORIDADES.find(function (x) { return x.valor === p; });
+        return pr ? pr.color : '#94a3b8';
+    }
+
+    function indiceFlujo(estado) {
+        var idx = ESTADOS_FLUJO.indexOf(estado);
+        return idx >= 0 ? idx : 0;
+    }
+
+    // ── Render campos SAP dinámicos (multi-item) ──
+    function renderCamposSAP() {
+        if (!esSAP || !form.id_subcategoria || !sapCatalogos) return null;
+        var cats = sapCatalogos;
+        var tipoLabel = subId === SUB_ARTICULO ? 'Artículo' : subId === SUB_SERVICIO ? 'Servicio' : subId === SUB_SOCIO ? 'Socio de Negocio' : '';
+
+        return (
+            <div className="sap-campos-extra">
+                <div className="sap-seccion-titulo">Datos SAP — {tipoLabel}(s)</div>
+                {sapItems.map(function (sapForm, idx) {
+                    var subfsFiltradas = sapForm.id_famsap
+                        ? cats.subfamilias.filter(function (sf) { return String(sf.id_familia) === String(sapForm.id_famsap); })
+                        : [];
+
+                    return (
+                        <div key={idx} className="sap-item-bloque">
+                            {sapItems.length > 1 && (
+                                <div className="sap-item-header">
+                                    <span className="sap-item-num">{tipoLabel} #{idx + 1}</span>
+                                    <button type="button" className="sap-item-quitar" onClick={function () { quitarSapItem(idx); }}>✕</button>
+                                </div>
+                            )}
+
+                            {subId === SUB_ARTICULO && (function () {
+                                var gruposArticulo = cats.grupos_articulos.filter(function (g) { return g.cod_serv_art === 1; });
+                                return (
+                                    <>
+                                        <div className="form-fila">
+                                            <div className="form-grupo">
+                                                <label>Grupo de artículos *</label>
+                                                <select value={sapForm.id_grp_art || ''} onChange={function (e) { handleSapChange(idx, 'id_grp_art', e.target.value); }}>
+                                                    <option value="">Seleccionar grupo</option>
+                                                    {gruposArticulo.map(function (g) { return <option key={g.id} value={g.id}>{g.nombre}</option>; })}
+                                                </select>
+                                            </div>
+                                            <div className="form-grupo">
+                                                <label>Lista de precios</label>
+                                                <select value={sapForm.id_lista || 'NINGUNO'} onChange={function (e) { handleSapChange(idx, 'id_lista', e.target.value); }}>
+                                                    <option value="NINGUNO">NINGUNO</option>
+                                                    <option value="SERIE">SERIE</option>
+                                                    <option value="LOTE">LOTE</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <div className="form-grupo">
+                                            <label>Nombre del artículo *</label>
+                                            <input type="text" value={sapForm.articulo_sap || ''} placeholder="Nombre del artículo SAP"
+                                                onChange={function (e) { handleSapChange(idx, 'articulo_sap', e.target.value); }} />
+                                        </div>
+                                        <div className="form-fila">
+                                            <div className="form-grupo">
+                                                <label>Familia</label>
+                                                <select value={sapForm.id_famsap || ''} onChange={function (e) { handleSapChange(idx, 'id_famsap', e.target.value); handleSapChange(idx, 'id_sbfamsap', ''); }}>
+                                                    <option value="">Seleccionar familia</option>
+                                                    {cats.familias.map(function (f) { return <option key={f.id} value={f.id}>{f.nombre}</option>; })}
+                                                </select>
+                                            </div>
+                                            <div className="form-grupo">
+                                                <label>Subfamilia</label>
+                                                <select value={sapForm.id_sbfamsap || ''} onChange={function (e) { handleSapChange(idx, 'id_sbfamsap', e.target.value); }}
+                                                    disabled={subfsFiltradas.length === 0}>
+                                                    <option value="">Seleccionar subfamilia</option>
+                                                    {subfsFiltradas.map(function (sf) { return <option key={sf.id} value={sf.id}>{sf.nombre}</option>; })}
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <div className="form-fila">
+                                            <div className="form-grupo">
+                                                <label>Marca</label>
+                                                <select value={sapForm.id_marcasap || ''} onChange={function (e) { handleSapChange(idx, 'id_marcasap', e.target.value); }}>
+                                                    <option value="">Seleccionar marca</option>
+                                                    {cats.marcas.map(function (m) { return <option key={m.id} value={m.id}>{m.nombre}</option>; })}
+                                                </select>
+                                            </div>
+                                            <div className="form-grupo">
+                                                <label>O escribir marca</label>
+                                                <input type="text" value={sapForm.marca_descrip || ''} placeholder="Marca (si no está en lista)"
+                                                    onChange={function (e) { handleSapChange(idx, 'marca_descrip', e.target.value); }} />
+                                            </div>
+                                        </div>
+                                        <div className="form-fila">
+                                            <div className="form-grupo">
+                                                <label>Modelo</label>
+                                                <select value={sapForm.id_modelosap || ''} onChange={function (e) { handleSapChange(idx, 'id_modelosap', e.target.value); }}>
+                                                    <option value="">Seleccionar modelo</option>
+                                                    {cats.modelos.map(function (m) { return <option key={m.id} value={m.id}>{m.nombre}</option>; })}
+                                                </select>
+                                            </div>
+                                            <div className="form-grupo">
+                                                <label>O escribir modelo</label>
+                                                <input type="text" value={sapForm.modelo_descrip || ''} placeholder="Modelo (si no está en lista)"
+                                                    onChange={function (e) { handleSapChange(idx, 'modelo_descrip', e.target.value); }} />
+                                            </div>
+                                        </div>
+                                        <div className="form-grupo">
+                                            <label>Unidad de medida *</label>
+                                            <select value={sapForm.id_unidad || ''} onChange={function (e) { handleSapChange(idx, 'id_unidad', e.target.value); }}>
+                                                <option value="">Seleccionar unidad</option>
+                                                {cats.tipos_unidad.map(function (u) { return <option key={u.id} value={u.id}>{u.nombre}</option>; })}
+                                            </select>
+                                        </div>
+                                    </>
+                                );
+                            })()}
+
+                            {subId === SUB_SERVICIO && (function () {
+                                var gruposServicio = cats.grupos_articulos.filter(function (g) { return g.cod_serv_art === 0; });
+                                return (
+                                    <>
+                                        <div className="form-grupo">
+                                            <label>Grupo de artículos *</label>
+                                            <select value={sapForm.id_grp_art || ''} onChange={function (e) { handleSapChange(idx, 'id_grp_art', e.target.value); }}>
+                                                <option value="">Seleccionar grupo</option>
+                                                {gruposServicio.map(function (g) { return <option key={g.id} value={g.id}>{g.nombre}</option>; })}
+                                            </select>
+                                        </div>
+                                        <div className="form-grupo">
+                                            <label>Nombre del servicio *</label>
+                                            <input type="text" value={sapForm.servicio_sap || ''} placeholder="Nombre del servicio SAP"
+                                                onChange={function (e) { handleSapChange(idx, 'servicio_sap', e.target.value); }} />
+                                        </div>
+                                        <div className="form-grupo">
+                                            <label>Unidad de medida *</label>
+                                            <select value={sapForm.id_unidad || ''} onChange={function (e) { handleSapChange(idx, 'id_unidad', e.target.value); }}>
+                                                <option value="">Seleccionar unidad</option>
+                                                {cats.tipos_unidad.map(function (u) { return <option key={u.id} value={u.id}>{u.nombre}</option>; })}
+                                            </select>
+                                        </div>
+                                    </>
+                                );
+                            })()}
+
+                            {subId === SUB_SOCIO && (
+                                <>
+                                    <div className="form-grupo">
+                                        <label>Tipo de socio *</label>
+                                        <select value={sapForm.id_tsocio || ''} onChange={function (e) { handleSapChange(idx, 'id_tsocio', e.target.value); }}>
+                                            <option value="">Seleccionar tipo</option>
+                                            {cats.tipos_socio.map(function (ts) { return <option key={ts.id} value={ts.id}>{ts.nombre}</option>; })}
+                                        </select>
+                                    </div>
+                                    <div className="form-grupo">
+                                        <label>Razón social *</label>
+                                        <input type="text" value={sapForm.razon_social || ''} placeholder="Nombre o razón social"
+                                            onChange={function (e) { handleSapChange(idx, 'razon_social', e.target.value); }} />
+                                    </div>
+                                    <div className="form-grupo">
+                                        <label>RUC</label>
+                                        <input type="text" value={sapForm.ruc || ''} placeholder="Número de RUC"
+                                            onChange={function (e) { handleSapChange(idx, 'ruc', e.target.value); }} />
+                                    </div>
+                                    <div className="form-grupo">
+                                        <label>Dirección</label>
+                                        <input type="text" value={sapForm.direccion || ''} placeholder="Dirección del socio"
+                                            onChange={function (e) { handleSapChange(idx, 'direccion', e.target.value); }} />
+                                    </div>
+                                </>
+                            )}
+                        </div>
+                    );
+                })}
+                <button type="button" className="sap-btn-agregar" onClick={agregarSapItem}>
+                    + Agregar otro {tipoLabel.toLowerCase()}
+                </button>
+            </div>
+        );
+    }
+
+    return (
+        <PageContent>
+            <div className="ingresar-ticket-page">
+                {/* ── Cabecera ── */}
+                <div className="ticket-header">
+                    <IconoFa icono={faTicket} clase="ticket-header-icon" />
+                    <h2>Ingresar Ticket</h2>
+                </div>
+
+                <div className="ticket-layout">
+                    {/* ── Mis Tickets recientes (arriba) ── */}
+                    <div className="mis-tickets-panel">
+                        <div className="mis-tickets-tabs">
+                            <button type="button" className={'mis-tickets-tab' + (tabTickets === 'atencion' ? ' activo' : '')} onClick={function () { setTabTickets('atencion'); }}>
+                                <IconoFa icono={faBolt} /> En Atención
+                            </button>
+                            <button type="button" className={'mis-tickets-tab' + (tabTickets === 'historial' ? ' activo' : '')} onClick={function () { setTabTickets('historial'); }}>
+                                <IconoFa icono={faClockRotateLeft} /> Historial
+                            </button>
+                        </div>
+
+                        {tabTickets === 'atencion' && (function () {
+                            var enAtencion = misTickets.filter(function (t) { return t.estado !== 'ABIERTO' && t.estado !== 'CERRADO'; });
+                            return (
+                                <>
+                                    {enAtencion.length === 0 && <p className="sin-tickets">No tienes tickets en atención</p>}
+                                    <div className="tickets-lista">
+                                        {enAtencion.slice(0, 8).map(function (tk) {
+                                            var paso = indiceFlujo(tk.estado);
+                                            return (
+                                                <div key={tk.id_ticket} className="ticket-card-mini" style={{ borderLeftColor: colorPrioridad(tk.prioridad) }}>
+                                                    <div className="ticket-card-top">
+                                                        <span className="ticket-codigo">TICKET: <b>#{tk.id_ticket}</b></span>
+                                                        <span className="ticket-card-asunto">{tk.asunto}</span>
+                                                    </div>
+
+                                                    {/* Progress stepper */}
+                                                    <div className="stepper-mini">
+                                                        {ETIQUETAS_FLUJO.map(function (et, i) {
+                                                            var completado = i <= paso;
+                                                            var lineaActiva = i < paso;
+                                                            return (
+                                                                <div key={et} className={'step-mini' + (completado ? ' activo' : '')}>
+                                                                    <div className="step-dot"></div>
+                                                                    {i < ETIQUETAS_FLUJO.length - 1 && <div className={'step-line' + (lineaActiva ? ' linea-activa' : '')}></div>}
+                                                                </div>
+                                                            );
+                                                        })}
+                                                    </div>
+                                                    <div className="stepper-labels">
+                                                        {ETIQUETAS_FLUJO.map(function (et, i) {
+                                                            return <span key={et} className={'step-label' + (i <= paso ? ' activo' : '')}>{et}</span>;
+                                                        })}
+                                                    </div>
+
+                                                    {tk.mensaje_ti && (
+                                                        <div className="ticket-card-mensaje">
+                                                            <span className="ticket-msg-label">Respuesta TI:</span>
+                                                            <p className="ticket-msg-text">{tk.mensaje_ti}</p>
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            );
+                                        })}
+                                    </div>
+                                </>
+                            );
+                        })()}
+
+                        {tabTickets === 'historial' && (function () {
+                            var todos = misTickets.slice().sort(function (a, b) {
+                                return new Date(b.fech_creacion) - new Date(a.fech_creacion);
+                            });
+                            return (
+                                <>
+                                    {todos.length === 0 && <p className="sin-tickets">No tienes tickets registrados</p>}
+                                    <div className="tickets-lista historial-lista">
+                                        {todos.map(function (tk) {
+                                            var paso = indiceFlujo(tk.estado);
+                                            var estiloPri = PRIORIDADES.find(function (p) { return p.valor === tk.prioridad; });
+                                            var esCerrado = tk.estado === 'CERRADO';
+                                            return (
+                                                <div key={tk.id_ticket} className={'ticket-card-mini' + (esCerrado ? ' cerrado' : '')} style={{ borderLeftColor: colorPrioridad(tk.prioridad) }}>
+                                                    <div className="ticket-card-top">
+                                                        <span className="ticket-codigo">TICKET: <b>#{tk.id_ticket}</b></span>
+                                                        <span className="ticket-card-estado" style={{
+                                                            background: esCerrado ? '#dcfce7' : '#dbeafe',
+                                                            color: esCerrado ? '#16a34a' : '#2563eb'
+                                                        }}>{tk.estado}</span>
+                                                    </div>
+                                                    <span className="ticket-card-asunto">{tk.asunto}</span>
+                                                    <div className="ticket-card-meta">
+                                                        <span style={{ color: estiloPri ? estiloPri.color : '#94a3b8' }}>{tk.prioridad}</span>
+                                                        <span>{tk.categoria}</span>
+                                                        <span>{formatearFechaHora(tk.fech_creacion)}</span>
+                                                    </div>
+
+                                                    {/* Progress stepper */}
+                                                    <div className="stepper-mini">
+                                                        {ETIQUETAS_FLUJO.map(function (et, i) {
+                                                            var completado = i <= paso;
+                                                            var lineaActiva = i < paso;
+                                                            return (
+                                                                <div key={et} className={'step-mini' + (completado ? ' activo' : '')}>
+                                                                    <div className="step-dot"></div>
+                                                                    {i < ETIQUETAS_FLUJO.length - 1 && <div className={'step-line' + (lineaActiva ? ' linea-activa' : '')}></div>}
+                                                                </div>
+                                                            );
+                                                        })}
+                                                    </div>
+                                                    <div className="stepper-labels">
+                                                        {ETIQUETAS_FLUJO.map(function (et, i) {
+                                                            return <span key={et} className={'step-label' + (i <= paso ? ' activo' : '')}>{et}</span>;
+                                                        })}
+                                                    </div>
+
+                                                    {tk.tecnico && (
+                                                        <div className="ticket-card-mensaje">
+                                                            <span className="ticket-msg-label">Técnico:</span>
+                                                            <p className="ticket-msg-text">{tk.tecnico}</p>
+                                                        </div>
+                                                    )}
+
+                                                    {tk.mensaje_ti && (
+                                                        <div className="ticket-card-mensaje">
+                                                            <span className="ticket-msg-label">Respuesta TI:</span>
+                                                            <p className="ticket-msg-text">{tk.mensaje_ti}</p>
+                                                        </div>
+                                                    )}
+
+                                                    {esCerrado && tk.fech_cierre && (
+                                                        <div className="ticket-card-meta cerrado-meta">
+                                                            <span>Cerrado: {formatearFechaHora(tk.fech_cierre)}</span>
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            );
+                                        })}
+                                    </div>
+                                </>
+                            );
+                        })()}
+                    </div>
+
+                    {/* ── Formulario (abajo) ── */}
+                    <form className="ticket-form" onSubmit={handleSubmit}>
+                        <div className="form-grupo">
+                            <label>Asunto *</label>
+                            <input type="text" value={form.asunto} placeholder="Describe brevemente el problema"
+                                onChange={function (e) { handleChange('asunto', e.target.value); }} />
+                        </div>
+
+                        <div className="form-fila">
+                            <div className="form-grupo">
+                                <label>Solicitud *</label>
+                                <select value={form.id_categoria} onChange={function (e) { handleChange('id_categoria', e.target.value); handleChange('id_subcategoria', ''); }}>
+                                    <option value="">Seleccionar categoría</option>
+                                    {categorias.map(function (c) {
+                                        return <option key={c.id} value={c.id}>{c.nombre}</option>;
+                                    })}
+                                </select>
+                            </div>
+
+                            <div className="form-grupo">
+                                <label>Tipo de Incidencia</label>
+                                <select value={form.id_subcategoria} onChange={function (e) { handleChange('id_subcategoria', e.target.value); }}
+                                    disabled={subsFiltradas.length === 0}>
+                                    <option value="">Seleccionar subcategoría</option>
+                                    {subsFiltradas.map(function (s) {
+                                        return <option key={s.id} value={s.id}>{s.nombre}</option>;
+                                    })}
+                                </select>
+                            </div>
+                        </div>
+
+                        {/* Campos SAP dinámicos */}
+                        {renderCamposSAP()}
+
+                        <div className="form-grupo">
+                            <label>Prioridad</label>
+                            <div className="prioridad-selector">
+                                {PRIORIDADES.map(function (p) {
+                                    return (
+                                        <button type="button" key={p.valor}
+                                            className={'prioridad-badge' + (form.prioridad === p.valor ? ' seleccionado' : '')}
+                                            style={{ '--badge-color': p.color }}
+                                            onClick={function () { handleChange('prioridad', p.valor); }}>
+                                            {p.valor}
+                                        </button>
+                                    );
+                                })}
+                            </div>
+                        </div>
+
+                        <div className="form-grupo">
+                            <label>Descripción</label>
+                            <textarea rows="4" value={form.descripcion} placeholder="Describe el problema con detalle..."
+                                onChange={function (e) { handleChange('descripcion', e.target.value); }} />
+                        </div>
+
+                        {/* Adjuntar imagen — oculto cuando es SAP */}
+                        {!esSAP && (
+                        <div className="form-grupo">
+                            <label>Adjuntar imagen</label>
+                            <div className="foto-upload" onClick={function () { fotoInput.current.click(); }}>
+                                {fotoPreview
+                                    ? <img src={fotoPreview} alt="preview" className="foto-preview" />
+                                    : <div className="foto-placeholder"><IconoFa icono={faCamera} /><span>Click para subir imagen</span></div>
+                                }
+                            </div>
+                            <input ref={fotoInput} type="file" accept="image/*" style={{ display: 'none' }} onChange={handleFoto} />
+                        </div>
+                        )}
+
+                        {mensaje && (
+                            <div className={'ticket-mensaje' + (exito ? ' exito' : ' error')}>
+                                {exito && <IconoFa icono={faCheckCircle} />} {mensaje}
+                            </div>
+                        )}
+
+                        <button type="submit" className="btn-crear-ticket" disabled={enviando}>
+                            <IconoFa icono={enviando ? faSpinner : faPaperPlane} clase={enviando ? 'spin' : ''} />
+                            {enviando ? 'Enviando...' : 'CREAR TICKET'}
+                        </button>
+                    </form>
+
+                </div>
+            </div>
+        </PageContent>
+    );
+}

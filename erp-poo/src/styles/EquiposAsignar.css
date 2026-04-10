@@ -1,0 +1,779 @@
+/* ═══════════════════════════════════════════
+   EquiposAsignar.css — Card-based layout
+   ═══════════════════════════════════════════ */
+
+.eqa-container {
+    padding: 0;
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+.eqa-titulo {
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin: 0;
+    color: var(--text-primary, #1a1a2e);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.eqa-subtitulo {
+    font-size: 0.82rem;
+    color: var(--text-muted, #888);
+    margin: 0.2rem 0 1.2rem;
+    letter-spacing: 0.5px;
+}
+
+.eqa-loading {
+    text-align: center;
+    color: var(--text-muted, #94a3b8);
+    padding: 3rem;
+}
+
+.eqa-mensaje {
+    padding: 0.6rem 1rem;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    font-weight: 500;
+    margin-bottom: 1rem;
+    animation: eqaSlide 0.25s ease;
+}
+.eqa-mensaje.exito { background: #d4edda; color: #155724; }
+.eqa-mensaje.error { background: #f8d7da; color: #721c24; }
+
+@keyframes eqaSlide {
+    from { opacity: 0; transform: translateY(-8px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ── Stats ── */
+.eqa-stats {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 1.2rem;
+    flex-wrap: wrap;
+}
+
+.eqa-stat {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 14px 28px;
+    border-radius: 10px;
+    background: var(--bg-card, #f8f9ff);
+    border: 1.5px solid var(--border-color, #e2e8f0);
+    cursor: pointer;
+    transition: all 0.2s;
+    min-width: 100px;
+}
+.eqa-stat:hover { border-color: var(--primario, #4361ee); }
+.eqa-stat.activo { border-color: var(--primario, #4361ee); background: rgba(67, 97, 238, 0.06); }
+.eqa-stat.disponible.activo { border-color: #16a34a; background: rgba(22, 163, 74, 0.06); }
+.eqa-stat.asignado.activo { border-color: #2563eb; background: rgba(37, 99, 235, 0.06); }
+.eqa-stat.gama.activo { border-color: #8b5cf6; background: rgba(139, 92, 246, 0.06); }
+
+.eqa-stats-sep {
+    width: 1px;
+    height: 36px;
+    background: var(--border-color, #e2e8f0);
+    align-self: center;
+    margin: 0 4px;
+}
+
+.eqa-stat-num {
+    font-size: 1.6rem;
+    font-weight: 700;
+    color: var(--text-primary, #1e293b);
+}
+.eqa-stat-label {
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--text-muted, #94a3b8);
+    font-weight: 600;
+}
+
+/* ── Toolbar ── */
+.eqa-toolbar {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 1rem;
+    flex-wrap: wrap;
+}
+
+.eqa-busqueda {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: var(--bg-input, #fff);
+    border: 1px solid var(--border-color, #ddd);
+    border-radius: 8px;
+    padding: 0.45rem 0.7rem;
+    flex: 1;
+    max-width: 400px;
+    color: var(--text-muted, #888);
+}
+.eqa-busqueda input {
+    border: none;
+    outline: none;
+    background: transparent;
+    flex: 1;
+    font-size: 0.85rem;
+    color: var(--text-primary, #222);
+}
+
+.eqa-filtro-tipo {
+    padding: 0.45rem 0.7rem;
+    border: 1px solid var(--border-color, #ddd);
+    border-radius: 8px;
+    background: var(--bg-input, #fff);
+    color: var(--text-primary, #222);
+    font-size: 0.85rem;
+}
+
+/* Filtros activos */
+.eqa-filtros-activos {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 1rem;
+    flex-wrap: wrap;
+}
+.eqa-filtro-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 12px;
+    border-radius: 20px;
+    background: var(--primario, #4361ee);
+    color: #fff;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+.eqa-filtro-badge button {
+    background: none;
+    border: none;
+    color: #fff;
+    cursor: pointer;
+    padding: 0;
+    font-size: 0.8rem;
+    opacity: 0.8;
+}
+.eqa-filtro-badge button:hover { opacity: 1; }
+
+/* ── Grid de tarjetas ── */
+.eqa-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 16px;
+}
+
+.eqa-vacio-grid {
+    grid-column: 1 / -1;
+    text-align: center;
+    color: var(--text-muted, #94a3b8);
+    font-style: italic;
+    padding: 3rem;
+}
+
+/* ── Card ── */
+.eqa-card {
+    background: var(--bg-card, #fff);
+    border: 1px solid var(--border-color, #e2e8f0);
+    border-radius: 12px;
+    padding: 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    transition: box-shadow 0.2s, border-color 0.2s;
+}
+.eqa-card:hover {
+    box-shadow: 0 4px 16px rgba(0,0,0,0.06);
+    border-color: var(--border-color-hover, #cbd5e1);
+}
+.eqa-card.asignado {
+    border-left: 4px solid #2563eb;
+}
+.eqa-card.asignando {
+    border-color: var(--primario, #4361ee);
+    box-shadow: 0 0 0 2px rgba(67, 97, 238, 0.15);
+}
+
+/* Card header */
+.eqa-card-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+.eqa-card-icono {
+    width: 42px;
+    height: 42px;
+    border-radius: 10px;
+    background: var(--bg-subtle, #f0f4ff);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+    color: var(--primario, #4361ee);
+    flex-shrink: 0;
+}
+.eqa-card-titulo {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-width: 0;
+}
+.eqa-card-tipo {
+    font-size: 0.88rem;
+    font-weight: 700;
+    color: var(--text-primary, #1e293b);
+}
+.eqa-card-marca {
+    font-size: 0.78rem;
+    color: var(--text-muted, #94a3b8);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.eqa-card-estado {
+    font-size: 0.68rem;
+    font-weight: 700;
+    padding: 3px 10px;
+    border-radius: 20px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+
+/* Specs */
+.eqa-card-specs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px 14px;
+    padding: 8px 0;
+    border-top: 1px solid var(--border-color, #f1f5f9);
+}
+.eqa-spec {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 0.76rem;
+    color: var(--text-secondary, #64748b);
+}
+.eqa-spec svg { font-size: 0.7rem; opacity: 0.6; }
+.eqa-gama-badge {
+    font-size: 0.68rem;
+    font-weight: 600;
+    padding: 1px 8px;
+    border-radius: 4px;
+    background: var(--bg-subtle, #f0f4ff);
+    color: var(--primario, #4361ee);
+}
+
+/* Asignación actual */
+.eqa-asig-bloque:has(.eqa-historial) .eqa-card-asignacion {
+    border-radius: 8px 8px 0 0;
+}
+.eqa-card-asignacion {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 12px;
+    background: #eff6ff;
+    border-radius: 8px;
+    border: 1px solid #bfdbfe;
+}
+.eqa-asig-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: #dbeafe;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #2563eb;
+    font-size: 0.85rem;
+    flex-shrink: 0;
+}
+.eqa-asig-info {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+}
+.eqa-asig-nombre {
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: #1e40af;
+}
+.eqa-asig-fecha {
+    font-size: 0.7rem;
+    color: #3b82f6;
+}
+
+/* ── History toggle & accordion ── */
+.eqa-asig-bloque {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+}
+.eqa-hist-toggle {
+    width: 28px;
+    height: 28px;
+    border: 1px solid #bfdbfe;
+    border-radius: 50%;
+    background: #dbeafe;
+    color: #2563eb;
+    font-size: 0.7rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.25s;
+    flex-shrink: 0;
+}
+.eqa-hist-toggle:hover {
+    background: #2563eb;
+    color: #fff;
+}
+.eqa-hist-toggle.abierto {
+    transform: rotate(180deg);
+    background: #2563eb;
+    color: #fff;
+}
+.eqa-historial {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: 8px 10px 6px;
+    margin-top: -1px;
+    background: #f0f6ff;
+    border: 1px solid #bfdbfe;
+    border-top: none;
+    border-radius: 0 0 8px 8px;
+    animation: eqaSlide 0.25s ease;
+}
+.eqa-hist-titulo {
+    font-size: 0.68rem;
+    font-weight: 700;
+    color: #64748b;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    margin-bottom: 4px;
+}
+.eqa-hist-titulo svg { font-size: 0.6rem; }
+.eqa-hist-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 5px 8px;
+    background: rgba(255,255,255,0.7);
+    border-radius: 6px;
+    border: 1px solid #e0eaff;
+}
+.eqa-hist-avatar {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: #e0eaff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #3b82f6;
+    font-size: 0.65rem;
+    flex-shrink: 0;
+}
+.eqa-hist-info {
+    display: flex;
+    flex-direction: column;
+}
+.eqa-hist-nombre {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #334155;
+}
+.eqa-hist-fechas {
+    font-size: 0.65rem;
+    color: #64748b;
+}
+
+/* Acciones */
+.eqa-card-acciones {
+    display: flex;
+    gap: 8px;
+}
+.eqa-btn-card {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 6px 14px;
+    border: none;
+    border-radius: 7px;
+    font-size: 0.78rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: opacity 0.2s, transform 0.15s;
+}
+.eqa-btn-card:hover { opacity: 0.85; transform: translateY(-1px); }
+
+.eqa-btn-card.asignar { background: #16a34a; color: #fff; }
+.eqa-btn-card.devolver { background: #fff8e1; color: #856404; border: 1px solid #ffc107; }
+.eqa-btn-card.confirmar { background: #2563eb; color: #fff; }
+.eqa-btn-card.cancelar { background: var(--bg-subtle, #f1f5f9); color: var(--text-secondary, #64748b); }
+.eqa-btn-card.historial {
+    background: #ede9fe; color: #5b21b6; border: 1px solid #c4b5fd;
+    width: 100%; justify-content: center; gap: 6px;
+}
+.eqa-btn-card.historial.activo { background: #ddd6fe; border-color: #a78bfa; }
+
+/* Form inline */
+.eqa-card-form {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 10px;
+    background: var(--bg-subtle, #f8fafc);
+    border-radius: 8px;
+    border: 1px dashed var(--border-color, #cbd5e1);
+    animation: eqaSlide 0.2s ease;
+}
+.eqa-card-form select {
+    padding: 7px 10px;
+    border: 1px solid var(--border-color, #ddd);
+    border-radius: 6px;
+    font-size: 0.82rem;
+    background: var(--bg-input, #fff);
+    color: var(--text-primary, #222);
+    width: 100%;
+}
+.eqa-card-form select:focus {
+    border-color: var(--primario, #4361ee);
+    outline: none;
+}
+.eqa-card-form-btns {
+    display: flex;
+    gap: 6px;
+}
+
+/* ═══ RESPONSIVE ═══ */
+@media (max-width: 768px) {
+    .eqa-grid {
+        grid-template-columns: 1fr;
+    }
+    .eqa-toolbar { flex-direction: column; align-items: stretch; }
+    .eqa-busqueda { max-width: 100%; }
+    .eqa-stats { justify-content: center; }
+    .eqa-stat { flex: 1; min-width: 80px; padding: 10px 14px; }
+    .eqa-edit-grid { grid-template-columns: 1fr 1fr !important; }
+}
+
+@media (max-width: 480px) {
+    .eqa-grid {
+        grid-template-columns: 1fr;
+    }
+    .eqa-card { padding: 14px; }
+    .eqa-stat-num { font-size: 1.3rem; }
+    .eqa-edit-grid { grid-template-columns: 1fr !important; }
+}
+
+/* ── Storage detallado ── */
+.eqa-card-storage {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: 8px 10px;
+    background: var(--bg-subtle, #f8fafc);
+    border-radius: 8px;
+    border: 1px solid var(--border-color, #f1f5f9);
+}
+.eqa-storage-label {
+    font-size: 0.7rem;
+    font-weight: 700;
+    color: var(--text-muted, #94a3b8);
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    margin-bottom: 2px;
+}
+.eqa-storage-label svg { font-size: 0.65rem; }
+.eqa-storage-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.76rem;
+    padding: 3px 0;
+}
+.eqa-storage-tipo {
+    font-weight: 600;
+    color: var(--text-primary, #1e293b);
+    background: var(--bg-card, #fff);
+    padding: 1px 8px;
+    border-radius: 4px;
+    border: 1px solid var(--border-color, #e2e8f0);
+}
+.eqa-storage-cap {
+    font-weight: 600;
+    color: var(--primario, #4361ee);
+}
+.eqa-storage-nota {
+    font-size: 0.7rem;
+    color: var(--text-muted, #94a3b8);
+    font-style: italic;
+}
+
+/* ── Edit form inline ── */
+.eqa-card.editando {
+    border-color: var(--primario, #4361ee);
+    box-shadow: 0 0 0 2px rgba(67, 97, 238, 0.12);
+    grid-column: 1 / -1;
+}
+.eqa-edit-form {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    animation: eqaSlide 0.25s ease;
+    max-width: 700px;
+}
+.eqa-edit-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 8px;
+}
+.eqa-edit-campo {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+.eqa-edit-campo label {
+    font-size: 0.68rem;
+    font-weight: 700;
+    color: var(--text-muted, #94a3b8);
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+}
+.eqa-edit-campo input,
+.eqa-edit-campo select {
+    padding: 6px 8px;
+    border: 1px solid var(--border-color, #ddd);
+    border-radius: 6px;
+    font-size: 0.8rem;
+    background: var(--bg-input, #fff);
+    color: var(--text-primary, #222);
+}
+.eqa-edit-campo input:focus,
+.eqa-edit-campo select:focus {
+    border-color: var(--primario, #4361ee);
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(67, 97, 238, 0.1);
+}
+
+/* Almacenamiento editable */
+.eqa-edit-almc {
+    border-top: 1px solid var(--border-color, #f1f5f9);
+    padding-top: 8px;
+}
+.eqa-edit-almc-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 6px;
+}
+.eqa-edit-almc-header label {
+    font-size: 0.72rem;
+    font-weight: 700;
+    color: var(--text-muted, #94a3b8);
+    text-transform: uppercase;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+.eqa-btn-mini {
+    width: 24px;
+    height: 24px;
+    border: none;
+    border-radius: 6px;
+    font-size: 0.7rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: opacity 0.15s;
+}
+.eqa-btn-mini:hover { opacity: 0.8; }
+.eqa-btn-mini.add { background: #16a34a; color: #fff; }
+.eqa-btn-mini.del { background: #ef4444; color: #fff; }
+
+.eqa-edit-disco-row {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+    margin-bottom: 4px;
+}
+.eqa-edit-disco-row select {
+    flex: 1;
+    padding: 5px 6px;
+    border: 1px solid var(--border-color, #ddd);
+    border-radius: 6px;
+    font-size: 0.78rem;
+    background: var(--bg-input, #fff);
+    color: var(--text-primary, #222);
+}
+.eqa-edit-disco-row input {
+    width: 80px;
+    padding: 5px 6px;
+    border: 1px solid var(--border-color, #ddd);
+    border-radius: 6px;
+    font-size: 0.78rem;
+    background: var(--bg-input, #fff);
+    color: var(--text-primary, #222);
+}
+
+.eqa-edit-btns {
+    display: flex;
+    gap: 8px;
+    padding-top: 4px;
+}
+
+.eqa-btn-card.editar {
+    background: var(--bg-subtle, #f0f4ff);
+    color: var(--primario, #4361ee);
+    border: 1px solid var(--border-color, #e2e8f0);
+}
+
+/* ═══ DARK MODE ═══ */
+body.dark-mode .eqa-titulo { color: var(--text-primary, #e0e4ea); }
+body.dark-mode .eqa-subtitulo { color: var(--text-muted, #7a8494); }
+
+body.dark-mode .eqa-card {
+    background: var(--bg-card, #1e2330);
+    border-color: var(--border-color, #2e3440);
+}
+body.dark-mode .eqa-card:hover {
+    box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+    border-color: var(--border-color-hover, #3a4050);
+}
+body.dark-mode .eqa-card.asignado { border-left-color: #3b82f6; }
+
+body.dark-mode .eqa-card-icono {
+    background: var(--bg-subtle, #252a36);
+    color: var(--primario, #6d8df7);
+}
+body.dark-mode .eqa-card-tipo { color: var(--text-primary, #e0e4ea); }
+body.dark-mode .eqa-card-marca { color: var(--text-muted, #7a8494); }
+body.dark-mode .eqa-card-specs { border-color: var(--border-color, #2e3440); }
+body.dark-mode .eqa-spec { color: var(--text-secondary, #9ca3af); }
+
+body.dark-mode .eqa-card-asignacion {
+    background: #1e293b;
+    border-color: #334155;
+}
+body.dark-mode .eqa-asig-avatar {
+    background: #1e3a5f;
+    color: #60a5fa;
+}
+body.dark-mode .eqa-asig-nombre { color: #93bbfc; }
+body.dark-mode .eqa-asig-fecha { color: #60a5fa; }
+
+body.dark-mode .eqa-stat {
+    background: var(--bg-card, #1e2330);
+    border-color: var(--border-color, #2e3440);
+}
+body.dark-mode .eqa-stat-num { color: var(--text-primary, #e0e4ea); }
+
+body.dark-mode .eqa-busqueda,
+body.dark-mode .eqa-filtro-tipo {
+    background: var(--bg-input, #2c3038);
+    border-color: var(--border-color, #3a3f48);
+    color: var(--text-primary, #e0e4ea);
+}
+body.dark-mode .eqa-busqueda input {
+    color: var(--text-primary, #e0e4ea);
+}
+
+body.dark-mode .eqa-card-form {
+    background: var(--bg-subtle, #252a36);
+    border-color: var(--border-color, #3a4050);
+}
+body.dark-mode .eqa-card-form select {
+    background: var(--bg-input, #2c3038);
+    border-color: var(--border-color, #3a3f48);
+    color: var(--text-primary, #e0e4ea);
+}
+
+body.dark-mode .eqa-gama-badge {
+    background: var(--bg-subtle, #252a36);
+    color: var(--primario, #6d8df7);
+}
+
+body.dark-mode .eqa-btn-card.devolver { background: #3a3200; border-color: #665800; color: #f5d97e; }
+body.dark-mode .eqa-btn-card.cancelar { background: var(--bg-subtle, #2c3038); color: var(--text-secondary, #9ca3af); }
+body.dark-mode .eqa-btn-card.historial { background: #2e1065; border-color: #6d28d9; color: #c4b5fd; }
+body.dark-mode .eqa-btn-card.historial.activo { background: #3b0764; border-color: #7c3aed; }
+
+body.dark-mode .eqa-mensaje.exito { background: #1e4620; color: #8fd99a; }
+body.dark-mode .eqa-mensaje.error { background: #4a1c1c; color: #f09090; }
+
+body.dark-mode .eqa-card-storage {
+    background: var(--bg-subtle, #252a36);
+    border-color: var(--border-color, #2e3440);
+}
+body.dark-mode .eqa-storage-tipo {
+    background: var(--bg-card, #1e2330);
+    border-color: var(--border-color, #3a4050);
+    color: var(--text-primary, #e0e4ea);
+}
+body.dark-mode .eqa-storage-cap { color: var(--primario, #6d8df7); }
+
+body.dark-mode .eqa-edit-campo input,
+body.dark-mode .eqa-edit-campo select,
+body.dark-mode .eqa-edit-disco-row select,
+body.dark-mode .eqa-edit-disco-row input {
+    background: var(--bg-input, #2c3038);
+    border-color: var(--border-color, #3a3f48);
+    color: var(--text-primary, #e0e4ea);
+}
+
+body.dark-mode .eqa-btn-card.editar {
+    background: var(--bg-subtle, #252a36);
+    color: var(--primario, #6d8df7);
+    border-color: var(--border-color, #3a4050);
+}
+
+/* ── Dark Mode: History accordion ── */
+body.dark-mode .eqa-hist-toggle {
+    background: #1e3a5f;
+    border-color: #334155;
+    color: #60a5fa;
+}
+body.dark-mode .eqa-hist-toggle:hover,
+body.dark-mode .eqa-hist-toggle.abierto {
+    background: #2563eb;
+    color: #fff;
+}
+body.dark-mode .eqa-historial {
+    background: #1a2332;
+    border-color: #334155;
+}
+body.dark-mode .eqa-hist-titulo {
+    color: #7a8494;
+}
+body.dark-mode .eqa-hist-row {
+    background: rgba(255,255,255,0.04);
+    border-color: #2e3440;
+}
+body.dark-mode .eqa-hist-avatar {
+    background: #1e3a5f;
+    color: #60a5fa;
+}
+body.dark-mode .eqa-hist-nombre {
+    color: #93bbfc;
+}
+body.dark-mode .eqa-hist-fechas {
+    color: #7a8494;
+}
