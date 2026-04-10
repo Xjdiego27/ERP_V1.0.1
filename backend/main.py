@@ -5,6 +5,7 @@ import uvicorn
 import traceback
 from fastapi import FastAPI, Depends, HTTPException, Request
 from fastapi.responses import JSONResponse
+from fastapi.staticfiles import StaticFiles
 from sqlalchemy.orm import Session
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -97,6 +98,11 @@ app.include_router(rutas_licencias)
 app.include_router(rutas_mantenimiento)
 app.include_router(rutas_tareas)
 app.include_router(rutas_red)
+
+# ── Servir imágenes subidas (menús, eventos, perfiles, equipos, etc.) ──
+ASSETS_DIR = os.path.join(os.path.dirname(__file__), "..", "erp-poo", "public", "assets")
+if os.path.isdir(ASSETS_DIR):
+    app.mount("/assets", StaticFiles(directory=ASSETS_DIR), name="assets")
 
 
 # ── Tarea en background: limpieza automática de saludos vencidos ──

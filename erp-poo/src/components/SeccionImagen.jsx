@@ -47,7 +47,7 @@ export default function SeccionImagen(props) {
 
     // Si el backend respondió con el nombre del archivo, actualizamos la imagen
     if (data.archivo) {
-      props.onCambio('/assets/' + carpeta + '/' + data.archivo + '?t=' + Date.now());
+      props.onCambio(API_URL + '/assets/' + carpeta + '/' + data.archivo + '?t=' + Date.now());
     }
 
     setCargando(false);

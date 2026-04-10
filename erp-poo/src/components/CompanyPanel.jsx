@@ -33,24 +33,24 @@ export default function CompanyPanel({ isOpen, onClose, idRol, idAccs }) {
 
     fetch(API_URL + '/menu', { headers: headersAuth() })
       .then(res => res.json())
-      .then(data => setMenuUrl(data.url ? data.url + '?t=' + Date.now() : null))
+      .then(data => setMenuUrl(data.url ? API_URL + data.url + '?t=' + Date.now() : null))
       .catch(() => setMenuUrl(null));
 
     fetch(API_URL + '/evento', { headers: headersAuth() })
       .then(res => res.json())
-      .then(data => setEventoUrl(data.url ? data.url + '?t=' + Date.now() : null))
+      .then(data => setEventoUrl(data.url ? API_URL + data.url + '?t=' + Date.now() : null))
       .catch(() => setEventoUrl(null));
 
     fetch(API_URL + '/evento2', { headers: headersAuth() })
       .then(res => res.json())
-      .then(data => setEvento2Url(data.url ? data.url + '?t=' + Date.now() : null))
+      .then(data => setEvento2Url(data.url ? API_URL + data.url + '?t=' + Date.now() : null))
       .catch(() => setEvento2Url(null));
 
     // Evento mujeres: solo traer si es admin o es mujer
     if (puedeSubir || esMujer) {
       fetch(API_URL + '/evento-mujeres', { headers: headersAuth() })
         .then(res => res.json())
-        .then(data => setEventoMujeresUrl(data.url ? data.url + '?t=' + Date.now() : null))
+        .then(data => setEventoMujeresUrl(data.url ? API_URL + data.url + '?t=' + Date.now() : null))
         .catch(() => setEventoMujeresUrl(null));
     }
 
