@@ -29,6 +29,11 @@ export default function CorreosCorporativos() {
 
     // Contraseñas descifradas { id_correo: "password_texto" }
     var [passDescifrada, setPassDescifrada] = useState({});
+    var [desbloqueado, setDesbloqueado] = useState(false); // si ya se ingresó la clave AES
+    // Prompt de clave AES
+    var [pideClave, setPideClave] = useState(false);
+    var [claveAes, setClaveAes] = useState('');
+    var [descifrando, setDescifrando] = useState(false);
 
     // Copiar feedback
     var [copiado, setCopiado] = useState(null);
@@ -151,28 +156,54 @@ export default function CorreosCorporativos() {
     }
 
     function verPassword(id_correo) {
-        // Si ya está descifrada, ocultarla
+        // Si ya está descifrada, solo ocultar/mostrar
         if (passDescifrada[id_correo]) {
             var nuevo = Object.assign({}, passDescifrada);
             delete nuevo[id_correo];
             setPassDescifrada(nuevo);
             return;
         }
-        // Pedir al servidor que descifre con su clave AES
-        fetch(API_URL + '/correos/' + id_correo + '/ver-password', {
+        // Si ya se desbloqueó con la clave, mostrar la que ya tenemos en cache
+        if (desbloqueado) {
+            // La password no está en cache (correo nuevo añadido después del desbloqueo)
+            mostrarMensaje('Contraseña no disponible — vuelve a desbloquear', false);
+            return;
+        }
+        // Pedir la clave AES una sola vez
+        setPideClave(true);
+        setClaveAes('');
+    }
+
+    function descifrarTodas() {
+        if (!claveAes.trim()) {
+            mostrarMensaje('Ingresa la clave AES', false);
+            return;
+        }
+        setDescifrando(true);
+        fetch(API_URL + '/correos/ver-passwords', {
+            method: 'POST',
             headers: headersConToken(),
+            body: JSON.stringify({ clave_aes: claveAes }),
         })
             .then(function (r) { return r.json(); })
             .then(function (res) {
                 if (res.ok) {
-                    var nuevo = Object.assign({}, passDescifrada);
-                    nuevo[id_correo] = res.password;
-                    setPassDescifrada(nuevo);
+                    setPassDescifrada(res.passwords || {});
+                    setDesbloqueado(true);
+                    setPideClave(false);
+                    setClaveAes('');
+                    mostrarMensaje('Contraseñas desbloqueadas', true);
                 } else {
-                    mostrarMensaje(res.detail || 'Error al descifrar', false);
+                    mostrarMensaje(res.detail || 'Clave AES incorrecta', false);
                 }
             })
-            .catch(function () { mostrarMensaje('Error de conexión', false); });
+            .catch(function () { mostrarMensaje('Error de conexión', false); })
+            .finally(function () { setDescifrando(false); });
+    }
+
+    function bloquearTodas() {
+        setPassDescifrada({});
+        setDesbloqueado(false);
     }
 
     function copiarTexto(texto, id) {
@@ -236,7 +267,7 @@ export default function CorreosCorporativos() {
                     </div>
                 </div>
 
-                {/* Buscador */}
+                {/* Buscador + botón desbloquear */}
                 <div className="correos-filtros">
                     <div className="correos-search">
                         <IconoFa icono={faSearch} clase="correos-search-icon" />
@@ -248,6 +279,21 @@ export default function CorreosCorporativos() {
                             className="correos-search-input"
                         />
                     </div>
+                    <button
+                        className={'correos-btn-global ' + (desbloqueado ? 'desbloqueado' : '')}
+                        onClick={function () {
+                            if (desbloqueado) {
+                                bloquearTodas();
+                            } else {
+                                setPideClave(true);
+                                setClaveAes('');
+                            }
+                        }}
+                        title={desbloqueado ? 'Bloquear todas las contraseñas' : 'Desbloquear todas las contraseñas'}
+                    >
+                        <IconoFa icono={desbloqueado ? faUnlock : faLock} />
+                        {desbloqueado ? ' Bloquear' : ' Desbloquear'}
+                    </button>
                 </div>
 
                 {cargando ? (
@@ -434,6 +480,32 @@ export default function CorreosCorporativos() {
                 )}
             </div>
 
+            {/* Modal para pedir clave AES — desbloquea TODAS las contraseñas */}
+            {pideClave && (
+                <div className="correos-aes-overlay" onClick={function () { setPideClave(false); setClaveAes(''); }}>
+                    <div className="correos-aes-modal" onClick={function (e) { e.stopPropagation(); }}>
+                        <h3><IconoFa icono={faKey} /> Clave de descifrado</h3>
+                        <p>Ingresa la clave AES para desbloquear <strong>todas</strong> las contraseñas</p>
+                        <input
+                            type="password"
+                            value={claveAes}
+                            onChange={function (e) { setClaveAes(e.target.value); }}
+                            onKeyDown={function (e) { if (e.key === 'Enter') descifrarTodas(); }}
+                            placeholder="Clave AES..."
+                            className="correos-aes-input"
+                            autoFocus
+                        />
+                        <div className="correos-aes-acciones">
+                            <button className="correos-btn guardar" onClick={descifrarTodas} disabled={descifrando}>
+                                <IconoFa icono={faUnlock} /> {descifrando ? 'Descifrando...' : 'Desbloquear todo'}
+                            </button>
+                            <button className="correos-btn cancelar" onClick={function () { setPideClave(false); setClaveAes(''); }}>
+                                <IconoFa icono={faXmark} /> Cancelar
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
 
         </PageContent>
     );

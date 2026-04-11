@@ -91,10 +91,43 @@
 /* ── Filtros ── */
 .correos-filtros {
     margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    flex-wrap: wrap;
 }
 .correos-search {
     position: relative;
     max-width: 400px;
+    flex: 1;
+}
+.correos-btn-global {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.55rem 1rem;
+    border: 1px solid #2563eb;
+    border-radius: 8px;
+    font-size: 0.82rem;
+    font-weight: 600;
+    cursor: pointer;
+    background: #eff4ff;
+    color: #2563eb;
+    transition: all 0.2s;
+    white-space: nowrap;
+}
+.correos-btn-global:hover {
+    background: #2563eb;
+    color: #fff;
+}
+.correos-btn-global.desbloqueado {
+    background: #dcfce7;
+    border-color: #16a34a;
+    color: #16a34a;
+}
+.correos-btn-global.desbloqueado:hover {
+    background: #16a34a;
+    color: #fff;
 }
 .correos-search-icon {
     position: absolute;

@@ -108,27 +108,44 @@ def listar_correos(db: Session = Depends(get_db), token: dict = Depends(verifica
 
 
 # ═══════════════════════════════════════════
-#  VER CONTRASEÑA (descifrar con clave AES del servidor)
+#  VER TODAS LAS CONTRASEÑAS (descifrar con clave AES)
 # ═══════════════════════════════════════════
-@router.get("/correos/{id_correo}/ver-password")
-def ver_password(id_correo: int, db: Session = Depends(get_db), _=Depends(verificar_token)):
-    """Descifra la contraseña usando la clave AES del servidor (.env)."""
-    if not AES_KEY:
-        raise HTTPException(status_code=500, detail="Clave AES no configurada en el servidor")
-    row = db.execute(
+class VerPasswordsRequest(BaseModel):
+    clave_aes: str
+
+
+@router.post("/correos/ver-passwords")
+def ver_passwords(datos: VerPasswordsRequest, db: Session = Depends(get_db), token: dict = Depends(verificar_token)):
+    """Descifra TODAS las contraseñas de correos corporativos con la clave AES."""
+    id_empresa = token.get("id_emp")
+
+    # Obtener todos los correos de la empresa
+    rows = db.execute(
         text("""
-            SELECT CAST(AES_DECRYPT(PASS_COORP, :key) AS CHAR) AS pass_texto
-            FROM correo_coorp
-            WHERE ID_CORREO = :id
+            SELECT cc.ID_CORREO,
+                   CAST(AES_DECRYPT(cc.PASS_COORP, :key) AS CHAR) AS pass_texto
+            FROM correo_coorp cc
+            INNER JOIN personal p ON p.ID_PERSONAL = cc.ID_PERSONAL
+            INNER JOIN contrato ct ON ct.ID_PERSONAL = p.ID_PERSONAL
+            INNER JOIN cargo ca ON ca.ID_CARGO = ct.ID_CARGO
+            WHERE ca.ID_EMP = :id_emp
+              AND ct.ID_ESTADO_CONTRATO = 1
         """),
-        {"key": AES_KEY, "id": id_correo}
-    ).fetchone()
-    if not row:
-        raise HTTPException(status_code=404, detail="Correo no encontrado")
-    password = row[0]
-    if not password:
-        raise HTTPException(status_code=500, detail="No se pudo descifrar — la clave AES del servidor no coincide con la usada al cifrar")
-    return {"ok": True, "password": password}
+        {"key": datos.clave_aes, "id_emp": id_empresa}
+    ).fetchall()
+
+    # Verificar que al menos una se descifró (clave válida)
+    passwords = {}
+    alguna_ok = False
+    for row in rows:
+        if row[1]:
+            passwords[row[0]] = row[1]
+            alguna_ok = True
+
+    if rows and not alguna_ok:
+        raise HTTPException(status_code=403, detail="Clave AES incorrecta")
+
+    return {"ok": True, "passwords": passwords}
 
 
 # ═══════════════════════════════════════════
