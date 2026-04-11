@@ -3,7 +3,7 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import IconoFa from './IconoFa'; 
 import PermisoService from '../servicios/PermisoService';
 import { getSession } from '../utils/session';
-import { faBars, faHouse, faBoxArchive, faUsers, faRightFromBracket, faChevronDown, faChevronRight, faPeopleGroup, faUserTie, faCalendarCheck, faClock, faLaptop, faPlus, faArrowsRotate, faTicket, faListCheck, faShieldHalved, faSimCard, faUserCircle, faCakeCandles, faKey, faWrench, faNetworkWired } from '@fortawesome/free-solid-svg-icons';
+import { faBars, faHouse, faBoxArchive, faUsers, faRightFromBracket, faChevronDown, faChevronRight, faPeopleGroup, faUserTie, faCalendarCheck, faClock, faLaptop, faPlus, faArrowsRotate, faTicket, faListCheck, faShieldHalved, faSimCard, faUserCircle, faCakeCandles, faKey, faWrench, faNetworkWired, faEnvelope } from '@fortawesome/free-solid-svg-icons';
 import '../styles/Sidebar.css';
 
 export default function Sidebar({ isOpen, onToggleMenu }) {
@@ -360,6 +360,19 @@ export default function Sidebar({ isOpen, onToggleMenu }) {
                     >
                         <IconoFa icono={faSimCard} />
                         {isOpen && <span className="menu-text">Telefonía</span>}
+                    </Link>
+                )}
+
+                {/* === Correos Corporativos === */}
+                {tieneAcceso('CORREOS') && (
+                    <Link
+                        to="/dashboard/correos"
+                        className={'menu-link ' + (location.pathname === '/dashboard/correos' ? 'active' : '')}
+                        title={!isOpen ? 'Correos Corporativos' : undefined}
+                        onClick={handleNavClick}
+                    >
+                        <IconoFa icono={faEnvelope} />
+                        {isOpen && <span className="menu-text">Correos Corp.</span>}
                     </Link>
                 )}
 

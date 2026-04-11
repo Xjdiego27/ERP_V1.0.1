@@ -672,6 +672,30 @@ body.dark-mode .asist-horario-badge {
   }
 }
 
+@media (max-width: 480px) {
+  .detalle-container {
+    padding: 0.75rem;
+  }
+  .detalle-cabecera {
+    padding: 0.75rem;
+  }
+  .detalle-tabs button {
+    font-size: 0.72rem;
+    padding: 6px 10px;
+  }
+  .det-campo label {
+    font-size: 0.7rem;
+  }
+  .det-campo input,
+  .det-campo select {
+    font-size: 0.78rem;
+    padding: 5px 8px;
+  }
+  .asist-tabla-scroll {
+    overflow-x: auto;
+  }
+}
+
 .asist-contenedor {
   position: relative;
 }

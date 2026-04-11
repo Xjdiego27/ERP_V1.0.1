@@ -307,7 +307,6 @@ body.dark-mode .noti-tipo-falta .noti-item-icono { background: #3a1515; color: #
     z-index: 120;
 }
 .header-hamburger svg {
-    left: 850px;
     display: block;
     fill: var(--text-primary, #333);
 }
@@ -380,8 +379,8 @@ body.dark-mode .noti-tipo-falta .noti-item-icono { background: #3a1515; color: #
     }
     .noti-dropdown {
         right: -60px;
-        min-width: 280px;
-        max-width: 320px;
+        min-width: 260px;
+        max-width: calc(100vw - 20px);
     }
 }
 
@@ -396,5 +395,11 @@ body.dark-mode .noti-tipo-falta .noti-item-icono { background: #3a1515; color: #
 
     .header-icon:not(.dark-toggle):not(:first-child) {
         display: none;
+    }
+
+    .noti-dropdown {
+        right: -10px;
+        min-width: 240px;
+        max-width: calc(100vw - 16px);
     }
 }

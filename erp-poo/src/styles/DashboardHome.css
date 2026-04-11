@@ -550,6 +550,24 @@ body.glass-off.dark-mode .dh-item-card {
   }
 }
 
+@media (max-width: 480px) {
+  .dh-content {
+    padding: 10px 8px;
+    gap: 10px;
+  }
+  .dh-cal-grid {
+    gap: 2px;
+  }
+  .dh-cal-day {
+    font-size: 0.7rem;
+    padding: 4px 2px;
+    min-height: 28px;
+  }
+  .dh-tarea-modal {
+    max-width: calc(100vw - 20px);
+  }
+}
+
 
 /* ═══════════════════════════════════════════
    TAREAS EN CALENDARIO

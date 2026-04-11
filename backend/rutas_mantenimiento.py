@@ -118,7 +118,7 @@ def listar_mantenimientos(db: Session = Depends(get_db), _=Depends(verificar_tok
 #  CATÁLOGOS PARA EL FORMULARIO
 # ═══════════════════════════════════════════
 @router.get("/mantenimientos/catalogos")
-def catalogos_mantenimiento(db: Session = Depends(get_db), _=Depends(verificar_token)):
+def catalogos_mantenimiento(db: Session = Depends(get_db), token: dict = Depends(verificar_token)):
     # Equipos asignados (con info completa)
     equipos_asig = []
     if AsignacionEquipo and Equipo:
@@ -179,8 +179,9 @@ def catalogos_mantenimiento(db: Session = Depends(get_db), _=Depends(verificar_t
                 "id_personal": a.ID_PERSONAL,
             })
 
-    # Técnicos: solo personal del departamento TI (soporte)
+    # Técnicos: solo personal del departamento TI (soporte) de la empresa
     tecnicos = []
+    id_empresa = token.get("id_emp")
     if Personal and Acceso and Contrato and Cargo:
         filas = (
             db.query(Personal, Contrato)
@@ -191,6 +192,7 @@ def catalogos_mantenimiento(db: Session = Depends(get_db), _=Depends(verificar_t
                 Acceso.ID_ESTADO == 1,
                 Contrato.ID_ESTADO_CONTRATO == 1,
                 Cargo.ID_DEPART == DEPTO_TI_ID,
+                Cargo.ID_EMP == id_empresa,
             )
             .all()
         )

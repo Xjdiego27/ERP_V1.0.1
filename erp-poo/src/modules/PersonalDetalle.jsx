@@ -42,6 +42,7 @@ export default function PersonalDetalle() {
   var [monedas, setMonedas] = useState([]);
   var [tiposCuenta, setTiposCuenta] = useState([]);
   var [departProvincias, setDepartProvincias] = useState([]);
+  var [empresas, setEmpresas] = useState([]);
   var [cargando, setCargando] = useState(true);
   var [contactos, setContactos] = useState([]);
   var [seguros, setSeguros] = useState(null);
@@ -74,7 +75,7 @@ export default function PersonalDetalle() {
     id_tipocontr: '1', id_modalidad: '', sueldo: '', asig_fam: 0,
     fech_ingr: '', fech_cese: '',
     id_estcivil: '', id_acadm: '', id_distr: '',
-    id_prov_depart: '',
+    id_prov_depart: '', id_empresa: '',
   });
 
   // Cargar catálogos + empleado (Promise.all para llamadas independientes)
@@ -111,6 +112,7 @@ export default function PersonalDetalle() {
       safeFetch(API_URL + '/monedas'),
       safeFetch(API_URL + '/tipos-cuenta'),
       safeFetch(API_URL + '/depart-provincias'),
+      fetch(API_URL + '/empresa', { signal: signal }).then(function (r) { return r.ok ? r.json() : []; }).catch(function () { return []; }),
     ]).then(function (res) {
       if (signal.aborted) return;
       setAreas(res[0]);
@@ -128,6 +130,7 @@ export default function PersonalDetalle() {
       setMonedas(res[12]);
       setTiposCuenta(res[13]);
       setDepartProvincias(res[14]);
+      setEmpresas(Array.isArray(res[15]) ? res[15] : []);
       console.log('Depart. provincias cargadas:', res[14].length, res[14]);
     });
 
@@ -245,6 +248,7 @@ export default function PersonalDetalle() {
     if (!datosLimpios.celular) datosLimpios.celular = null;
     if (!datosLimpios.direccion) datosLimpios.direccion = null;
     datosLimpios.id_prov_depart = datosLimpios.id_prov_depart ? Number(datosLimpios.id_prov_depart) : null;
+    datosLimpios.id_empresa = datosLimpios.id_empresa ? Number(datosLimpios.id_empresa) : null;
     if (!datosLimpios.sueldo) datosLimpios.sueldo = null;
     if (!datosLimpios.fech_ingr) datosLimpios.fech_ingr = null;
     if (!datosLimpios.fech_cese) datosLimpios.fech_cese = null;
@@ -713,6 +717,20 @@ export default function PersonalDetalle() {
                   </div>
 
                   {/* Nombres + Apellido Paterno */}
+                  {esNuevo && empresas.length > 0 && (
+                    <div className="det-fila">
+                      <div className="det-campo">
+                        <label className="det-label">Empresa</label>
+                        <select className="det-select" value={datos.id_empresa}
+                          onChange={function (e) { cambiarCampo('id_empresa', e.target.value); }}>
+                          <option value="">-- Empresa del usuario --</option>
+                          {empresas.map(function (emp) {
+                            return <option key={emp.ID_EMP} value={emp.ID_EMP}>{emp.NOMBRE}</option>;
+                          })}
+                        </select>
+                      </div>
+                    </div>
+                  )}
                   <div className="det-fila">
                     <div className="det-campo">
                       <label className="det-label">Nombres</label>
@@ -1063,7 +1081,12 @@ export default function PersonalDetalle() {
           {!editandoCuentas ? (
             <div className="det-cuentas-view">
               <div className="det-cuentas-actions">
-                <button className="det-btn det-btn-editar" onClick={function () { setEditandoCuentas(true); }}>
+                <button className="det-btn det-btn-editar" onClick={function () {
+                  if (!cuentas || cuentas.length === 0) {
+                    setCuentas([{ id_tipo_cuenta: '', id_banco: '', cuenta_banc: '', id_moneda: '' }]);
+                  }
+                  setEditandoCuentas(true);
+                }}>
                   <IconoFa icono={faPen} /> Editar
                 </button>
               </div>

@@ -628,14 +628,15 @@ body.dark-mode .mnt-foto-thumb { border-color: #334155; }
 body.dark-mode .mnt-foto-vacia { border-color: #475569; color: #475569; }
 
 /* ── Responsive ── */
-@media (max-width: 900px) {
+@media (max-width: 768px) {
     .mnt-stats { grid-template-columns: repeat(2, 1fr); }
     .mnt-form-grid { grid-template-columns: 1fr; }
     .mnt-header { flex-direction: column; align-items: stretch; }
 }
-@media (max-width: 600px) {
+@media (max-width: 480px) {
     .mnt-stats { grid-template-columns: 1fr 1fr; gap: 8px; }
     .mnt-stat-card { padding: 10px 12px; }
     .mnt-filtros { flex-direction: column; }
     .mnt-filtro-group { flex-wrap: wrap; }
+    .mnt-container { padding: 1rem; }
 }

@@ -140,7 +140,8 @@ def listar_personal_horarios(db: Session = Depends(get_db), token: dict = Depend
         Horario, Horario.ID_HORARIO == Contrato.ID_HORARIO
     ).filter(
         Cargo.ID_EMP == id_empresa,
-        Contrato.ID_ESTADO_CONTRATO == 1
+        Contrato.ID_ESTADO_CONTRATO == 1,
+        Acceso.ID_ESTADO == 1
     ).all()
 
     resultado = []

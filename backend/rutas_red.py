@@ -5,7 +5,7 @@ from pydantic import BaseModel
 from typing import Optional
 from sqlalchemy.orm import Session
 from sqlalchemy import text
-from database import get_db, Red, Equipo
+from database import get_db, Red, Equipo, EspecificacionesTec
 from auth_token import verificar_token
 
 router = APIRouter()
@@ -26,14 +26,22 @@ def listar_ips(db: Session = Depends(get_db), _=Depends(verificar_token)):
 
     filas = db.query(Red).order_by(Red.IP).all()
 
+    # Mapa de especificaciones para obtener CODIGOE
+    espec_map = {}
+    if EspecificacionesTec:
+        for es in db.query(EspecificacionesTec).all():
+            espec_map[es.ID_ESPEC] = getattr(es, 'CODIGOE', None)
+
     # Mapa de equipos para evitar N+1
     equipo_map = {}
     if Equipo:
         for e in db.query(Equipo).all():
+            id_espec = getattr(e, 'ID_ESPEC', None)
             equipo_map[e.ID_EQUIPO] = {
                 "id": e.ID_EQUIPO,
                 "serie": getattr(e, 'SERIE_EQUIPO', None),
                 "nombre": getattr(e, 'NOMBRE_EQUIPO', None),
+                "codigoe": espec_map.get(id_espec) if id_espec else None,
             }
 
     lista = []
@@ -66,13 +74,21 @@ def listar_ips(db: Session = Depends(get_db), _=Depends(verificar_token)):
 # ═══════════════════════════════════════════
 @router.get("/red/catalogos")
 def catalogos_red(db: Session = Depends(get_db), _=Depends(verificar_token)):
+    # Mapa de especificaciones para obtener CODIGOE
+    espec_map = {}
+    if EspecificacionesTec:
+        for es in db.query(EspecificacionesTec).all():
+            espec_map[es.ID_ESPEC] = getattr(es, 'CODIGOE', None)
+
     equipos = []
     if Equipo:
         for e in db.query(Equipo).order_by(Equipo.ID_EQUIPO).all():
+            id_espec = getattr(e, 'ID_ESPEC', None)
             equipos.append({
                 "id": e.ID_EQUIPO,
                 "serie": getattr(e, 'SERIE_EQUIPO', None),
                 "nombre": getattr(e, 'NOMBRE_EQUIPO', None),
+                "codigoe": espec_map.get(id_espec) if id_espec else None,
             })
     return {"etiquetas": ETIQUETAS_ENUM, "equipos": equipos}
 

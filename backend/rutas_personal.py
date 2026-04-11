@@ -54,6 +54,7 @@ class PersonalSchema(BaseModel):
     id_acadm: Optional[int] = None
     id_distr: Optional[int] = None
     id_prov_depart: Optional[int] = None
+    id_empresa: Optional[int] = None  # Empresa destino (opcional, por defecto la del token)
 
 # === LISTAR PERSONAL (optimizado: consultas por lote en vez de N+1) ===
 @router.get("/personal")
@@ -338,8 +339,8 @@ async def crear_personal(datos: PersonalSchema, db: Session = Depends(get_db), t
     if faltantes:
         raise HTTPException(status_code=400, detail='Campos obligatorios faltantes: ' + ', '.join(faltantes))
     try:
-        # Obtener id_empresa del token
-        id_emp = token.get('id_emp', 1)
+        # Obtener id_empresa: si el front envía id_empresa, usarlo; si no, usar el del token
+        id_emp = datos.id_empresa if datos.id_empresa else token.get('id_emp', 1)
         usuario_base = (datos.nombres[0] + datos.ape_paterno).upper()
         usuario = usuario_base
         contador = 1

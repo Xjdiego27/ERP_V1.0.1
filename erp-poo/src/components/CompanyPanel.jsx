@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import AsidePanel from './AsideContainer';
 import IconoFa from './IconoFa';
 import { faXmark } from '@fortawesome/free-solid-svg-icons';
@@ -27,38 +27,60 @@ export default function CompanyPanel({ isOpen, onClose, idRol, idAccs }) {
   var generoUsuario = sessionData && sessionData.usuario ? sessionData.usuario.genero : null;
   var esMujer = generoUsuario === 'F';
 
-  // Traer datos cuando se abre el panel
-  useEffect(() => {
-    if (!isOpen) return;
+  // Ref para guardar las URLs anteriores y evitar re-renders innecesarios
+  const prevUrlsRef = useRef({});
 
-    fetch(API_URL + '/menu', { headers: headersAuth() })
-      .then(res => res.json())
-      .then(data => setMenuUrl(data.url ? API_URL + data.url + '?t=' + Date.now() : null))
-      .catch(() => setMenuUrl(null));
+  // Función reutilizable para cargar todas las imágenes y cumpleaños
+  const cargarDatos = useCallback(function (silencioso) {
+    var h = headersAuth();
+    var t = Date.now();
 
-    fetch(API_URL + '/evento', { headers: headersAuth() })
-      .then(res => res.json())
-      .then(data => setEventoUrl(data.url ? API_URL + data.url + '?t=' + Date.now() : null))
-      .catch(() => setEventoUrl(null));
-
-    fetch(API_URL + '/evento2', { headers: headersAuth() })
-      .then(res => res.json())
-      .then(data => setEvento2Url(data.url ? API_URL + data.url + '?t=' + Date.now() : null))
-      .catch(() => setEvento2Url(null));
-
-    // Evento mujeres: solo traer si es admin o es mujer
-    if (puedeSubir || esMujer) {
-      fetch(API_URL + '/evento-mujeres', { headers: headersAuth() })
-        .then(res => res.json())
-        .then(data => setEventoMujeresUrl(data.url ? API_URL + data.url + '?t=' + Date.now() : null))
-        .catch(() => setEventoMujeresUrl(null));
+    function fetchImg(endpoint, setter, key) {
+      fetch(API_URL + '/' + endpoint, { headers: h })
+        .then(function (res) { return res.json(); })
+        .then(function (data) {
+          var nuevaUrl = data.url ? API_URL + data.url + '?t=' + t : null;
+          // Solo actualizar si la URL base cambió (evita parpadeos)
+          var urlBase = data.url || null;
+          if (prevUrlsRef.current[key] !== urlBase) {
+            prevUrlsRef.current[key] = urlBase;
+            setter(nuevaUrl);
+          }
+        })
+        .catch(function () { if (!silencioso) setter(null); });
     }
 
-    fetch(API_URL + '/cumpleanos', { headers: headersAuth() })
-      .then(res => res.json())
-      .then(data => setCumpleanos(data))
-      .catch(() => setCumpleanos([]));
-  }, [isOpen]);
+    fetchImg('menu', setMenuUrl, 'menu');
+    fetchImg('evento', setEventoUrl, 'evento');
+    fetchImg('evento2', setEvento2Url, 'evento2');
+
+    if (puedeSubir || esMujer) {
+      fetchImg('evento-mujeres', setEventoMujeresUrl, 'evento-mujeres');
+    }
+
+    // Cumpleaños solo en carga inicial (no cambia frecuentemente)
+    if (!silencioso) {
+      fetch(API_URL + '/cumpleanos', { headers: h })
+        .then(function (res) { return res.json(); })
+        .then(function (data) { setCumpleanos(data); })
+        .catch(function () { setCumpleanos([]); });
+    }
+  }, [puedeSubir, esMujer]);
+
+  // Carga inicial al abrir + polling cada 30s mientras esté abierto
+  useEffect(function () {
+    if (!isOpen) return;
+
+    // Carga inmediata
+    cargarDatos(false);
+
+    // Polling silencioso cada 30s (solo imágenes, no cumpleaños)
+    var intervalo = setInterval(function () {
+      cargarDatos(true);
+    }, 30000);
+
+    return function () { clearInterval(intervalo); };
+  }, [isOpen, cargarDatos]);
 
   return (
     <AsidePanel isOpen={isOpen}>

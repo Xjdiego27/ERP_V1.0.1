@@ -20,6 +20,9 @@ class Settings(BaseSettings):
     # Prod: C:\nginx\html\erp  (donde nginx sirve los archivos)
     static_dir: str = ''
 
+    # Clave AES para encriptar/desencriptar contraseñas de correos corporativos
+    aes_key: str = 'clave_erp_2026'
+
     class Config:
         env_file = '.env'
         env_file_encoding = 'utf-8'
@@ -122,6 +125,9 @@ PlanChips = Base.classes.plan_chips if hasattr(Base.classes, 'plan_chips') else 
 OperadorChips = Base.classes.operador_chips if hasattr(Base.classes, 'operador_chips') else None
 DescuentoChips = Base.classes.descuento_chips if hasattr(Base.classes, 'descuento_chips') else None
 AsignacionChip = Base.classes.asignacion_chip if hasattr(Base.classes, 'asignacion_chip') else None
+
+# ── Correos corporativos ──
+CorreoCoorp = Base.classes.correo_coorp if hasattr(Base.classes, 'correo_coorp') else None
 
 # ── SAP ──
 FamiliaSap = Base.classes.familia_sap if hasattr(Base.classes, 'familia_sap') else None

@@ -7,7 +7,7 @@ from sqlalchemy.orm import Session
 from database import (
     get_db, settings, Equipo, TipoEquipo, EstadoEquipo, Gama, Marca, Modelo,
     Procesador, TipoRam, Ram, TipoDisco, CapacidadDisco, Disco,
-    EspecificacionesTec, Almacenamiento, Personal, Contrato, Acceso,
+    EspecificacionesTec, Almacenamiento, Personal, Contrato, Acceso, Cargo,
     AsignacionEquipo, Licencia, AsignacionLicencia
 )
 from auth_token import verificar_token
@@ -574,17 +574,21 @@ def equipos_disponibles(db: Session = Depends(get_db), _=Depends(verificar_token
 
 
 @router.get("/equipos/empleados-activos")
-def empleados_activos(db: Session = Depends(get_db), _=Depends(verificar_token)):
-    """Lista de empleados con contrato activo y cuenta activa."""
+def empleados_activos(db: Session = Depends(get_db), token: dict = Depends(verificar_token)):
+    """Lista de empleados con contrato activo y cuenta activa, filtrados por empresa."""
     if not Personal or not Contrato:
         return []
+    id_empresa = token.get("id_emp")
     registros = db.query(Personal).join(
         Acceso, Personal.ID_ACCS == Acceso.ID_ACCS
     ).join(
         Contrato, Contrato.ID_PERSONAL == Personal.ID_PERSONAL
+    ).join(
+        Cargo, Cargo.ID_CARGO == Contrato.ID_CARGO
     ).filter(
         Acceso.ID_ESTADO == 1,
-        Contrato.ID_ESTADO_CONTRATO == 1
+        Contrato.ID_ESTADO_CONTRATO == 1,
+        Cargo.ID_EMP == id_empresa
     ).order_by(Personal.APE_PATERNO).all()
     return [{"id_personal": p.ID_PERSONAL, "nombre": f"{p.APE_PATERNO} {p.APE_MATERNO}, {p.NOMBRES}"} for p in registros]
 

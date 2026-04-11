@@ -22,6 +22,9 @@ Acceso    = Base.classes.acceso
 Contrato  = Base.classes.contrato
 Cargo     = Base.classes.cargo
 Empresa   = Base.classes.empresa if hasattr(Base.classes, 'empresa') else None
+Area      = Base.classes.area if hasattr(Base.classes, 'area') else None
+Chips     = Base.classes.chips if hasattr(Base.classes, 'chips') else None
+AsignacionChip = Base.classes.asignacion_chip if hasattr(Base.classes, 'asignacion_chip') else None
 
 
 def get_db():

@@ -30,27 +30,40 @@ export default function SeccionImagen(props) {
     var archivo = e.target.files[0];
     if (!archivo) return;
 
+    // Preview local INMEDIATO — se muestra al instante sin esperar al servidor
+    var previewUrl = URL.createObjectURL(archivo);
+    props.onCambio(previewUrl);
+
     setCargando(true);
 
     // FormData es como un "sobre" para enviar archivos por HTTP
     var formData = new FormData();
     formData.append('archivo', archivo);
 
-    // Enviamos al backend
-    var respuesta = await fetch(API_URL + '/' + props.tipo + '?id_accs=' + props.idAccs, {
-      method: 'POST',
-      headers: headersAuth(),
-      body: formData,
-    });
+    try {
+      // Enviamos al backend
+      var respuesta = await fetch(API_URL + '/' + props.tipo + '?id_accs=' + props.idAccs, {
+        method: 'POST',
+        headers: headersAuth(),
+        body: formData,
+      });
 
-    var data = await respuesta.json();
+      var data = await respuesta.json();
 
-    // Si el backend respondió con el nombre del archivo, actualizamos la imagen
-    if (data.archivo) {
-      props.onCambio(API_URL + '/assets/' + carpeta + '/' + data.archivo + '?t=' + Date.now());
+      // Reemplazar preview local por la URL real del servidor
+      if (data.archivo) {
+        URL.revokeObjectURL(previewUrl);
+        props.onCambio(API_URL + '/assets/' + carpeta + '/' + data.archivo + '?t=' + Date.now());
+      }
+    } catch (err) {
+      // Si falla la subida, quitar el preview
+      URL.revokeObjectURL(previewUrl);
+      props.onCambio(null);
     }
 
     setCargando(false);
+    // Limpiar el input para permitir re-subir el mismo archivo
+    if (inputRef.current) inputRef.current.value = '';
   }
 
   // --- FUNCIÓN: Eliminar imagen ---

@@ -120,7 +120,7 @@ class PermisoService:
             .join(Acceso, Acceso.ID_ACCS == Personal.ID_ACCS)
             .outerjoin(Contrato, Contrato.ID_PERSONAL == Personal.ID_PERSONAL)
             .outerjoin(Cargo, Cargo.ID_CARGO == Contrato.ID_CARGO)
-            .filter(Cargo.ID_EMP == id_empresa, Contrato.ID_ESTADO_CONTRATO == 1)
+            .filter(Cargo.ID_EMP == id_empresa, Contrato.ID_ESTADO_CONTRATO == 1, Acceso.ID_ESTADO == 1)
             .all()
         )
 

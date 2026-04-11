@@ -97,7 +97,8 @@ export default function Red() {
             lista = lista.filter(function (i) {
                 return (i.ip && i.ip.toLowerCase().indexOf(q) >= 0) ||
                     (i.descripcion && i.descripcion.toLowerCase().indexOf(q) >= 0) ||
-                    (i.etiqueta && i.etiqueta.toLowerCase().indexOf(q) >= 0);
+                    (i.etiqueta && i.etiqueta.toLowerCase().indexOf(q) >= 0) ||
+                    (i.equipo && i.equipo.codigoe && i.equipo.codigoe.toLowerCase().indexOf(q) >= 0);
             });
         }
         return lista;
@@ -327,6 +328,7 @@ export default function Red() {
                                                             <th>Etiqueta</th>
                                                             <th>Descripción</th>
                                                             <th>Equipo</th>
+                                                            <th>Código</th>
                                                             <th className="red-th-acc">Acciones</th>
                                                         </tr>
                                                     </thead>
@@ -383,12 +385,16 @@ export default function Red() {
                                                                             >
                                                                                 <option value="">Sin equipo</option>
                                                                                 {catalogos.equipos.map(function (eq) {
-                                                                                    return <option key={eq.id} value={eq.id}>{eq.serie || eq.nombre || 'Equipo #' + eq.id}</option>;
+                                                                                    var label = eq.codigoe || eq.serie || eq.nombre || 'Equipo #' + eq.id;
+                                                                                    return <option key={eq.id} value={eq.id}>{label}</option>;
                                                                                 })}
                                                                             </select>
                                                                         ) : (
                                                                             <span>{ip.equipo ? (ip.equipo.serie || ip.equipo.nombre || '#' + ip.equipo.id) : '—'}</span>
                                                                         )}
+                                                                    </td>
+                                                                    <td>
+                                                                        <span className="red-td-codigo">{ip.equipo && ip.equipo.codigoe ? ip.equipo.codigoe : '—'}</span>
                                                                     </td>
                                                                     <td className="red-td-acc">
                                                                         {esEditando ? (

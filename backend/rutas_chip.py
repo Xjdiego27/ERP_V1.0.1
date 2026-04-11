@@ -4,7 +4,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 from database import (
     get_db, Chips, PlanChips, OperadorChips, DescuentoChips,
-    AsignacionChip, Personal, Contrato, Acceso, Empresa
+    AsignacionChip, Personal, Contrato, Acceso, Empresa, Cargo
 )
 from auth_token import verificar_token
 
@@ -125,21 +125,26 @@ def personal_disponible(db: Session = Depends(get_db), token: dict = Depends(ver
     if not Personal or not Contrato:
         return []
     filtro_emp = id_emp if id_emp else token.get("id_emp", 1)
-    contratos = db.query(Contrato).filter(
-        Contrato.ID_EMP == filtro_emp,
-        Contrato.ID_ESTADO_CONTRATO == 1
-    ).all()
-    ids = [ct.ID_PERSONAL for ct in contratos]
-    if not ids:
-        return []
-    personal = db.query(Personal).filter(Personal.ID_PERSONAL.in_(ids)).order_by(Personal.APE_PATERNO).all()
+    registros = (
+        db.query(Personal)
+        .join(Acceso, Acceso.ID_ACCS == Personal.ID_ACCS)
+        .join(Contrato, Contrato.ID_PERSONAL == Personal.ID_PERSONAL)
+        .join(Cargo, Cargo.ID_CARGO == Contrato.ID_CARGO)
+        .filter(
+            Acceso.ID_ESTADO == 1,
+            Contrato.ID_ESTADO_CONTRATO == 1,
+            Cargo.ID_EMP == filtro_emp
+        )
+        .order_by(Personal.APE_PATERNO)
+        .all()
+    )
     return [
         {
             "id": p.ID_PERSONAL,
             "nombre": p.NOMBRES + ' ' + p.APE_PATERNO + ' ' + p.APE_MATERNO,
             "num_doc": p.NUM_DOC,
         }
-        for p in personal
+        for p in registros
     ]
 
 

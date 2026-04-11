@@ -354,7 +354,7 @@
     background: var(--bg-card, #fff);
     border-radius: 12px;
     padding: 1.5rem;
-    min-width: 400px;
+    width: 90vw;
     max-width: 600px;
     max-height: 80vh;
     overflow-y: auto;
@@ -411,7 +411,8 @@
 
 /* ── Historial modal ── */
 .chip-modal-historial {
-    min-width: 550px;
+    width: 95vw;
+    max-width: 650px;
 }
 .chip-tabla-historial {
     font-size: 0.8rem;
@@ -421,18 +422,19 @@
 /* ══════════════════════════════
    RESPONSIVE
    ══════════════════════════════ */
-@media (max-width: 900px) {
+@media (max-width: 768px) {
     .chip-stats { grid-template-columns: repeat(2, 1fr); }
     .chip-form-campos { grid-template-columns: 1fr 1fr; }
-    .chip-modal { min-width: 90vw; }
-    .chip-modal-historial { min-width: 90vw; }
+    .chip-modal { width: 95vw; max-width: none; }
+    .chip-modal-historial { width: 95vw; max-width: none; }
 }
 
-@media (max-width: 600px) {
+@media (max-width: 480px) {
     .chip-container { padding: 1rem; }
     .chip-stats { grid-template-columns: 1fr 1fr; gap: 0.7rem; }
     .chip-toolbar { flex-direction: column; align-items: stretch; }
     .chip-busqueda { max-width: 100%; }
     .chip-form-campos { grid-template-columns: 1fr; }
     .chip-stat-num { font-size: 1.2rem; }
+    .chip-modal { padding: 1rem; }
 }

@@ -1,8 +1,9 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
+import { createPortal } from 'react-dom';
 import IconoFa from './IconoFa';
 import StickerPicker from './StickerPicker';
 import ModalImagen from './ModalImagen';
-import { faTimes, faPaperPlane, faCircle, faMinus, faExpand, faFaceSmile, faBolt, faPaperclip, faCheck, faCheckDouble } from '@fortawesome/free-solid-svg-icons';
+import { faTimes, faPaperPlane, faCircle, faMinus, faExpand, faFaceSmile, faBolt, faPaperclip, faCheck, faCheckDouble, faEnvelope, faPhone, faBriefcase, faBuilding, faCopy, faMobileAlt } from '@fortawesome/free-solid-svg-icons';
 import { CHAT_URL, obtenerToken } from '../auth';
 import { getSession } from '../utils/session';
 import { formatHora as formatHoraUtil, subirArchivo as subirArchivoUtil, renderContenidoMensaje } from '../utils/chatUtils';
@@ -53,6 +54,9 @@ export default function ChatVentana({ contacto, socket, onCerrar, posicion, enLi
     const [sacudiendo, setSacudiendo] = useState(false);
     const [arrastrando, setArrastrando] = useState(false);
     const [imagenExpandida, setImagenExpandida] = useState(null);
+    const [perfilAbierto, setPerfilAbierto] = useState(false);
+    const [datosPerfil, setDatosPerfil] = useState(null);
+    const [cargandoPerfil, setCargandoPerfil] = useState(false);
     const chatBodyRef = useRef(null);
     const inputRef = useRef(null);
     const escribiendoTimer = useRef(null);
@@ -315,6 +319,23 @@ export default function ChatVentana({ contacto, socket, onCerrar, posicion, enLi
     // ── Formato hora (usa util compartido) ──
     const formatHora = formatHoraUtil;
 
+    // ── Perfil del contacto ──
+    function abrirPerfil() {
+        setPerfilAbierto(true);
+        setCargandoPerfil(true);
+        const token = obtenerToken();
+        fetch(CHAT_URL + '/contactos/' + contacto.id_personal + '/perfil', {
+            headers: { 'Authorization': 'Bearer ' + token },
+        })
+            .then(r => r.ok ? r.json() : null)
+            .then(data => { setDatosPerfil(data); setCargandoPerfil(false); })
+            .catch(() => setCargandoPerfil(false));
+    }
+
+    function copiarTexto(txt) {
+        navigator.clipboard.writeText(txt).catch(() => {});
+    }
+
     // Posición de la ventana
     const offsetRight = modeMobile ? 0 : (panelAbierto ? 354 : 80) + posicion * 320;
 
@@ -338,7 +359,7 @@ export default function ChatVentana({ contacto, socket, onCerrar, posicion, enLi
                 style={{ cursor: minimizada ? 'pointer' : 'default' }}
             >
                 <div className="chat-ventana-header-info">
-                    <div className="chat-ventana-avatar-mini">
+                    <div className="chat-ventana-avatar-mini chat-avatar-clickable" onClick={(e) => { e.stopPropagation(); abrirPerfil(); }}>
                         {contacto.foto ? (
                             <img src={'/assets/perfiles/' + contacto.foto} alt="" />
                         ) : (
@@ -348,7 +369,7 @@ export default function ChatVentana({ contacto, socket, onCerrar, posicion, enLi
                             <IconoFa icono={faCircle} />
                         </span>
                     </div>
-                    <div className="chat-ventana-nombre">
+                    <div className="chat-ventana-nombre chat-nombre-clickable" onClick={(e) => { e.stopPropagation(); abrirPerfil(); }}>
                         <strong>{contacto.nombre.split(' ').slice(0, 2).join(' ')}</strong>
                         {escribiendo && <span className="chat-escribiendo">escribiendo...</span>}
                     </div>
@@ -400,7 +421,7 @@ export default function ChatVentana({ contacto, socket, onCerrar, posicion, enLi
                                 return (
                                     <div key={idx} className={'chat-msg ' + (esMio ? 'mio' : 'suyo')}>
                                         {!esMio && (
-                                            <div className="chat-ventana-avatar-mini">
+                                            <div className="chat-ventana-avatar-mini chat-avatar-clickable" onClick={abrirPerfil}>
                                                 {contacto.foto ? (
                                                     <img src={'/assets/perfiles/' + contacto.foto} alt="" />
                                                 ) : (
@@ -482,6 +503,111 @@ export default function ChatVentana({ contacto, socket, onCerrar, posicion, enLi
                         <ModalImagen url={imagenExpandida} onCerrar={() => setImagenExpandida(null)} />
                     )}
                 </>
+            )}
+
+            {/* ── Modal de perfil del contacto ── */}
+            {perfilAbierto && createPortal(
+                <div className="chat-perfil-overlay" onClick={() => setPerfilAbierto(false)}>
+                    <div className="chat-perfil-card" onClick={(e) => e.stopPropagation()}>
+                        <button className="chat-perfil-cerrar" onClick={() => setPerfilAbierto(false)}>
+                            <IconoFa icono={faTimes} />
+                        </button>
+
+                        {cargandoPerfil ? (
+                            <div className="chat-perfil-cargando">
+                                <span className="chat-dots"><span></span><span></span><span></span></span>
+                                <p>Cargando perfil...</p>
+                            </div>
+                        ) : datosPerfil ? (
+                            <>
+                                {/* Cabecera con foto */}
+                                <div className="chat-perfil-header">
+                                    <div className="chat-perfil-avatar">
+                                        {datosPerfil.foto ? (
+                                            <img src={'/assets/perfiles/' + datosPerfil.foto} alt="" />
+                                        ) : (
+                                            <span className="chat-perfil-avatar-letra">{datosPerfil.nombres?.charAt(0)}</span>
+                                        )}
+                                        <span className={'chat-perfil-status ' + (datosPerfil.en_linea ? 'online' : 'offline-dot')}>
+                                            <IconoFa icono={faCircle} />
+                                        </span>
+                                    </div>
+                                    <h3 className="chat-perfil-nombre">{datosPerfil.nombre_completo}</h3>
+                                    <span className="chat-perfil-estado">{datosPerfil.en_linea ? 'En línea' : 'Desconectado'}</span>
+                                </div>
+
+                                {/* Info laboral */}
+                                <div className="chat-perfil-seccion">
+                                    {datosPerfil.cargo && (
+                                        <div className="chat-perfil-item">
+                                            <IconoFa icono={faBriefcase} />
+                                            <div>
+                                                <label>Cargo</label>
+                                                <span>{datosPerfil.cargo}</span>
+                                            </div>
+                                        </div>
+                                    )}
+                                    {datosPerfil.area && (
+                                        <div className="chat-perfil-item">
+                                            <IconoFa icono={faBuilding} />
+                                            <div>
+                                                <label>Área</label>
+                                                <span>{datosPerfil.area}</span>
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
+
+                                {/* Contacto */}
+                                <div className="chat-perfil-seccion">
+                                    <h4>Contacto</h4>
+                                    {datosPerfil.celular && (
+                                        <div className="chat-perfil-item chat-perfil-copiable" onClick={() => copiarTexto(datosPerfil.celular)}>
+                                            <IconoFa icono={faPhone} />
+                                            <div>
+                                                <label>Celular</label>
+                                                <span>{datosPerfil.celular}</span>
+                                            </div>
+                                            <button className="chat-perfil-btn-copiar" title="Copiar"><IconoFa icono={faCopy} /></button>
+                                        </div>
+                                    )}
+                                    {datosPerfil.chips?.length > 0 && datosPerfil.chips.map((ch, i) => (
+                                        <div key={i} className="chat-perfil-item chat-perfil-copiable" onClick={() => copiarTexto(ch.numero)}>
+                                            <IconoFa icono={faMobileAlt} />
+                                            <div>
+                                                <label>Chip corporativo</label>
+                                                <span>{ch.numero}</span>
+                                            </div>
+                                            <button className="chat-perfil-btn-copiar" title="Copiar"><IconoFa icono={faCopy} /></button>
+                                        </div>
+                                    ))}
+                                </div>
+
+                                {/* Correos corporativos (solo direcciones, sin contraseñas) */}
+                                {datosPerfil.correos_corp?.length > 0 && (
+                                    <div className="chat-perfil-seccion">
+                                        <h4>Correos corporativos</h4>
+                                        {datosPerfil.correos_corp.map((c, i) => (
+                                            <div key={i} className="chat-perfil-item chat-perfil-copiable" onClick={() => copiarTexto(c.correo)}>
+                                                <IconoFa icono={faEnvelope} />
+                                                <div>
+                                                    <label>Correo corporativo</label>
+                                                    <span>{c.correo}</span>
+                                                </div>
+                                                <button className="chat-perfil-btn-copiar" title="Copiar"><IconoFa icono={faCopy} /></button>
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
+                            </>
+                        ) : (
+                            <div className="chat-perfil-cargando">
+                                <p>No se pudo cargar el perfil</p>
+                            </div>
+                        )}
+                    </div>
+                </div>,
+                document.body
             )}
         </div>
     );

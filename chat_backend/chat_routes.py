@@ -13,9 +13,10 @@ from pydantic import BaseModel
 from bson import ObjectId
 from bson.errors import InvalidId
 
+from sqlalchemy import text
 from chat_config import CORS_ORIGINS, CORS_ORIGIN_REGEX, UPLOAD_DIR, MAX_UPLOAD_SIZE, ALLOWED_UPLOAD_TYPES
 from chat_db import (
-    get_db, Personal, Acceso, Contrato, Cargo,
+    get_db, Personal, Acceso, Contrato, Cargo, Area, Chips, AsignacionChip,
     coleccion_mensajes, coleccion_msg_general,
     coleccion_grupos, coleccion_msg_grupo, coleccion_notas,
 )
@@ -99,6 +100,106 @@ def obtener_contactos(db=Depends(get_db), token: dict = Depends(verificar_token)
 
     contactos.sort(key=lambda x: (not x['en_linea'], x['nombre']))
     return contactos
+
+
+@fastapi_app.get("/contactos/{id_personal}/perfil")
+def obtener_perfil_contacto(id_personal: int, db=Depends(get_db), token: dict = Depends(verificar_token)):
+    """Devuelve el perfil completo de un contacto: nombre, area, cargo, correos corp, telefonos."""
+    # Datos basicos
+    if Area is not None:
+        fila = (
+            db.query(Personal, Cargo, Area)
+            .join(Acceso, Acceso.ID_ACCS == Personal.ID_ACCS)
+            .join(Contrato, Contrato.ID_PERSONAL == Personal.ID_PERSONAL)
+            .join(Cargo, Cargo.ID_CARGO == Contrato.ID_CARGO)
+            .outerjoin(Area, Area.ID_AREA == Contrato.ID_AREA)
+            .filter(
+                Personal.ID_PERSONAL == id_personal,
+                Contrato.ID_ESTADO_CONTRATO == 1,
+            )
+            .first()
+        )
+        if not fila:
+            raise HTTPException(status_code=404, detail="Contacto no encontrado")
+        p, cargo, area = fila
+    else:
+        fila = (
+            db.query(Personal, Cargo)
+            .join(Acceso, Acceso.ID_ACCS == Personal.ID_ACCS)
+            .join(Contrato, Contrato.ID_PERSONAL == Personal.ID_PERSONAL)
+            .join(Cargo, Cargo.ID_CARGO == Contrato.ID_CARGO)
+            .filter(
+                Personal.ID_PERSONAL == id_personal,
+                Contrato.ID_ESTADO_CONTRATO == 1,
+            )
+            .first()
+        )
+        if not fila:
+            raise HTTPException(status_code=404, detail="Contacto no encontrado")
+        p, cargo = fila
+        area = None
+
+    # Nombre del area (fallback si Area model no existe)
+    area_nombre = ""
+    if area is not None:
+        area_nombre = area.DESCRIP
+    elif Area is None:
+        try:
+            row = db.execute(
+                text("SELECT a.DESCRIP FROM area a JOIN contrato c ON c.ID_AREA = a.ID_AREA WHERE c.ID_PERSONAL = :pid AND c.ID_ESTADO_CONTRATO = 1 LIMIT 1"),
+                {"pid": id_personal}
+            ).fetchone()
+            if row:
+                area_nombre = row[0]
+        except Exception:
+            pass
+
+    # Correos corporativos (solo direcciones, sin contraseñas)
+    correos = []
+    try:
+        rows = db.execute(
+            text(
+                "SELECT CORREO_COORP "
+                "FROM correo_coorp WHERE ID_PERSONAL = :pid ORDER BY ID_CORREO"
+            ),
+            {"pid": id_personal}
+        ).fetchall()
+        correos = [{"correo": r[0]} for r in rows]
+    except Exception:
+        pass  # tabla puede no existir
+
+    # Chips corporativos asignados actualmente
+    chips = []
+    if Chips and AsignacionChip:
+        try:
+            chip_rows = (
+                db.query(Chips)
+                .join(AsignacionChip, AsignacionChip.ID_CHIPS == Chips.ID_CHIPS)
+                .filter(
+                    AsignacionChip.ID_PERSONAL == id_personal,
+                    AsignacionChip.FECHA_DEVOL.is_(None),
+                )
+                .all()
+            )
+            chips = [{"numero": ch.NUMERO} for ch in chip_rows]
+        except Exception:
+            pass
+
+    return {
+        "id_personal": p.ID_PERSONAL,
+        "nombre_completo": f"{p.NOMBRES} {p.APE_PATERNO} {p.APE_MATERNO}",
+        "nombres": p.NOMBRES,
+        "ape_paterno": p.APE_PATERNO,
+        "ape_materno": p.APE_MATERNO,
+        "cargo": cargo.DESCRIP if cargo else "",
+        "area": area_nombre,
+        "foto": p.FOTO,
+        "email": p.EMAIL,
+        "celular": p.CELULAR,
+        "correos_corp": correos,
+        "chips": chips,
+        "en_linea": p.ID_PERSONAL in usuarios_conectados,
+    }
 
 
 @fastapi_app.get("/conectados")

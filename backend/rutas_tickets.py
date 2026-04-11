@@ -315,15 +315,18 @@ def catalogos_sap(db: Session = Depends(get_db), _: dict = Depends(verificar_tok
 
 @router.get("/tickets/tecnicos")
 def listar_tecnicos(db: Session = Depends(get_db), token: dict = Depends(verificar_token)):
-    """Lista empleados con rol SOPORTE de cualquier empresa (posibles asignados)."""
+    """Lista empleados con rol SOPORTE de la empresa del usuario logueado."""
+    id_empresa = token.get("id_emp")
     tecnicos = (
         db.query(Personal, Acceso)
         .join(Acceso, Acceso.ID_ACCS == Personal.ID_ACCS)
         .join(Contrato, Contrato.ID_PERSONAL == Personal.ID_PERSONAL)
+        .join(Cargo, Cargo.ID_CARGO == Contrato.ID_CARGO)
         .filter(
             Acceso.ID_ESTADO == 1,
             Acceso.ID_ROL == 2,  # Solo SOPORTE
             Contrato.ID_ESTADO_CONTRATO == 1,
+            Cargo.ID_EMP == id_empresa,
         )
         .all()
     )
