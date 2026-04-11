@@ -194,8 +194,6 @@ def obtener_perfil_contacto(id_personal: int, db=Depends(get_db), token: dict = 
         "cargo": cargo.DESCRIP if cargo else "",
         "area": area_nombre,
         "foto": p.FOTO,
-        "email": p.EMAIL,
-        "celular": p.CELULAR,
         "correos_corp": correos,
         "chips": chips,
         "en_linea": p.ID_PERSONAL in usuarios_conectados,

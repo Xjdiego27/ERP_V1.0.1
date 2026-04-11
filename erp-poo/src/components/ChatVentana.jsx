@@ -3,7 +3,7 @@ import { createPortal } from 'react-dom';
 import IconoFa from './IconoFa';
 import StickerPicker from './StickerPicker';
 import ModalImagen from './ModalImagen';
-import { faTimes, faPaperPlane, faCircle, faMinus, faExpand, faFaceSmile, faBolt, faPaperclip, faCheck, faCheckDouble, faEnvelope, faPhone, faBriefcase, faBuilding, faCopy, faMobileAlt } from '@fortawesome/free-solid-svg-icons';
+import { faTimes, faPaperPlane, faCircle, faMinus, faExpand, faFaceSmile, faBolt, faPaperclip, faCheck, faCheckDouble, faEnvelope, faBriefcase, faBuilding, faCopy, faMobileAlt } from '@fortawesome/free-solid-svg-icons';
 import { CHAT_URL, obtenerToken } from '../auth';
 import { getSession } from '../utils/session';
 import { formatHora as formatHoraUtil, subirArchivo as subirArchivoUtil, renderContenidoMensaje } from '../utils/chatUtils';
@@ -572,30 +572,22 @@ export default function ChatVentana({ contacto, socket, onCerrar, posicion, enLi
                                     )}
                                 </div>
 
-                                {/* Contacto */}
-                                <div className="chat-perfil-seccion">
-                                    <h4>Contacto</h4>
-                                    {datosPerfil.celular && (
-                                        <div className="chat-perfil-item chat-perfil-copiable" onClick={() => copiarTexto(datosPerfil.celular)}>
-                                            <IconoFa icono={faPhone} />
-                                            <div>
-                                                <label>Celular</label>
-                                                <span>{datosPerfil.celular}</span>
+                                {/* Contacto corporativo */}
+                                {datosPerfil.chips?.length > 0 && (
+                                    <div className="chat-perfil-seccion">
+                                        <h4>Contacto corporativo</h4>
+                                        {datosPerfil.chips.map((ch, i) => (
+                                            <div key={i} className="chat-perfil-item chat-perfil-copiable" onClick={() => copiarTexto(ch.numero)}>
+                                                <IconoFa icono={faMobileAlt} />
+                                                <div>
+                                                    <label>Chip corporativo</label>
+                                                    <span>{ch.numero}</span>
+                                                </div>
+                                                <button className="chat-perfil-btn-copiar" title="Copiar"><IconoFa icono={faCopy} /></button>
                                             </div>
-                                            <button className="chat-perfil-btn-copiar" title="Copiar"><IconoFa icono={faCopy} /></button>
-                                        </div>
-                                    )}
-                                    {datosPerfil.chips?.length > 0 && datosPerfil.chips.map((ch, i) => (
-                                        <div key={i} className="chat-perfil-item chat-perfil-copiable" onClick={() => copiarTexto(ch.numero)}>
-                                            <IconoFa icono={faMobileAlt} />
-                                            <div>
-                                                <label>Chip corporativo</label>
-                                                <span>{ch.numero}</span>
-                                            </div>
-                                            <button className="chat-perfil-btn-copiar" title="Copiar"><IconoFa icono={faCopy} /></button>
-                                        </div>
-                                    ))}
-                                </div>
+                                        ))}
+                                    </div>
+                                )}
 
                                 {/* Correos corporativos (solo direcciones, sin contraseñas) */}
                                 {datosPerfil.correos_corp?.length > 0 && (
