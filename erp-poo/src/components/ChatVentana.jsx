@@ -333,7 +333,21 @@ export default function ChatVentana({ contacto, socket, onCerrar, posicion, enLi
     }
 
     function copiarTexto(txt) {
-        navigator.clipboard.writeText(txt).catch(() => {});
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(txt).catch(() => copiarFallback(txt));
+        } else {
+            copiarFallback(txt);
+        }
+    }
+    function copiarFallback(txt) {
+        const ta = document.createElement('textarea');
+        ta.value = txt;
+        ta.style.position = 'fixed';
+        ta.style.left = '-9999px';
+        document.body.appendChild(ta);
+        ta.select();
+        document.execCommand('copy');
+        document.body.removeChild(ta);
     }
 
     // Posición de la ventana

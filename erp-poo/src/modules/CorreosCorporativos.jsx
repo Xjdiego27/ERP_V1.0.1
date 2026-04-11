@@ -5,7 +5,7 @@ import PageContent from '../components/PageContent';
 import {
     faEnvelope, faSearch, faPlus, faPen, faFloppyDisk, faXmark,
     faTrash, faEye, faEyeSlash, faUser, faChevronDown, faChevronRight,
-    faKey, faCopy, faCheck, faLock, faUnlock
+    faCopy, faCheck, faKey, faLock, faUnlock
 } from '@fortawesome/free-solid-svg-icons';
 import '../styles/CorreosCorporativos.css';
 
@@ -29,10 +29,6 @@ export default function CorreosCorporativos() {
 
     // Contraseñas descifradas { id_correo: "password_texto" }
     var [passDescifrada, setPassDescifrada] = useState({});
-    // Prompt de clave AES
-    var [pideClave, setPideClave] = useState(null); // id_correo que está pidiendo clave
-    var [claveAes, setClaveAes] = useState('');
-    var [descifrando, setDescifrando] = useState(false);
 
     // Copiar feedback
     var [copiado, setCopiado] = useState(null);
@@ -162,43 +158,49 @@ export default function CorreosCorporativos() {
             setPassDescifrada(nuevo);
             return;
         }
-        // Pedir la clave AES
-        setPideClave(id_correo);
-        setClaveAes('');
-    }
-
-    function descifrarPassword() {
-        if (!claveAes.trim()) {
-            mostrarMensaje('Ingresa la clave AES', false);
-            return;
-        }
-        setDescifrando(true);
-        fetch(API_URL + '/correos/' + pideClave + '/ver-password', {
-            method: 'POST',
+        // Pedir al servidor que descifre con su clave AES
+        fetch(API_URL + '/correos/' + id_correo + '/ver-password', {
             headers: headersConToken(),
-            body: JSON.stringify({ clave_aes: claveAes }),
         })
             .then(function (r) { return r.json(); })
             .then(function (res) {
                 if (res.ok) {
                     var nuevo = Object.assign({}, passDescifrada);
-                    nuevo[pideClave] = res.password;
+                    nuevo[id_correo] = res.password;
                     setPassDescifrada(nuevo);
-                    setPideClave(null);
-                    setClaveAes('');
                 } else {
-                    mostrarMensaje(res.detail || 'Clave AES incorrecta', false);
+                    mostrarMensaje(res.detail || 'Error al descifrar', false);
                 }
             })
-            .catch(function () { mostrarMensaje('Error de conexión', false); })
-            .finally(function () { setDescifrando(false); });
+            .catch(function () { mostrarMensaje('Error de conexión', false); });
     }
 
     function copiarTexto(texto, id) {
-        navigator.clipboard.writeText(texto).then(function () {
+        function marcar() {
             setCopiado(id);
             setTimeout(function () { setCopiado(null); }, 1500);
-        });
+        }
+        // navigator.clipboard solo funciona en HTTPS o localhost
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(texto).then(marcar).catch(function () {
+                copiarFallback(texto);
+                marcar();
+            });
+        } else {
+            copiarFallback(texto);
+            marcar();
+        }
+    }
+
+    function copiarFallback(texto) {
+        var ta = document.createElement('textarea');
+        ta.value = texto;
+        ta.style.position = 'fixed';
+        ta.style.left = '-9999px';
+        document.body.appendChild(ta);
+        ta.select();
+        document.execCommand('copy');
+        document.body.removeChild(ta);
     }
 
     var lista = personalFiltrado();
@@ -432,32 +434,7 @@ export default function CorreosCorporativos() {
                 )}
             </div>
 
-            {/* Modal para pedir clave AES */}
-            {pideClave !== null && (
-                <div className="correos-aes-overlay" onClick={function () { setPideClave(null); setClaveAes(''); }}>
-                    <div className="correos-aes-modal" onClick={function (e) { e.stopPropagation(); }}>
-                        <h3><IconoFa icono={faKey} /> Clave de descifrado</h3>
-                        <p>Ingresa la clave AES para descifrar la contraseña</p>
-                        <input
-                            type="password"
-                            value={claveAes}
-                            onChange={function (e) { setClaveAes(e.target.value); }}
-                            onKeyDown={function (e) { if (e.key === 'Enter') descifrarPassword(); }}
-                            placeholder="Clave AES..."
-                            className="correos-aes-input"
-                            autoFocus
-                        />
-                        <div className="correos-aes-acciones">
-                            <button className="correos-btn guardar" onClick={descifrarPassword} disabled={descifrando}>
-                                <IconoFa icono={faUnlock} /> {descifrando ? 'Descifrando...' : 'Descifrar'}
-                            </button>
-                            <button className="correos-btn cancelar" onClick={function () { setPideClave(null); setClaveAes(''); }}>
-                                <IconoFa icono={faXmark} /> Cancelar
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            )}
+
         </PageContent>
     );
 }

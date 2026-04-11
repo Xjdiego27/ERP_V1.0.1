@@ -108,28 +108,26 @@ def listar_correos(db: Session = Depends(get_db), token: dict = Depends(verifica
 
 
 # ═══════════════════════════════════════════
-#  VER CONTRASEÑA (descifrar con clave AES)
+#  VER CONTRASEÑA (descifrar con clave AES del servidor)
 # ═══════════════════════════════════════════
-class VerPasswordRequest(BaseModel):
-    clave_aes: str
-
-
-@router.post("/correos/{id_correo}/ver-password")
-def ver_password(id_correo: int, datos: VerPasswordRequest, db: Session = Depends(get_db), _=Depends(verificar_token)):
-    """Descifra la contraseña de un correo usando la clave AES proporcionada por el usuario."""
+@router.get("/correos/{id_correo}/ver-password")
+def ver_password(id_correo: int, db: Session = Depends(get_db), _=Depends(verificar_token)):
+    """Descifra la contraseña usando la clave AES del servidor (.env)."""
+    if not AES_KEY:
+        raise HTTPException(status_code=500, detail="Clave AES no configurada en el servidor")
     row = db.execute(
         text("""
             SELECT CAST(AES_DECRYPT(PASS_COORP, :key) AS CHAR) AS pass_texto
             FROM correo_coorp
             WHERE ID_CORREO = :id
         """),
-        {"key": datos.clave_aes, "id": id_correo}
+        {"key": AES_KEY, "id": id_correo}
     ).fetchone()
     if not row:
         raise HTTPException(status_code=404, detail="Correo no encontrado")
     password = row[0]
     if not password:
-        raise HTTPException(status_code=403, detail="Clave AES incorrecta")
+        raise HTTPException(status_code=500, detail="No se pudo descifrar — la clave AES del servidor no coincide con la usada al cifrar")
     return {"ok": True, "password": password}
 
 
