@@ -27,7 +27,7 @@ MONGO_DB_NAME = os.getenv('MONGO_DB_NAME', 'erp_nosql')
 CHAT_PORT = int(os.getenv('CHAT_PORT', '4001'))
 
 # ── AES ──
-AES_KEY = os.getenv('AES_KEY', 'clave_erp_2026')
+AES_KEY = os.getenv('AES_KEY', '')
 
 # ── CORS ──
 _cors_env = os.getenv('CORS_ORIGINS', 'http://localhost:3000').split(',')

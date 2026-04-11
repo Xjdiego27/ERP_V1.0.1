@@ -21,7 +21,7 @@ class Settings(BaseSettings):
     static_dir: str = ''
 
     # Clave AES para encriptar/desencriptar contraseñas de correos corporativos
-    aes_key: str = 'clave_erp_2026'
+    aes_key: str = ''
 
     class Config:
         env_file = '.env'

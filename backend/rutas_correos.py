@@ -13,7 +13,7 @@ from auth_token import verificar_token
 router = APIRouter()
 
 # ── Clave AES — se lee de settings (.env) ──
-AES_KEY = getattr(settings, 'aes_key', 'clave_erp_2026')
+AES_KEY = getattr(settings, 'aes_key', '')
 
 
 # ═══════════════════════════════════════════
