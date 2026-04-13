@@ -115,6 +115,9 @@ async def obtener_notificaciones(db: Session = Depends(get_db), token: dict = De
             "icono": "cake-candles",
             "foto": p.FOTO,
             "urgente": False,
+            "id_personal": p.ID_PERSONAL,
+            "nombre_cumple": f"{p.NOMBRES} {p.APE_PATERNO} {p.APE_MATERNO}",
+            "dias_para": 0,
         })
 
     # ── 2b. Aviso de cumpleaños próximos (1–2 días antes) ──
@@ -130,6 +133,9 @@ async def obtener_notificaciones(db: Session = Depends(get_db), token: dict = De
                 "icono": "cake-candles",
                 "foto": p.FOTO,
                 "urgente": False,
+                "id_personal": p.ID_PERSONAL,
+                "nombre_cumple": f"{p.NOMBRES} {p.APE_PATERNO} {p.APE_MATERNO}",
+                "dias_para": dias_antes,
             })
 
     # ── 2c. Aviso de saludo de cumpleaños pendiente HOY ──
@@ -153,6 +159,10 @@ async def obtener_notificaciones(db: Session = Depends(get_db), token: dict = De
                     "texto": f"¡Envía tu saludo de cumpleaños a {c.NOMBRES} {c.APE_PATERNO}!",
                     "icono": "gift",
                     "urgente": True,
+                    "id_personal": c.ID_PERSONAL,
+                    "nombre_cumple": f"{c.NOMBRES} {c.APE_PATERNO} {c.APE_MATERNO}",
+                    "foto_cumple": c.FOTO,
+                    "dias_para": 0,
                 })
 
     # ── 3. Menú actualizado hoy ──

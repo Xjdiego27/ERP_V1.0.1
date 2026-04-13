@@ -215,6 +215,25 @@
     cursor: default;
 }
 
+.noti-item.noti-clickable {
+    cursor: pointer;
+}
+.noti-item.noti-clickable:hover {
+    background: #eff6ff;
+}
+body.dark-mode .noti-item.noti-clickable:hover {
+    background: #1a2a3f;
+}
+.noti-item.noti-clickable .noti-msg {
+    text-decoration: underline;
+    text-decoration-color: transparent;
+    transition: text-decoration-color 0.2s;
+}
+.noti-item.noti-clickable:hover .noti-msg {
+    text-decoration-color: #2563eb;
+    color: #2563eb;
+}
+
 .noti-item:last-child {
     border-bottom: none;
 }

@@ -1,0 +1,940 @@
+﻿FACULTAD DE INGENIERÍA
+ESTUDIOS GENERALES
+TEMA
+DESARROLLO DE UN APLICATIVO WEB UTILIZANDO SPRING FRAMEWORK PARA MEJORAR LA GESTIÓN DE INVENTARIO DE LA EMPRESA YOUPRINTER
+
+
+CURSO DE
+DESARROLLO DE SOFTWARE I
+
+
+PROPÓSITO DEL TRABAJO
+PROYECTO DE INVESTIGACIÓN
+
+
+PROFESOR
+BENITES LAVADO, SIRHAN WILLIAMS
+
+
+AUTORES
+ALVA JARAMILLO, ENGELBERT EDUARDO
+INCHE DELGADO, ALEXANDER MOISES
+MEJÍA FIGUEROA, ANGELINA XIOMARA
+ORTEGA QUEZADA, JAIME ALEXIS
+
+
+LOS OLIVOS
+2025
+________________
+Desarrollo de un Aplicativo Web utilizando Spring Framework para mejorar la gestión de inventario de la empresa YouPrinter
+
+
+ÍNDICE
+RESUMEN EJECUTIVO        5
+CAPÍTULO I: ANÁLISIS DE LA EMPRESA        6
+Historia de la empresa        6
+Visión        6
+Misión        6
+Objetivos de la Empresa        6
+Análisis FODA        7
+Análisis Estratégico y Organizacional        9
+Cadena de Valor        10
+Modelo de Negocio Canvas        12
+Procesos AS-IS        14
+Problemática        17
+CAPÍTULO II: PROPUESTA DE MEJORA        21
+Introducción        21
+Descripción General        21
+Objetivo General        21
+Objetivos Específicos        21
+Alcance de la Solución        22
+Beneficios Esperados        22
+Procesos Digitalizados        22
+Diagrama de Actividades TO-BE        24
+Matriz de Requerimientos de Software        26
+Metodología de Desarrollo        27
+Product Backlog        28
+Caso de Uso de Negocio        33
+Arquitectura de la Base de Datos        37
+Tecnologías y Arquitectura de la Aplicación Web        38
+Contenido del Software        39
+Diseño de Interfaces de Usuario        47
+ANEXOS        49
+________________
+
+
+Lista de Figuras
+Figura 1. FODA
+	8
+	Figura 2. Organigrama de la Empresa
+	9
+	Figura 3. Cadena de Valor
+	11
+	Figura 4. Modelo Canvas
+	13
+	Figura 5. Mapa de Procesos AS-IS
+	14
+	Figura 6. Diagrama de Actividades AS-IS - Ventas
+	15
+	Figura 7. Diagrama de Actividades AS-IS - Soporte Técnico
+	16
+	Figura 8. Modelo Star
+	18
+	Figura 9. Diagrama Ishikawa
+	20
+	Figura 10. Mapa de Procesos Digitalizados TO-BE
+	23
+	Figura 11. Diagrama de Actividades TO-BE - Subproceso Sesión
+	24
+	Figura 12. Diagrama de Actividades TO-BE - Gestión de Inventario
+	25
+	Figura 13. Lista de Actores de Negocio
+	33
+	Figura 14. Lista de Casos de Uso de Negocio
+	36
+	Figura 15. Diagrama General de Caso de Uso de Negocio
+	36
+	Figura 16. Diagrama EER
+	37
+	Figura 17. Mockup - Login
+	39
+	Figura 18. Mockup - Error 304
+	40
+	Figura 19. Mockup - Index/Homepage
+	41
+	Figura 20. Mockup - Proveedores
+	42
+	Figura 21. Mockup - Formulario Proveedores
+	43
+	Figura 22. Mockup - Mockup - Inventario
+	44
+	Figura 23. Mockup - Detalle Producto
+	45
+	Figura 24. Mockup - Formulario Producto
+	46
+	Figura 25. Diagrama de Flujo de Navegación entre Vistas
+	48
+	
+
+	
+
+	________________
+
+
+Lista de Tablas
+Tabla 1. FODA
+	7
+	Tabla 2. Roles del Organigrama Empresarial
+	9
+	Tabla 3. Cadena de Valor - Actividades Primarias y de Apoyo
+	10
+	Tabla 4. Modelo Canvas
+	12
+	Tabla 5. Modelo Star - Propuesta de Mejora
+	17
+	Tabla 6. Diagrama Ishikawa
+	19
+	Tabla 7. Alcance
+	22
+	Tabla 8. Procesos Digitalizados
+	22
+	Tabla 9. Matriz de Requerimientos
+	26
+	Tabla 10. Scrum Team
+	27
+	Tabla 11. Lista de Funcionalidades y Actores
+	27
+	Tabla 12. Historias de Usuario
+	28
+	Tabla 13. Priorización de Historias
+	29
+	Tabla 14. Estimación Backlog
+	30
+	Tabla 15. Estimación Análoga
+	31
+	Tabla 16. Mapa de Historias
+	32
+	Tabla 17. Actores de Negocio
+	33
+	Tabla 18. Caso de Uso de Negocio
+	34
+	Tabla 19. Lista de Vistas
+	47
+	
+
+	
+
+	________________
+
+
+RESUMEN EJECUTIVO
+        El presente trabajo de investigación propone una solución de software orientada a la gestión, administración y optimización del inventario de la empresa YouPrinter. Para ello, se propone la implementación de un aplicativo web basado en Spring Framework, haciendo uso de sus principales componentes y dependencias, además de otras herramientas externas que integran su arquitectura y funcionalidad.
+
+
+Palabras Clave: Aplicativo Web, Spring Framework, Java, JPA, Patrón DAO, Spring Security, MySQL.
+________________
+
+
+CAPÍTULO I: ANÁLISIS DE LA EMPRESA
+Historia de la empresa
+YouPrinter es un emprendimiento familiar dedicado a brindar soporte técnico especializado en computadoras, portátiles e impresoras, además de la venta de componentes, hardware y dispositivos de cómputo. Actualmente opera en la reconocida galería tecnológica Compuplaza Wilson, ubicada en la Av. Garcilaso de la Vega 1251, en la ciudad de Lima.
+Esta empresa se compone de un pequeño equipo de trabajadores, los cuales se especializan en el rubro de venta y soporte técnico de dispositivos computacionales, administrando sus actividades diarias a través de herramientas básicas como hojas de cálculo en Excel y facturación en formato PDF, lo que refleja el carácter práctico y cercano con el que actualmente gestiona sus operaciones.
+
+
+Visión
+"Convertirnos en el referente de innovación y confianza en tecnología para hogares peruanos, empoderando a cada familia con soluciones que facilitan su día a día y conectan con un futuro digital".
+
+
+Misión
+"Crear y entregar experiencias tecnológicas excepcionales que superen las expectativas de nuestros usuarios, proporcionándoles las herramientas más avanzadas del mercado".
+
+
+Objetivos de la Empresa
+* Fortalecer la confianza de los clientes mediante un servicio técnico especializado y de calidad.
+* Diversificar la oferta de los productos tecnológicos y de los servicios de soporte.
+* Capacitar continuamente al personal para adaptarse a nuevas tecnologías.
+* Mejorar los procesos internos a través de la digitalización.
+________________
+
+
+Análisis FODA
+Tabla 1. FODA
+FODA
+	Fortalezas
+	* Atención personalizada al cliente.
+* Equipo de trabajo especializado.
+* Ubicación estratégica del local.
+* Experiencia en reparación y mantenimiento.
+	Oportunidades
+	* Crecimiento del comercio electrónico en hardware y servicios técnicos.
+* Tendencia al teletrabajo.
+* Alianzas y/o colaboraciones con empresas que requieren mantenimiento constante.
+* Avances tecnológicos constantes.
+	Debilidades
+	* Procesos administrativos y de gestión poco digitalizados.
+* Baja exposición mediática.
+* Equipo de trabajo reducido.
+	Amenazas
+	* Alta competencia en el mercado tecnológico.
+* Piratería y productos falsificados.
+	
+
+Figura 1. FODA
+  
+
+
+
+Análisis Estratégico y Organizacional
+Estrategia de la empresa
+La estrategia de YouPrinter está orientada a consolidarse como un referente de innovación y confianza tecnológica en el mercado peruano, en línea con su visión de empoderar a las familias con soluciones digitales accesibles y de calidad. Para ello, la empresa apuesta por un enfoque de diferenciación, destacando frente a la competencia mediante la personalización del servicio, la modernización de sus procesos internos y la cercanía con el cliente.
+En el corto plazo, la empresa implementará la transformación digital de su gestión de ventas y servicios, con el objetivo de superar las limitaciones actuales y mejorar la eficiencia operativa. A mediano y largo plazo, esta estrategia permitirá fortalecer su imagen corporativa, ampliar su base de clientes y abrir oportunidades de crecimiento competitivo en el sector tecnológico.
+
+
+Organigrama de la empresa
+Tabla 2. Roles del Organigrama Empresarial
+Roles
+	Desempeño
+	Gerente General/Propietario
+	Encargado de la dirección general, finanzas y decisiones estratégicas.
+	Técnico Especialista en Computadoras
+	Responsable del soporte de equipos de escritorio y portátiles.
+	Técnico Especialista en Impresoras
+	Encargado del mantenimiento y reparación de impresoras.
+	Especialista en Componentes y Ventas
+	Asesora a los clientes sobre hardware y dispositivos, y gestiona las ventas.
+	Figura 2. Organigrama de la Empresa
+  
+________________
+
+Cadena de Valor
+La cadena de valor de YouPrinter se centra en la calidad y especialización del servicio. Sus actividades clave incluyen la recepción y diagnóstico de equipos, la reparación técnica, el asesoramiento al cliente, la venta de repuestos y un servicio de garantía. El valor se genera a través de la experiencia y confianza que el personal ofrece en cada paso.
+
+
+Tabla 3. Cadena de Valor - Actividades Primarias y de Apoyo
+Actividades Primarias
+	Logística de Entrada
+	Recepción de equipos de clientes, compra de repuestos y materiales.
+	Operaciones
+	Diagnóstico y reparación de computadoras, portátiles e impresoras. 
+Asesoramiento técnico a clientes.
+	Logística de Salida
+	Entrega de equipos reparados y productos vendidos.
+	Marketing y Ventas
+	Publicidad local (volantes, carteles), promoción boca a boca, atención al cliente en el local.
+	Servicio Post-Venta
+	Garantía de reparaciones, seguimiento al cliente, resolución de dudas.
+	Actividades de Apoyo
+	Infraestructura de la Empresa
+	Buen posicionamiento del local.
+	Gestión de Recursos Humanos
+	Contratación de personal técnico especializado.
+	Desarrollo Tecnológico
+	Actualización constante sobre nuevos modelos y tecnologías de equipos, herramientas digitales.
+	Abastecimiento
+	Búsqueda y selección de proveedores de repuestos certificados.
+	
+
+Figura 3. Cadena de Valor
+  
+
+Modelo de Negocio Canvas
+Tabla 4. Modelo Canvas
+MODELO CANVAS
+	Aspectos Internos
+	Segmento de Cliente
+	* Pequeñas y medianas empresas que dependen del hardware para sus operaciones.
+* Familias y hogares que necesitan soluciones tecnológicas confiables.
+* Público de la galería tecnológica Compuplaza Wilson.
+	Propuesta de Valor
+	* Soporte técnico especializado en computadoras, portátiles e impresoras.
+* Venta de repuestos y dispositivos tecnológicos de calidad.
+* Atención personalizada y cercana.
+* Garantía y servicio postventa.
+	Canales
+	* Tienda física en Compuplaza Wilson.
+* Publicidad local.
+	Relación con los Clientes
+	* Atención personalizada en el local.
+* Comunicación directa con el técnico.
+* Seguimiento postventa.
+	Fuente de Ingresos
+	* Venta de repuestos y dispositivos tecnológicos.
+* Servicios de diagnóstico, reparación y mantenimiento.
+* Instalación de software/licencias.
+	Aspectos Externos
+	Actividades Clave
+	* Recepción, diagnóstico y reparación de equipos.
+* Venta de repuestos y asesoramiento tecnológico.
+* Seguimiento de clientes y servicios.
+	Recursos Clave
+	* Personal técnico especializado.
+* Local en Compuplaza Wilson.
+* Equipos y herramientas de diagnóstico y reparación.
+* Red de proveedores de repuestos.
+	Socios Clave
+	* Proveedores de repuestos y dispositivos tecnológicos certificados.
+* Aliados locales.
+* Distribuidores de software y hardware.
+	Estructura de Costes
+	* Sueldos del personal técnico.
+* Costos de adquisición de repuestos y hardware.
+* Mantenimiento del local.
+* Inversión en herramientas tecnológicas.
+	
+
+
+
+Figura 4. Modelo Canvas
+  
+
+Procesos AS-IS
+Mapa de Procesos AS-IS
+Figura 5. Mapa de Procesos AS-IS
+  
+
+Diagrama de Actividades AS-IS
+Figura 6. Diagrama de Actividades AS-IS - Ventas
+  
+
+________________
+
+
+Figura 7. Diagrama de Actividades AS-IS - Soporte Técnico
+  
+
+
+
+Problemática
+El principal problema que enfrenta YouPrinter son las limitaciones críticas en la gestión y control de su inventario, viéndose comprometidas por las operaciones manuales con las cuales trabajan en la actualidad. Estas faltas han comprometido el desarrollo de operaciones principales de negocio como lo son las área de ventas y soporte técnico. Operaciones que se han visto afectadas por retrasos y demoras en las consultas, actualizaciones y abastecimiento de los productos.
+
+
+Modelo STAR
+Tabla 5. Modelo Star - Propuesta de Mejora
+Situación
+	YouPrinter es una empresa dedicada a la venta de artículos de cómputo y soporte técnico que actualmente gestiona sus operaciones de forma manual y escrita (ventas, inventario y servicios). Esta forma de trabajo ha generado limitaciones en la organización, descentralización de la información, retrasos en la atención al cliente y una pérdida de competitividad frente a empresas que ya cuentan con procesos digitalizados.
+	Tarea
+	La empresa necesita optimizar sus procesos administrativos y comerciales para responder a la demanda de un mercado tecnológico altamente competitivo. El reto principal es mejorar la gestión de inventario, garantizando eficiencia, rapidez de consultas y centralización de la información.
+	Acción
+	* Identificar los procesos críticos que hoy dependen de registros manuales.
+* Analizar las fallas más frecuentes en la gestión de información.
+* Evaluar opciones tecnológicas que permitan digitalizar las operaciones.
+* Diseñar una estrategia de cambio que prepare al personal para adoptar nuevas herramientas.
+	Resultados
+	Con estas acciones se espera:
+* Reducir los errores administrativos ocasionados por la gestión manual.
+* Centralizar la información en un sistema único y confiable.
+* Mejorar los tiempos de operaciones de mantenimiento y control de productos.
+* Aumentar la competitividad de YouPrinter frente a empresas del mismo rubro.
+	
+
+Figura 9. Modelo Star
+  
+
+Diagrama de Ishikawa
+Tabla 6. Diagrama Ishikawa
+Efecto
+	Deficiente gestión de inventario en YouPrinter
+	Material
+	* Información dispersa en diferentes documentos.
+* Riesgo de pérdida de datos por manejo manual.
+* Productos sin descripción estandarizada (nombres, códigos).
+	Máquina
+	* No cuentan con un sistema de gestión de inventario.
+* Limitación tecnológica en los procesos internos.
+* Dependencia de herramientas no integradas (Excel, PDFs).
+	Medición
+	* Falta de visión tecnológica en la gestión administrativa.
+* Limitada inversión en herramientas digitales.
+* Carencia de indicadores de gestión para la toma de decisiones.
+	Método
+	* Uso de registros manuales en hojas y documentos.
+* Falta de procedimientos estandarizados.
+* Ausencia de control automatizado de inventario.
+	Mano de Obra
+	* Escasa capacitación en herramientas digitales.
+* Dependencia de la experiencia personal para gestionar información.
+* Sobrecarga de trabajo administrativo.
+	Medio Ambiente
+	* Alta competitividad en el sector tecnológico.
+* Mayor exigencia de los clientes en rapidez y calidad de servicio.
+* Dependencia de métodos tradicionales frente a un mercado digitalizado.
+	
+
+Figura 9. Diagrama Ishikawa
+  
+
+CAPÍTULO II: PROPUESTA DE MEJORA
+Introducción
+Para dar solución a esta problemática, se propone desarrollar un aplicativo web que optimice los procesos administrativos internos, especialmente en la gestión de inventario para mejorar y agilizar el mantenimiento de productos.
+
+
+Descripción General
+El sistema propuesto para la gestión de inventario de YouPrinter está compuesto por módulos funcionales que permiten controlar de manera integral los productos, proveedores y stock disponible.
+
+
+Objetivo General
+Implementar un aplicativo web que digitalice la gestión de inventario de YouPrinter, optimizando la gestión interna y las operaciones de negocio de la empresa.
+
+
+Objetivos Específicos
+* Estandarizar y centralizar el registro de productos y proveedores para mejorar el control del inventario.
+* Implementar procesos digitales que reduzcan errores en el manejo de stock y actualizaciones de productos.
+* Proporcionar herramientas de consulta rápida que faciliten al personal visualizar información detallada del inventario.
+* Facilitar la actualización eficiente del stock mediante operaciones CRUD sobre productos y proveedores.
+* Optimizar la búsqueda y filtrado de información para agilizar las tareas operativas del personal.
+________________
+
+
+Alcance de la Solución
+El aplicativo web estará enfocado en las siguientes áreas de trabajo cumpliendo con los siguiente requisitos orientados a los procesos.
+Tabla 7. Alcance
+Áreas
+	Requisitos
+	Gestión de Inventario
+	* Registro, edición, consulta y eliminación de proveedores.
+* Registro, edición, consulta y eliminación de productos del inventario.
+* Control del estado de productos y proveedores.
+* Gestión de categorías, marcas y asociaciones con proveedores.
+* Visualización detallada de la ficha técnica de productos.
+* Búsqueda y filtrado avanzado para proveedores y productos.
+* Validaciones en los formularios para garantizar la integridad de los datos.
+* Uso exclusivo interno por el personal autorizado de YouPrinter.
+	Gestión Administrativa
+	* Registro, edición, consulta y eliminación de usuarios y roles.
+* Control de permisos a operaciones y navegación dentro del sistema.
+	
+
+Beneficios Esperados
+* Mejora en la organización interna.
+* Disminución de errores en registros y procesos administrativos.
+* Optimización del tiempo de atención y reducción de cargas operativas.
+* Mayor control sobre el inventario.
+* Acceso rápido y sencillo a información de productos.
+* Mayor transparencia en el estado de los proveedores.
+
+
+Procesos Digitalizados
+Tabla 8. Procesos Digitalizados
+Categoría
+	Procesos
+	Digitalización
+	Entrada
+	Aplicativo Web
+	Las operaciones de venta o de servicio se realizarán a través del aplicativo web, el cual estará operando las 24 horas al día.
+	Procesos Estratégicos
+	Negociación con Proveedores
+	Se podrá controlar digitalmente los datos de los proveedores y consultar la información importante ante cualquier necesidad como reabastecimiento.
+	Procesos de Soporte
+	Gestión de Inventario
+	Se podrá controlar digitalmente el inventario de productos mediante operaciones, consultas y filtros.
+	
+
+
+
+Mapa de Procesos TO-BE
+Figura 10. Mapa de Procesos Digitalizados TO-BE
+  
+
+Diagrama de Actividades TO-BE
+Figura 11. Diagrama de Actividades TO-BE - Subproceso Sesión
+  
+
+________________
+
+
+Figura 12. Diagrama de Actividades TO-BE - Gestión de Inventario
+  
+________________
+
+Matriz de Requerimientos de Software
+Tabla 9. Matriz de Requerimientos
+  
+
+Metodología de Desarrollo
+El sistema será desarrollado bajo una metodología ágil Scrum, dividiendo el proyecto en entregables iterativos que permitan la retroalimentación continua y actualizaciones periódicas. Así mismo, se designará un equipo Scrum para completar el desarrollo del software y su dirección.
+Tabla 10. Scrum Team
+ROL
+	ENCARGADO
+	Product Owner
+	Sirhan Williams Banites Lavado
+	Scrum Master
+	Engelbert Eduardo Alva Jaramillo
+	Team Development
+	Alexander Moises Inche Delgado
+	Angelina Xiomara Mejía Figueroa
+	Jaime Alexis Ortega Quezada
+	
+
+Se evaluaron las siguientes funcionalidades mediante los procesos digitalizados y a los actores mediante entrevistas hacia los empleados de la empresa para poder desarrollar el Product Backlog.
+Tabla 11. Lista de Funcionalidades y Actores
+Funcionalidad
+	Actor Responsable
+	Sesiones
+	Administrador
+	Empleado
+	Gestión de Inventario
+	Administrador
+	Empleado
+	Gestión de Proveedores
+	Administrador
+	
+
+Product Backlog
+Historias de Usuario
+Tabla 12. Historias de Usuario
+  
+
+________________
+
+
+Priorización de Historias
+Tabla 13. Priorización de Historias
+  
+
+________________
+
+
+Estimación Backlog
+Tabla 14. Estimación Backlog
+  
+
+________________
+
+
+Estimación Análoga
+Tabla 15. Estimación Análoga
+  
+
+________________
+
+
+Mapa de Historias
+Tabla 16. Mapa de Historias
+  
+
+
+
+Caso de Uso de Negocio
+Actores de Negocio
+Tabla 17. Actores de Negocio
+Código
+	Actor
+	Descripción
+	Tipo
+	AN01
+	Cliente
+	Persona natural o empresa que realiza consultas sobre productos o disponibilidad. No interactúa directamente con el sistema, pero genera los requerimientos que el empleado gestiona.
+	Externo
+	AN02
+	Empleado
+	Personal operativo (vendedores, técnicos o repartidores internos) que accede al sistema para consultar productos, registrar abastecimiento o reportar incidencias del inventario.
+	Interno
+	AN03
+	Administrador
+	Encargado del sistema. Gestiona empleados, proveedores, productos y permisos. Tiene acceso a todas las funciones del sistema.
+	Interno
+	AN04
+	Proveedor
+	Entidad externa que abastece los productos solicitados. No accede al sistema, pero se registra y gestiona su información.
+	Externo
+	
+
+Figura 13. Lista de Actores de Negocio
+  
+
+Caso de Uso de Negocio
+Tabla 18. Caso de Uso de Negocio
+Código
+	Actor
+	Caso de Uso de Negocio
+	Descripción
+	Comunicación
+	CUN01
+	Empleado
+Administrador
+	Iniciar Sesión en el Sistema
+	El empleado o administrador ingresa al sistema proporcionando usuario y contraseña para acceder a sus funciones.
+	Asociación
+	CUN02
+	Cliente
+	Solicitar datos de productos
+	El cliente requiere información sobre productos, disponibilidad o características mediante atención del personal.
+	Asociación
+Extiende a CUN03
+	CUN03
+	Empleado
+	Consultar datos de productos
+	El empleado revisa o busca información de los productos para atender consultas o realizar tareas internas.
+	Asociación
+	CUN04
+	Administrador
+	Registrar productos
+	Permite crear nuevos productos en el sistema, incluyendo sus atributos y estado inicial.
+	Asociación
+	CUN05
+	Administrador
+	Editar productos
+	Permite modificar información del producto como nombre, precio, stock o proveedor.
+	Asociación
+	CUN06
+	Administrador
+	Eliminar productos
+	Permite eliminar o desactivar productos para mantener un inventario depurado.
+	Asociación
+	CUN07
+	Proveedor
+Administrador
+	Abastecer inventario
+	El administrador registra el abastecimiento realizado por un proveedor y actualiza el stock correspondiente.
+	Asociación
+Extiende a CUN08
+	CUN08
+	Administrador
+	Gestionar inventario
+	Caso de uso general que agrupa el registro, consulta, actualización, eliminación y abastecimiento de productos.
+	Generalización
+Incluye a CUN03
+Incluye a CUN04
+Incluye a CUN05
+Incluye a CUN06
+Incluye a CUN07
+	CUN09
+	Administrador
+	Consultar datos de proveedores
+	Permite revisar información sobre proveedores registrados para gestiones internas.
+	Asociación
+	CUN10
+	Administrador
+	Registrar proveedores
+	Permite registrar nuevos proveedores junto con sus datos comerciales y de contacto.
+	Asociación
+	CUN11
+	Administrador
+	Editar proveedores
+	Permite actualizar datos del proveedor como razón social, contacto, sede o estado.
+	Asociación
+	CUN12
+	Administrador
+	Eliminar proveedores
+	Permite eliminar o desactivar proveedores para evitar errores de abastecimiento.
+	Asociación
+	CUN13
+	Administrador
+	Gestionar Proveedores
+	Caso de uso general que agrupa el registro, consulta, actualización y eliminación de proveedores.
+	Generalización
+Incluye a CUN09
+Incluye a CUN10
+Incluye a CUN11
+Incluye a CUN12
+	CUN14
+	Administrador
+	Crear cuentas de usuario
+	Permite registrar una nueva cuenta de empleado con credenciales, rol y permisos.
+	Asociación
+	CUN15
+	Administrador
+	Consultar cuentas de usuario
+	Permite listar o buscar empleados registrados para mantenimiento.
+	Asociación
+	CUN16
+	Administrador
+	Editar cuentas de usuario
+	Permite modificar la información de usuario como datos personales, cargo o permisos.
+	Asociación
+	CUN17
+	Administrador
+	Eliminar cuentas de usuario
+	Permite eliminar o desactivar cuentas de empleados del sistema.
+	Asociación
+	CUN18
+	Administrador
+	Gestionar Usuarios
+	Caso de uso general que agrupa el registro, consulta, edición y eliminación de las cuentas de usuario.
+	Generalización
+Incluye a CUN14
+Incluye a CUN15
+Incluye a CUN16
+Incluye a CUN17
+	
+
+
+
+Figura 14. Lista de Casos de Uso de Negocio
+  
+
+
+
+Diagrama General de Caso de Uso de Negocio
+Figura 15. Diagrama General de Caso de Uso de Negocio
+  
+________________
+
+Arquitectura de la Base de Datos
+Modelo Entidad-Relación (Diagrama EER)
+Figura 16. Diagrama EER
+  
+
+
+
+Entorno de Desarrollo de la Base de Datos
+* Tipo: Base de Datos Relacional
+* Base de Datos: MySQL
+* Edición: MySQL Community
+* Herramienta: MySQL Workbench
+________________
+
+
+Tecnologías y Arquitectura de la Aplicación Web
+Entorno de Desarrollo
+* Construcción: Maven
+* Empaquetado: JAR
+* Lenguaje (Versión): Java 17
+* Framework: Spring Framework
+
+
+Arquitectura y Patrones de Diseño
+* Capa Web: Se sigue el patrón Modelo-Vista-Controlador (MVC), implementado a través de Spring MVC.
+* Acceso a Datos: Se utiliza el patrón Objeto de Acceso a Datos (DAO), que abstrae la lógica de persistencia y se implementa con la ayuda de Spring Data JPA.
+
+
+Componentes del Framework Spring
+* Spring Boot: Se utiliza como base para la creación de aplicaciones Spring independientes, eliminando la necesidad de una configuración manual y repetitiva.
+* Spring MVC (Spring Web): Se utiliza para el desarrollo de la capa web, gestionando las peticiones HTTP y la generación de vistas.
+* Spring Data JPA: Se utiliza para la implementación de la capa de acceso a datos, simplificando las operaciones de persistencia con bases de datos relacionales.
+* Spring Security: Se utiliza para la configuración de la seguridad de la aplicación, controlando la autenticación y la autorización.
+
+
+Dependencias Adicionales
+* ThymeLeaf: Motor de plantillas para la capa de presentación.
+* MySQL Driver: Conector para la base de datos MySQL.
+* Spring DevTools: Herramientas de desarrollo para un ciclo de desarrollo más rápido.
+
+
+Componentes Web
+* Lenguajes: HTML 5, CSS 3, JavaScript.
+* Bibliotecas: Bootstrap 5, Sweet Alert 2.
+________________
+
+
+Contenido del Software
+1. Sesiones
+Este contenido permite ingresar al sistema por medio de un usuario con permisos, lo permitirá tener un acceso seguro al sistema.
+Vista de inicio de sesión
+* Muestra un formulario para llenar credenciales de usuario.
+* Incluye un medio de recuperación de cuenta vía telefónica para brindar soporte y orientación por un administrador.
+Mockup
+Figura 17. Mockup - Login
+  
+
+________________
+
+
+Vista de errores
+* Indica el tipo de error al ingresar a un módulo o tras realizar una acción sin tener los permisos necesarios.
+* Incluye una opción para volver al inicio del sistema.
+Mockup
+Figura 18. Mockup - Error 304
+  
+
+________________
+
+
+Vista de Homepage
+* Muestra la barra de navegación para ir a los módulos operativos
+Mockup
+Figura 19. Mockup - Index/Homepage
+  
+
+________________
+
+
+2. Módulo de Proveedores
+Este módulo permite administrar la información de los proveedores que abastecen a la empresa.
+Vista de listado de proveedores
+* Muestra la lista completa de proveedores registrados.
+* Incluye barra de búsqueda por razón social o RUC.
+* Permite acciones CRUD (crear, editar, eliminar).
+* Incluye paginación y control de estado activo/inactivo.
+Mockup
+Figura 20. Mockup - Proveedores
+  
+
+________________
+
+
+
+
+Vista de formulario de proveedor
+* Permite registrar nuevos proveedores.
+* Permite editar proveedores existentes.
+* Contiene validaciones de campos.
+Mockup
+Figura 21. Mockup - Formulario Proveedores
+  
+
+________________
+
+
+3. Módulo de Inventario
+Este módulo gestiona los productos del inventario, permitiendo controlar su disponibilidad, características y relación con proveedores.
+Vista de listado de productos
+* Muestra los productos con información relevante (nombre, precio, categoría, proveedor, stock).
+* Incluye acciones CRUD, barra de búsqueda y filtros.
+* Control de estado del producto (disponible/no disponible).
+Mockup
+Figura 22. Mockup - Inventario
+  
+
+________________
+
+
+
+
+Vista de ficha técnica del producto
+* Muestra los datos del producto en modo lectura.
+* Incluye información detallada: categoría, precio, stock, proveedor vinculado, garantía, descripción.
+* Útil para consultas rápidas del personal.
+Mockup
+Figura 23. Mockup - Detalle Producto
+  
+
+________________
+
+
+
+
+
+
+Vista de formulario de producto
+* Permite registrar nuevos productos.
+* Permite editar productos existentes.
+* Gestiona relaciones con categoría, marca y proveedor.
+* Permite definir stock, precio y estado del producto.
+Mockup
+Figura 24. Mockup - Formulario Producto
+  
+
+
+
+Diseño de Interfaces de Usuario
+Vistas de la Aplicación Web
+Tabla 19. Lista de Vistas
+Vista
+	Descripción
+	Tipo
+	Rol (Sesión)
+	Acciones
+	Login
+	Página del inicio de sesión del sistema.
+	Vista
+	Empleado
+	Iniciar sesión
+	Index / Dashboard
+	Página principal del sistema.
+	Vista
+	Empleado
+	Navegar entre módulos
+	Inventario
+	Página donde se puede realizar operaciones de los productos.
+	Vista
+	Empleado
+	Visualizar
+	Administrador
+	CRUD
+	Detalle Producto
+	Página donde se ven los detalles del producto seleccionado.
+	Subvista (Inventario)
+	Empleado
+	Visualizar
+	Formulario Producto
+	Página del formulario de registro o edición de los productos.
+	Subvista (Inventario)
+	Administrador
+	CRUD
+	Proveedores
+	Página donde se puede realizar operaciones de los proveedores.
+	Vista
+	Administrador
+	CRUD
+	Formulario Proveedores
+	Página del formulario de registro o edición de los proveedores,
+	Subvista  (Proveedores)
+	Administrador
+	CRUD
+	Usuarios
+	Página donde se puede realizar operaciones de las cuentas de los empleados.
+	Vista
+	Administrador
+	CRUD
+	Formulario Usuarios
+	Página del formulario de registro o edición de las cuentas de los empleados,
+	Subvista (Usuarios)
+	Administrador
+	CRUD
+	Error
+	Página de error notificando la falta de permisos para visualizar una vista o realizar una acción.
+	Vista de Error
+	Empleado
+	Visualización
+	
+
+Flujo de Navegación entre Vistas
+Figura 25. Diagrama de Flujo de Navegación entre Vistas
+  
+
+________________
+
+
+ANEXOS
+Product Backlog
+* Google Sheets: Product Backlog - YouPrinter - Grupo 3
+
+
+Archivos y Código Fuente del Aplicativo Web
+* Github: https://github.com/engalvaj35/YouPrinter 
+* Google Drive: https://drive.google.com/file/d/1UCEie1U7aXylLfaa_nWvOhA8YfnIH7oH/view?usp=sharing 
+
+
+Script MySQL de la Base de Datos
+* Google Drive: https://drive.google.com/file/d/1CJSykU7k9VkM2FtOeQHo7wm2YIE7NcvL/view?usp=sharing

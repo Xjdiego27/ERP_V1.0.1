@@ -147,8 +147,25 @@ export default function Header({ onToggleMenu, onToggleEmpresa, onCambiarPasswor
                             ) : (
                                 <div className="noti-lista">
                                     {notificaciones.map(function (noti, idx) {
+                                        var esCumple = noti.tipo === 'cumpleanos' || noti.tipo === 'cumpleanos_proximo' || noti.tipo === 'saludo_pendiente';
                                         return (
-                                            <div key={idx} className={'noti-item' + (noti.urgente ? ' noti-urgente' : '') + ' noti-tipo-' + noti.tipo}>
+                                            <div
+                                                key={idx}
+                                                className={'noti-item' + (noti.urgente ? ' noti-urgente' : '') + ' noti-tipo-' + noti.tipo + (esCumple ? ' noti-clickable' : '')}
+                                                onClick={function () {
+                                                    if (esCumple && noti.id_personal) {
+                                                        window.dispatchEvent(new CustomEvent('abrir-saludo-cumple', {
+                                                            detail: {
+                                                                id_personal: noti.id_personal,
+                                                                nombre: noti.nombre_cumple || '',
+                                                                foto: noti.foto_cumple || noti.foto || null,
+                                                                dias_para: noti.dias_para != null ? noti.dias_para : 0,
+                                                            }
+                                                        }));
+                                                        setNotiOpen(false);
+                                                    }
+                                                }}
+                                            >
                                                 <div className="noti-item-icono">
                                                     <IconoFa icono={iconoNoti(noti.tipo)} />
                                                 </div>

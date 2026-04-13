@@ -78,6 +78,28 @@ export default function CumpleanosModal() {
         return function () { clearInterval(intervalo); };
     }, [verificarPendiente]);
 
+    // Escuchar evento personalizado desde las notificaciones del Header
+    useEffect(function () {
+        function abrirDesdeNoti(e) {
+            var d = e.detail;
+            if (d && d.id_personal) {
+                setCumpleanero({
+                    id_personal: d.id_personal,
+                    nombre: d.nombre || '',
+                    foto: d.foto || null,
+                    dias_para: d.dias_para != null ? d.dias_para : 0,
+                });
+                setMensaje('');
+                setStickerSeleccionado(null);
+                setMostrarStickers(false);
+                setEnviado(false);
+                setModalVisible(true);
+            }
+        }
+        window.addEventListener('abrir-saludo-cumple', abrirDesdeNoti);
+        return function () { window.removeEventListener('abrir-saludo-cumple', abrirDesdeNoti); };
+    }, []);
+
     async function enviarSaludo() {
         if (!cumpleanero || !mensaje.trim()) return;
         setEnviando(true);
