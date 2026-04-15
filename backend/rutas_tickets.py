@@ -1,8 +1,9 @@
 # ============================================
-# RUTAS TICKETS — Sistema de tickets de soporte TI
+# RUTAS TICKETS — Sistema de tickets de soporte TI y RRHH
 # Responsabilidad: CRUD de tickets, asignación, cambio de estado,
 # listado por rol, categorías y subcategorías.
-# Roles: ADMINISTRADOR y SOPORTE ven todos; USUARIO solo los propios.
+# Roles: ADMINISTRADOR y SOPORTE ven todos; RRHH ve solo tickets RRHH;
+#        USUARIO solo los propios.
 # ============================================
 
 from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Form, Query
@@ -30,6 +31,8 @@ from servicios.permiso_service import PermisoService
 router = APIRouter()
 
 ROLES_TI = ("ADMINISTRADOR", "ADMIN", "SOPORTE")
+ID_CATEGORIA_RRHH = 5   # Categoría RRHH en la BD
+ID_ROL_RRHH = 4          # Rol RRHH en la BD
 
 _static_root = Path(settings.static_dir) if settings.static_dir else Path(__file__).resolve().parent.parent / "erp-poo" / "public"
 UPLOAD_DIR = _static_root / "assets" / "tickets"
@@ -46,9 +49,16 @@ def _es_ti(token: dict) -> bool:
     return _rol_token(token) in ROLES_TI
 
 
+def _es_rrhh(token: dict) -> bool:
+    """True si el usuario tiene rol RRHH."""
+    return _rol_token(token) == "RRHH"
+
+
 def _tiene_panel_tickets(token: dict, db: Session) -> bool:
-    """True si el usuario es TI por rol O tiene permiso TICKETS_PANEL asignado."""
+    """True si el usuario es TI por rol, RRHH por rol, O tiene permiso TICKETS_PANEL asignado."""
     if _es_ti(token):
+        return True
+    if _es_rrhh(token):
         return True
     # Buscar ID_ROL del usuario y verificar si tiene TICKETS_PANEL
     id_accs = token.get("id_accs")
@@ -75,22 +85,44 @@ async def _notificar_ticket(db: Session, id_ticket: int, tipo: str, texto: str,
     """
     ids = set(destinatarios_ids or [])
 
-    if roles_destino and id_empresa:
-        personas_rol = (
-            db.query(Personal)
-            .join(Acceso, Acceso.ID_ACCS == Personal.ID_ACCS)
-            .join(Contrato, Contrato.ID_PERSONAL == Personal.ID_PERSONAL)
-            .join(Cargo, Cargo.ID_CARGO == Contrato.ID_CARGO)
-            .filter(
-                Acceso.ID_ESTADO == 1,
-                Acceso.ID_ROL.in_(roles_destino),
-                Cargo.ID_EMP == id_empresa,
-                Contrato.ID_ESTADO_CONTRATO == 1,
+    if roles_destino:
+        # Separar roles que deben buscar en TODAS las empresas (RRHH)
+        roles_global = [r for r in roles_destino if r == ID_ROL_RRHH]
+        roles_empresa = [r for r in roles_destino if r != ID_ROL_RRHH]
+
+        # Roles que solo buscan en la empresa del ticket (ADMIN, SOPORTE)
+        if roles_empresa and id_empresa:
+            personas_emp = (
+                db.query(Personal)
+                .join(Acceso, Acceso.ID_ACCS == Personal.ID_ACCS)
+                .join(Contrato, Contrato.ID_PERSONAL == Personal.ID_PERSONAL)
+                .join(Cargo, Cargo.ID_CARGO == Contrato.ID_CARGO)
+                .filter(
+                    Acceso.ID_ESTADO == 1,
+                    Acceso.ID_ROL.in_(roles_empresa),
+                    Cargo.ID_EMP == id_empresa,
+                    Contrato.ID_ESTADO_CONTRATO == 1,
+                )
+                .all()
             )
-            .all()
-        )
-        for p in personas_rol:
-            ids.add(p.ID_PERSONAL)
+            for p in personas_emp:
+                ids.add(p.ID_PERSONAL)
+
+        # Roles RRHH → buscar en TODAS las empresas
+        if roles_global:
+            personas_global = (
+                db.query(Personal)
+                .join(Acceso, Acceso.ID_ACCS == Personal.ID_ACCS)
+                .join(Contrato, Contrato.ID_PERSONAL == Personal.ID_PERSONAL)
+                .filter(
+                    Acceso.ID_ESTADO == 1,
+                    Acceso.ID_ROL.in_(roles_global),
+                    Contrato.ID_ESTADO_CONTRATO == 1,
+                )
+                .all()
+            )
+            for p in personas_global:
+                ids.add(p.ID_PERSONAL)
 
     if not ids:
         return
@@ -336,6 +368,26 @@ def listar_tecnicos(db: Session = Depends(get_db), token: dict = Depends(verific
     ]
 
 
+@router.get("/tickets/personal-rrhh")
+def listar_personal_rrhh(db: Session = Depends(get_db), token: dict = Depends(verificar_token)):
+    """Lista empleados con rol RRHH de TODAS las empresas (RRHH atiende globalmente)."""
+    personal = (
+        db.query(Personal, Acceso)
+        .join(Acceso, Acceso.ID_ACCS == Personal.ID_ACCS)
+        .join(Contrato, Contrato.ID_PERSONAL == Personal.ID_PERSONAL)
+        .filter(
+            Acceso.ID_ESTADO == 1,
+            Acceso.ID_ROL == ID_ROL_RRHH,
+            Contrato.ID_ESTADO_CONTRATO == 1,
+        )
+        .all()
+    )
+    return [
+        {"id_personal": p.ID_PERSONAL, "nombre": f"{p.NOMBRES} {p.APE_PATERNO}"}
+        for p, a in personal
+    ]
+
+
 # ── Estadísticas (dashboard) ─────────────────────
 
 @router.get("/tickets/estadisticas")
@@ -345,9 +397,13 @@ def estadisticas_tickets(db: Session = Depends(get_db), token: dict = Depends(ve
     if not Ticket:
         return {"abiertos": 0, "asignados": 0, "en_progreso": 0, "cerrados": 0, "total": 0, "por_mes": []}
 
-    # ADMIN/SOPORTE ven estadísticas de TODAS las empresas
+    # RRHH solo ve estadísticas de tickets RRHH
+    # ADMIN/SOPORTE excluyen tickets RRHH de sus estadísticas
+    solo_rrhh = _es_rrhh(token) and not _es_ti(token)
+    solo_ti = _es_ti(token) and not _es_rrhh(token)
+
     # Conteos por estado
-    conteos = (
+    q_conteos = (
         db.query(
             Ticket.ESTADO,
             func.count(Ticket.ID_TICKET),
@@ -355,13 +411,16 @@ def estadisticas_tickets(db: Session = Depends(get_db), token: dict = Depends(ve
         .join(Personal, Personal.ID_PERSONAL == Ticket.ID_PERSONAL)
         .join(Contrato, Contrato.ID_PERSONAL == Personal.ID_PERSONAL)
         .filter(Contrato.ID_ESTADO_CONTRATO == 1)
-        .group_by(Ticket.ESTADO)
-        .all()
     )
+    if solo_rrhh:
+        q_conteos = q_conteos.filter(Ticket.ID_CATEGORIA == ID_CATEGORIA_RRHH)
+    elif solo_ti:
+        q_conteos = q_conteos.filter(Ticket.ID_CATEGORIA != ID_CATEGORIA_RRHH)
+    conteos = q_conteos.group_by(Ticket.ESTADO).all()
     mapa = {estado: cant for estado, cant in conteos}
 
     # Tickets por mes (últimos 6 meses)
-    por_mes = (
+    q_mes = (
         db.query(
             func.month(Ticket.FECH_CREACION).label("mes"),
             func.count(Ticket.ID_TICKET),
@@ -369,7 +428,13 @@ def estadisticas_tickets(db: Session = Depends(get_db), token: dict = Depends(ve
         .join(Personal, Personal.ID_PERSONAL == Ticket.ID_PERSONAL)
         .join(Contrato, Contrato.ID_PERSONAL == Personal.ID_PERSONAL)
         .filter(Contrato.ID_ESTADO_CONTRATO == 1)
-        .group_by(func.month(Ticket.FECH_CREACION))
+    )
+    if solo_rrhh:
+        q_mes = q_mes.filter(Ticket.ID_CATEGORIA == ID_CATEGORIA_RRHH)
+    elif solo_ti:
+        q_mes = q_mes.filter(Ticket.ID_CATEGORIA != ID_CATEGORIA_RRHH)
+    por_mes = (
+        q_mes.group_by(func.month(Ticket.FECH_CREACION))
         .order_by(func.month(Ticket.FECH_CREACION))
         .all()
     )
@@ -727,8 +792,11 @@ def informe_tickets_pdf(
 
     nombre_usuario = ""
     if es_ti:
-        # Admin/Soporte ven todos
-        pass
+        # RRHH solo ve tickets RRHH; TI excluye los RRHH
+        if _es_rrhh(token) and not _es_ti(token):
+            query = query.filter(Ticket.ID_CATEGORIA == ID_CATEGORIA_RRHH)
+        elif _es_ti(token) and not _es_rrhh(token):
+            query = query.filter(Ticket.ID_CATEGORIA != ID_CATEGORIA_RRHH)
     else:
         # Usuario solo sus tickets
         persona = _personal_por_accs(db, id_accs)
@@ -811,6 +879,11 @@ def listar_tickets(
             .join(Contrato, Contrato.ID_PERSONAL == Personal.ID_PERSONAL)
             .filter(Contrato.ID_ESTADO_CONTRATO == 1)
         )
+        # RRHH solo ve tickets de categoría RRHH; TI excluye los RRHH
+        if _es_rrhh(token) and not _es_ti(token):
+            query = query.filter(Ticket.ID_CATEGORIA == ID_CATEGORIA_RRHH)
+        elif _es_ti(token) and not _es_rrhh(token):
+            query = query.filter(Ticket.ID_CATEGORIA != ID_CATEGORIA_RRHH)
     else:
         query = (
             db.query(Ticket)
@@ -1011,13 +1084,20 @@ async def crear_ticket(
         datos_nuevos={"prioridad": prioridad, "categoria": id_categoria},
     )
 
-    # Notificar a SOPORTE (2) y ADMINISTRADOR (1) sobre nuevo ticket
+    # Determinar roles destino según la categoría del ticket
+    if id_categoria == ID_CATEGORIA_RRHH:
+        # Tickets RRHH → solo notificar al rol RRHH (4)
+        roles_notif = [ID_ROL_RRHH]
+    else:
+        # Tickets normales → notificar a SOPORTE (2) y ADMINISTRADOR (1)
+        roles_notif = [1, 2]
+
     nombre_creador = f"{persona.NOMBRES} {persona.APE_PATERNO}" if persona else "Usuario"
     await _notificar_ticket(
         db, nuevo.ID_TICKET,
         tipo="ticket_creado",
         texto=f"Nuevo ticket: {asunto} — {nombre_creador} [{prioridad.upper()}]",
-        roles_destino=[1, 2],
+        roles_destino=roles_notif,
         id_empresa=token.get("id_emp"),
     )
 
@@ -1411,13 +1491,19 @@ async def reabrir_ticket(
     if t.ID_TI:
         destinatarios_extra.append(t.ID_TI)
 
-    # Notificación general (campana) para SOPORTE y ADMIN
+    # Notificación general (campana) según categoría del ticket
+    if t.ID_CATEGORIA == ID_CATEGORIA_RRHH:
+        # Tickets RRHH → solo notificar al rol RRHH
+        roles_reabrir = [ID_ROL_RRHH]
+    else:
+        roles_reabrir = [1, 2]
+
     await _notificar_ticket(
         db, id_ticket,
         tipo="ticket_reabierto",
         texto=texto_notif,
         destinatarios_ids=destinatarios_extra,
-        roles_destino=[1, 2],
+        roles_destino=roles_reabrir,
         id_empresa=id_empresa,
     )
 

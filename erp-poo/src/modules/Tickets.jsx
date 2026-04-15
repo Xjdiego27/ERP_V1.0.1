@@ -32,6 +32,7 @@ export default function Tickets() {
     var [tickets, setTickets] = useState([]);
     var [estadisticas, setEstadisticas] = useState(null);
     var [tecnicos, setTecnicos] = useState([]);
+    var [personalRRHH, setPersonalRRHH] = useState([]);
     var [seleccionado, setSeleccionado] = useState(null);
     var [filtroEstado, setFiltroEstado] = useState('');
     var [busqueda, setBusqueda] = useState('');
@@ -52,6 +53,8 @@ export default function Tickets() {
     var rolUsuario = (sessionData && sessionData.usuario && sessionData.usuario.rol || '').toUpperCase();
     var modulosUsuario = (sessionData && sessionData.usuario && sessionData.usuario.modulos) || [];
     var esRolTI = ['ADMINISTRADOR', 'ADMIN', 'SOPORTE'].indexOf(rolUsuario) >= 0 || modulosUsuario.indexOf('TICKETS_PANEL') >= 0;
+    var esRolRRHH = rolUsuario === 'RRHH';
+    var esPanel = esRolTI || esRolRRHH;
 
     useEffect(function () { cargarDatos(); }, []);
 
@@ -71,10 +74,16 @@ export default function Tickets() {
                 if (r.status === 403) return [];
                 return r.json();
             }),
+            fetch(API_URL + '/tickets/personal-rrhh', { headers: headersConToken() }).then(function (r) {
+                if (r.status === 401) return [];
+                if (r.status === 403) return [];
+                return r.json();
+            }),
         ]).then(function (res) {
             setTickets(Array.isArray(res[0]) ? res[0] : []);
             if (res[1]) setEstadisticas(res[1]);
             setTecnicos(Array.isArray(res[2]) ? res[2] : []);
+            setPersonalRRHH(Array.isArray(res[3]) ? res[3] : []);
         }).catch(function () {});
     }
 
@@ -308,7 +317,7 @@ export default function Tickets() {
                 <div className="tickets-dash-header">
                     <div className="tickets-dash-title">
                         <IconoFa icono={faTicket} clase="tickets-dash-icon" />
-                        <h2>Tickets de Soporte</h2>
+                        <h2>{esRolRRHH && !esRolTI ? 'Tickets RRHH' : 'Tickets de Soporte'}</h2>
                     </div>
                     <div className="tickets-dash-actions">
                         <select value={informeMes} onChange={function (e) { setInformeMes(Number(e.target.value)); }}
@@ -477,23 +486,25 @@ export default function Tickets() {
                                 )}
                             </div>
 
-                            {/* Asignar técnico */}
-                            {seleccionado.estado !== 'CERRADO' && esRolTI && (
+                            {/* Asignar técnico / personal RRHH */}
+                            {seleccionado.estado !== 'CERRADO' && esPanel && (
                                 <div className="detalle-asignar">
-                                    <span className="detalle-label">Técnico asignado</span>
+                                    <span className="detalle-label">
+                                        {seleccionado.categoria === 'RRHH' ? 'Personal RRHH asignado' : 'Técnico asignado'}
+                                    </span>
                                     <select value={seleccionado.id_ti || ''} onChange={function (e) {
                                         if (e.target.value) asignarTecnico(seleccionado.id_ticket, e.target.value);
                                     }}>
                                         <option value="">Sin asignar</option>
-                                        {tecnicos.map(function (tec) {
+                                        {(seleccionado.categoria === 'RRHH' ? personalRRHH : tecnicos).map(function (tec) {
                                             return <option key={tec.id_personal} value={tec.id_personal}>{tec.nombre}</option>;
                                         })}
                                     </select>
                                 </div>
                             )}
 
-                            {/* Cambiar prioridad — solo TI */}
-                            {seleccionado.estado !== 'CERRADO' && esRolTI && (
+                            {/* Cambiar prioridad — solo panel */}
+                            {seleccionado.estado !== 'CERRADO' && esPanel && (
                                 <div className="detalle-asignar">
                                     <span className="detalle-label">Prioridad</span>
                                     <select value={seleccionado.prioridad || 'MEDIA'} onChange={function (e) {
@@ -506,8 +517,8 @@ export default function Tickets() {
                                 </div>
                             )}
 
-                            {/* Cambiar estado — solo TI */}
-                            {seleccionado.estado !== 'CERRADO' && esRolTI && (
+                            {/* Cambiar estado — panel (TI o RRHH) */}
+                            {seleccionado.estado !== 'CERRADO' && esPanel && (
                                 <div className="detalle-estados-btns">
                                     {['ASIGNADO', 'RESUELTO'].map(function (est) {
                                         if (seleccionado.estado === est) return null;
@@ -523,7 +534,7 @@ export default function Tickets() {
                             )}
 
                             {/* Códigos SAP — solo para tickets SAP y TI */}
-                            {seleccionado.es_sap && seleccionado.estado !== 'CERRADO' && esRolTI && seleccionado.sap_data && seleccionado.sap_data.length > 0 && (
+                            {seleccionado.es_sap && seleccionado.estado !== 'CERRADO' && esPanel && seleccionado.sap_data && seleccionado.sap_data.length > 0 && (
                                 <div className="detalle-sap-code">
                                     <span className="detalle-label">Código(s) SAP (asignar antes de cerrar)</span>
                                     {seleccionado.sap_data.map(function (item, idx) {
@@ -554,8 +565,8 @@ export default function Tickets() {
                                 </div>
                             )}
 
-                            {/* Cerrar ticket — SOLO TI puede cerrar */}
-                            {seleccionado.estado !== 'CERRADO' && esRolTI && (
+                            {/* Cerrar ticket — panel (TI o RRHH) */}
+                            {seleccionado.estado !== 'CERRADO' && esPanel && (
                                 <div className="detalle-cerrar">
                                     <span className="detalle-label">Comentario al cerrar</span>
                                     <textarea rows="3" value={mensajeTI} placeholder="Mensaje para el usuario..."
