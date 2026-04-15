@@ -54,6 +54,4 @@ ALLOWED_UPLOAD_TYPES = {
     'application/zip', 'application/x-zip-compressed',
     'application/x-rar-compressed', 'application/vnd.rar',
     'application/x-7z-compressed',
-    # Otros
-    'application/octet-stream',
 }

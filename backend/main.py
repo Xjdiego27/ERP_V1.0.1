@@ -51,26 +51,29 @@ async def unified_middleware(request: Request, call_next):
     try:
         response = await call_next(request)
         ms = (time.time() - start) * 1000
-        response.headers["X-Process-Time-Ms"] = f"{ms:.2f}"
         status = response.status_code
         nivel = "[OK]" if ms < 100 else "[LENTO]" if ms < 200 else "[CRITICO]"
         print(f"{nivel} {request.method} {request.url.path} -- {ms:.1f} ms [{status}]")
         return response
     except Exception as e:
         ms = (time.time() - start) * 1000
-        traceback.print_exc()
+        traceback.print_exc()  # Log completo en servidor
         print(f"[ERROR] {request.method} {request.url.path} -- {ms:.2f} ms")
-        return JSONResponse(status_code=500, content={"detail": "Error interno del servidor"})
+        return JSONResponse(
+            status_code=500,
+            content={"detail": "Error interno del servidor"},
+            headers={"Cache-Control": "no-store"},
+        )
 
 # CORS — origenes permitidos desde .env + acceso LAN automatico
 cors_env = os.getenv("CORS_ORIGINS", "http://localhost:3000").split(",")
-cors_origins = [o.strip() for o in cors_env]
+cors_origins = [o.strip() for o in cors_env if o.strip()]
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins='*',
+    allow_origins=cors_origins,
     # Permitir cualquier IP privada de red local automaticamente
-    allow_origin_regex=r'https?://(192\.168\.\d+\.\d+|10\.\d+\.\d+\.\d+|172\.(1[6-9]|2\d|3[01])\.\d+\.\d+)(:\d+)?',
+    allow_origin_regex=r'https?://(localhost|127\.0\.0\.1|192\.168\.\d+\.\d+|10\.\d+\.\d+\.\d+|172\.(1[6-9]|2\d|3[01])\.\d+\.\d+|intraneteq)(:\d+)?',
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -156,6 +159,8 @@ def _verificar_asignacion(db, id_accs, id_empresa):
 # ── EMPRESAS ─────────────────────────────────────
 @app.get("/empresa", response_model=list[EmpresaResponse])
 def listar_empresas(db: Session = Depends(get_db)):
+    """Lista de empresas — accesible sin token para el login selector.
+    Solo devuelve nombre y logo, nunca datos internos."""
     return db.query(Empresa).order_by(Empresa.NOMBRE).all()
 
 
@@ -199,7 +204,15 @@ async def login(datos: LoginRequest, db: Session = Depends(get_db)):
 
 # ── LOGIN PASO 2: Seleccionar empresa → JWT ─────
 @app.post("/auth/seleccionar-empresa")
-async def seleccionar_empresa(datos: SeleccionEmpresaRequest, db: Session = Depends(get_db)):
+async def seleccionar_empresa(
+    datos: SeleccionEmpresaRequest,
+    db: Session = Depends(get_db),
+    token: dict = Depends(verificar_token),
+):
+    # Seguridad: solo el usuario autenticado puede cambiar de empresa
+    id_accs_token = token.get("id_accs")
+    if id_accs_token != datos.id_accs:
+        raise HTTPException(status_code=403, detail="No autorizado para este usuario")
 
     acceso = db.query(Acceso).filter(Acceso.ID_ACCS == datos.id_accs).first()
     if not acceso:

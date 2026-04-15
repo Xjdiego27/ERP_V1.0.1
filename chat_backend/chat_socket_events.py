@@ -16,7 +16,12 @@ logger = logging.getLogger("chat")
 # ── Socket.IO server ──
 sio = socketio.AsyncServer(
     async_mode='asgi',
-    cors_allowed_origins='*',
+    cors_allowed_origins=[
+        'http://localhost:3000',
+        'http://localhost:5173',
+        'http://intraneteq',
+        'http://intraneteq:3000',
+    ],
     ping_interval=25,
     ping_timeout=60,
     logger=False,

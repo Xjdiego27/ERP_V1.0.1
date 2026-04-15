@@ -27,6 +27,7 @@ from datetime import datetime as dt_now_import
 from helpers import construir_rangos_horarios
 from auth_token import verificar_token
 from auditoria import registrar_accion
+from rutas_password import hashear_password
 
 router = APIRouter()
 
@@ -347,7 +348,7 @@ async def crear_personal(datos: PersonalSchema, db: Session = Depends(get_db), t
         while db.query(Acceso).filter(Acceso.USUARIO == usuario).first():
             usuario = usuario_base + str(contador)
             contador += 1
-        nuevo_acceso = Acceso(USUARIO=usuario, PASSWORD=datos.num_doc, RESET_PASS=1, INTENT_LOGIN=0, ID_ESTADO=1, ID_ROL=3)
+        nuevo_acceso = Acceso(USUARIO=usuario, PASSWORD=hashear_password(datos.num_doc), RESET_PASS=1, INTENT_LOGIN=0, ID_ESTADO=1, ID_ROL=3)
         db.add(nuevo_acceso); db.flush()
         # Asignar empresa al usuario via asignacion_emp
         if AsignacionEmp:
@@ -518,15 +519,15 @@ async def desactivar_personal(id: int, db: Session = Depends(get_db), token: dic
 # === REINICIAR CLAVE (admin resetea password y fuerza cambio) ===
 @router.post("/personal/{id}/reiniciar-clave")
 async def reiniciar_clave(id: int, db: Session = Depends(get_db), token: dict = Depends(verificar_token)):
-    """Reinicia la clave de un empleado a su NUM_DOC y activa RESET_PASS=1."""
+    """Reinicia la clave de un empleado a su NUM_DOC (hasheada) y activa RESET_PASS=1."""
     persona = db.query(Personal).filter(Personal.ID_PERSONAL == id).first()
     if not persona:
         raise HTTPException(status_code=404, detail="Empleado no encontrado")
     acceso = db.query(Acceso).filter(Acceso.ID_ACCS == persona.ID_ACCS).first()
     if not acceso:
         raise HTTPException(status_code=404, detail="Acceso no encontrado")
-    # Restablecer password al NUM_DOC (texto plano, se hasheara en el proximo login)
-    acceso.PASSWORD = persona.NUM_DOC
+    # Restablecer password al NUM_DOC — hashear inmediatamente
+    acceso.PASSWORD = hashear_password(persona.NUM_DOC)
     acceso.RESET_PASS = 1
     acceso.INTENT_LOGIN = 0
     # Si estaba bloqueado, reactivar
@@ -541,7 +542,7 @@ async def reiniciar_clave(id: int, db: Session = Depends(get_db), token: dict = 
         nombre_afectado=f"{persona.APE_PATERNO} {persona.APE_MATERNO}, {persona.NOMBRES}",
         datos_nuevos={"reset_pass": 1}
     )
-    return {"mensaje": f"Clave reiniciada. Nueva clave temporal: {persona.NUM_DOC}", "usuario": acceso.USUARIO}
+    return {"mensaje": "Clave reiniciada exitosamente. El empleado deberá cambiarla en su próximo login.", "usuario": acceso.USUARIO}
 
 
 # === ESQUEMA: contactos de emergencia ===

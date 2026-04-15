@@ -665,12 +665,16 @@ body.dark-mode .mi-panel-card-icono.telefono {
    NOTIFICACIONES — dropdown glass
    ═══════════════════════════════════════════ */
 .noti-dropdown {
-  background: var(--glass-bg) !important;
-  backdrop-filter: blur(18px);
-  -webkit-backdrop-filter: blur(18px);
-  border: 1px solid var(--glass-border) !important;
+  background: rgba(255, 255, 255, 0.72) !important;
+  backdrop-filter: blur(22px) saturate(1.4);
+  -webkit-backdrop-filter: blur(22px) saturate(1.4);
+  border: 1px solid rgba(255, 255, 255, 0.45) !important;
   border-radius: var(--glass-radius-sm) !important;
-  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.12);
+}
+body.dark-mode .noti-dropdown {
+  background: rgba(30, 34, 42, 0.82) !important;
+  border-color: rgba(255, 255, 255, 0.10) !important;
 }
 
 
@@ -678,12 +682,16 @@ body.dark-mode .mi-panel-card-icono.telefono {
    USER MENU — dropdown del usuario glass
    ═══════════════════════════════════════════ */
 .user-dropdown {
-  background: var(--glass-bg) !important;
-  backdrop-filter: blur(18px);
-  -webkit-backdrop-filter: blur(18px);
-  border: 1px solid var(--glass-border) !important;
+  background: rgba(255, 255, 255, 0.72) !important;
+  backdrop-filter: blur(22px) saturate(1.4);
+  -webkit-backdrop-filter: blur(22px) saturate(1.4);
+  border: 1px solid rgba(255, 255, 255, 0.45) !important;
   border-radius: var(--glass-radius-sm) !important;
-  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.12);
+}
+body.dark-mode .user-dropdown {
+  background: rgba(30, 34, 42, 0.82) !important;
+  border-color: rgba(255, 255, 255, 0.10) !important;
 }
 
 
