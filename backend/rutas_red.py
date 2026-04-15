@@ -5,7 +5,7 @@ from pydantic import BaseModel
 from typing import Optional
 from sqlalchemy.orm import Session
 from sqlalchemy import text
-from database import get_db, Red, Equipo, EspecificacionesTec, Personal, Empresa, Contrato
+from database import get_db, Red, Equipo, EspecificacionesTec, Personal, Empresa, Contrato, AsignacionEquipo
 from auth_token import verificar_token
 import traceback
 
@@ -57,10 +57,18 @@ def listar_ips(db: Session = Depends(get_db), _=Depends(verificar_token)):
                     "apellido_mat": getattr(p, 'APE_MATERNO', '') or '',
                 }
 
+        # Mapa equipo → personal asignado (desde asignacion_equipo)
+        equipo_personal_map = {}
+        if AsignacionEquipo:
+            for a in db.query(AsignacionEquipo).all():
+                # Si hay varias asignaciones por equipo, la última gana
+                equipo_personal_map[a.ID_EQUIPO] = a.ID_PERSONAL
+
         lista = []
         for f in filas:
             etiqueta = f.ETIQUETAS if f.ETIQUETAS else None
-            id_personal = getattr(f, 'ID_PERSONAL', None)
+            # Resolver personal asignado al equipo de esta IP
+            id_personal_asignado = equipo_personal_map.get(f.ID_EQUIPO) if f.ID_EQUIPO else None
             lista.append({
                 "id_ip": f.ID_IP,
                 "ip": f.IP,
@@ -68,8 +76,7 @@ def listar_ips(db: Session = Depends(get_db), _=Depends(verificar_token)):
                 "descripcion": f.DESCRIP,
                 "id_equipo": f.ID_EQUIPO,
                 "equipo": equipo_map.get(f.ID_EQUIPO) if f.ID_EQUIPO else None,
-                "id_personal": id_personal,
-                "personal": personal_map.get(id_personal) if id_personal else None,
+                "personal": personal_map.get(id_personal_asignado) if id_personal_asignado else None,
             })
 
         # Resumen: conteo por etiqueta

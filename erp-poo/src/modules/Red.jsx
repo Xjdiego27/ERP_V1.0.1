@@ -52,7 +52,7 @@ export default function Red() {
 
     // Edición inline
     var [editandoId, setEditandoId] = useState(null);
-    var [formEditar, setFormEditar] = useState({ etiqueta: '', descripcion: '', id_equipo: '', id_personal: '' });
+    var [formEditar, setFormEditar] = useState({ etiqueta: '', descripcion: '', id_equipo: '' });
 
     // Selección múltiple
     var [seleccionados, setSeleccionados] = useState([]);
@@ -138,13 +138,12 @@ export default function Red() {
             etiqueta: ip.etiqueta || '',
             descripcion: ip.descripcion || '',
             id_equipo: ip.id_equipo || '',
-            id_personal: ip.id_personal || '',
         });
     }
 
     function cancelarEdicion() {
         setEditandoId(null);
-        setFormEditar({ etiqueta: '', descripcion: '', id_equipo: '', id_personal: '' });
+        setFormEditar({ etiqueta: '', descripcion: '', id_equipo: '' });
     }
 
     function guardarEdicion(id_ip) {
@@ -155,7 +154,6 @@ export default function Red() {
                 etiqueta: formEditar.etiqueta,
                 descripcion: formEditar.descripcion,
                 id_equipo: formEditar.id_equipo ? Number(formEditar.id_equipo) : 0,
-                id_personal: formEditar.id_personal ? Number(formEditar.id_personal) : 0,
             }),
         })
             .then(function (r) { return r.json(); })
@@ -395,29 +393,15 @@ export default function Red() {
                                                                                 })}
                                                                             </select>
                                                                         ) : (
-                                                                            <span>{ip.equipo ? (ip.equipo.codigoe || ip.equipo.serie || ip.equipo.nombre || '#' + ip.equipo.id) : '—'}</span>
+                                                                            <span className="red-td-codigo">{ip.equipo ? (ip.equipo.codigoe || ip.equipo.serie || ip.equipo.nombre || '#' + ip.equipo.id) : '—'}</span>
                                                                         )}
                                                                     </td>
                                                                     <td>
-                                                                        {esEditando ? (
-                                                                            <select
-                                                                                value={formEditar.id_personal}
-                                                                                onChange={function (e) { setFormEditar(Object.assign({}, formEditar, { id_personal: e.target.value })); }}
-                                                                                className="red-edit-select"
-                                                                            >
-                                                                                <option value="">Sin asignar</option>
-                                                                                {(catalogos.personal || []).map(function (p) {
-                                                                                    var label = p.apellido_pat + ' ' + p.apellido_mat + ', ' + p.nombre + (p.empresa ? ' — ' + p.empresa : '');
-                                                                                    return <option key={p.id} value={p.id}>{label}</option>;
-                                                                                })}
-                                                                            </select>
-                                                                        ) : (
-                                                                            <span className="red-td-personal">
-                                                                                {ip.personal ? (
-                                                                                    <><IconoFa icono={faUser} clase="red-personal-icon" /> {ip.personal.apellido_pat + ' ' + ip.personal.apellido_mat + ', ' + ip.personal.nombre}</>
-                                                                                ) : '—'}
-                                                                            </span>
-                                                                        )}
+                                                                        <span className="red-td-personal">
+                                                                            {ip.personal ? (
+                                                                                <><IconoFa icono={faUser} clase="red-personal-icon" /> {ip.personal.apellido_pat + ' ' + ip.personal.apellido_mat + ', ' + ip.personal.nombre}</>
+                                                                            ) : '—'}
+                                                                        </span>
                                                                     </td>
                                                                     <td className="red-td-acc">
                                                                         {esEditando ? (
