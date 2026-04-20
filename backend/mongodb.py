@@ -25,6 +25,7 @@ coleccion_saludos_cumple = db_mongo["saludos_cumpleanos"]      # Saludos de cump
 coleccion_eventos2 = db_mongo["eventos2"]                      # Segundo evento (foto)
 coleccion_evento_mujeres = db_mongo["evento_mujeres"]          # Evento exclusivo para mujeres
 coleccion_tareas = db_mongo["tareas_personales"]               # Tareas programadas personales por usuario
+coleccion_push_suscripciones = db_mongo["push_suscripciones"]   # Suscripciones Web Push por dispositivo/usuario
 
 # === BASE DE DATOS DE ARCHIVO (erp_sql) ===
 db_archivo = cliente_mongo["erp_sql"]

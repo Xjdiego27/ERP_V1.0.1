@@ -147,6 +147,19 @@ async def _notificar_ticket(db: Session, id_ticket: int, tipo: str, texto: str,
     if docs:
         await coleccion_notif_tickets.insert_many(docs)
 
+    # ── Enviar Web Push a los mismos destinatarios ──
+    try:
+        from rutas_push import enviar_push_a_personal
+        await enviar_push_a_personal(
+            ids_personal=list(ids),
+            titulo="INTRANET EQ — Tickets",
+            cuerpo=texto,
+            url="/tickets",
+            icono="/assets/icono.jpg",
+        )
+    except Exception:
+        pass  # Push es opcional, nunca debe romper el flujo principal
+
 
 # ── Endpoint: Modal de reapertura de ticket ──────────
 from bson import ObjectId

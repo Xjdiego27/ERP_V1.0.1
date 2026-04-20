@@ -2,6 +2,7 @@ import { useRef, useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useHeader } from '../hooks/useHeader';
 import { useClickAfuera } from '../hooks/useClickAfuera';
+import { usePushNotificaciones } from '../hooks/usePushNotificaciones';
 import Img from './Img'; 
 import IconoFa from './IconoFa';
 import { faBell, faMoon, faSun, faFileContract, faCakeCandles, faUtensils, faCalendarDay, faCircleExclamation, faUserXmark, faTicket, faWrench, faCalendarCheck } from '@fortawesome/free-solid-svg-icons';
@@ -25,6 +26,19 @@ export default function Header({ onToggleMenu, onToggleEmpresa, onCambiarPasswor
     const notiRef = useRef(null);
     const prevNotiTotal = useRef(0);
     const navigate = useNavigate();
+
+    // Registrar Service Worker y suscribir a Web Push
+    usePushNotificaciones();
+
+    // Navegar cuando el usuario hace clic en una push notification
+    useEffect(function () {
+        function onPushNavigate(e) {
+            var url = e.detail && e.detail.url;
+            if (url) navigate(url);
+        }
+        window.addEventListener('push-navigate', onPushNavigate);
+        return function () { window.removeEventListener('push-navigate', onPushNavigate); };
+    }, [navigate]);
 
     useClickAfuera(menuRef, closeMenu);
     useClickAfuera(notiRef, () => setNotiOpen(false));
@@ -63,6 +77,22 @@ export default function Header({ onToggleMenu, onToggleEmpresa, onCambiarPasswor
                     if (nuevas.length > prevNotiTotal.current && nuevas.length > 0) {
                         sonidoNotificacion.currentTime = 0;
                         sonidoNotificacion.play().catch(function () {});
+
+                        // Mostrar push notification del SO para cada notificación nueva
+                        if (Notification.permission === 'granted' && 'serviceWorker' in navigator) {
+                            navigator.serviceWorker.ready.then(function (reg) {
+                                nuevas.slice(0, 3).forEach(function (n) {
+                                    reg.showNotification('INTRANET EQ', {
+                                        body: n.texto,
+                                        icon: '/assets/icono.jpg',
+                                        badge: '/assets/icono.jpg',
+                                        tag: 'noti-' + claveNoti(n),
+                                        silent: true, // ya sonó el audio
+                                        data: { url: '/' },
+                                    });
+                                });
+                            }).catch(function () {});
+                        }
                     }
                     prevNotiTotal.current = nuevas.length;
                 }

@@ -40,6 +40,7 @@ from rutas_mantenimiento import router as rutas_mantenimiento
 from rutas_tareas import router as rutas_tareas
 from rutas_red import router as rutas_red
 from rutas_correos import router as rutas_correos
+from rutas_push import router as rutas_push
 from rutas_saludos_cumpleanos import tarea_limpieza_periodica
 
 app = FastAPI()
@@ -103,6 +104,7 @@ app.include_router(rutas_mantenimiento)
 app.include_router(rutas_tareas)
 app.include_router(rutas_red)
 app.include_router(rutas_correos)
+app.include_router(rutas_push)
 
 # ── Servir imágenes subidas (menús, eventos, perfiles, equipos, etc.) ──
 ASSETS_DIR = os.path.join(os.path.dirname(__file__), "..", "erp-poo", "public", "assets")
