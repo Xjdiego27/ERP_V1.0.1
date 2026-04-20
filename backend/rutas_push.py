@@ -4,6 +4,7 @@
 # notificaciones del sistema operativo al browser.
 # ============================================
 
+import importlib
 import json
 import os
 import asyncio
@@ -103,8 +104,9 @@ async def enviar_push_a_personal(
         return
 
     try:
-        from pywebpush import webpush, WebPushException
-    except ImportError:
+        pywebpush = importlib.import_module("pywebpush")
+        webpush = pywebpush.webpush
+    except Exception:
         return  # Si no está instalado, ignorar silenciosamente
 
     payload = json.dumps({
@@ -129,7 +131,7 @@ async def enviar_push_a_personal(
             "keys": sub.get("keys", {}),
         }
         try:
-            await asyncio.get_event_loop().run_in_executor(
+            await asyncio.get_running_loop().run_in_executor(
                 None,
                 lambda s=subscription_info: webpush(
                     subscription_info=s,

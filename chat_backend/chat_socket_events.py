@@ -4,12 +4,14 @@
 import asyncio
 import logging
 from datetime import datetime
+from bson import ObjectId
 from jose import jwt, JWTError
 import socketio
 
 from chat_config import SECRET_KEY, ALGORITHM, CORS_ORIGINS
 from chat_auth import resolver_id_personal
 from chat_db import coleccion_mensajes, coleccion_msg_general, coleccion_msg_grupo, coleccion_grupos
+from chat_push import enviar_push_chat, ids_suscritos_push
 
 logger = logging.getLogger("chat")
 
@@ -33,6 +35,14 @@ usuarios_conectados = {}
 _lock_usuarios = asyncio.Lock()
 
 SALA_GENERAL = 'sala_general'
+
+
+def _texto_push_chat(data, contenido):
+    tipo = data.get('tipo', 'texto') if isinstance(data, dict) else 'texto'
+    if tipo == 'archivo':
+        nombre = (data.get('archivo_nombre') or '').strip() if isinstance(data, dict) else ''
+        return f"Archivo: {nombre}" if nombre else 'Te enviaron un archivo'
+    return (contenido or '').strip() or 'Nuevo mensaje'
 
 
 # ══════════════════════════════════════════════════════════
@@ -87,7 +97,7 @@ async def connect(sid, environ, auth):
             {'_id': 1}
         )
         async for grupo in cursor:
-            sio.enter_room(sid, f'grupo_{str(grupo["_id"])}')
+            await sio.enter_room(sid, f'grupo_{str(grupo["_id"])}')
     except Exception as e:
         logger.warning(f"[Chat] Error al unir a grupos: {e}")
 
@@ -174,6 +184,15 @@ async def enviar_mensaje(sid, data):
     for rsid in sids_destino:
         await sio.emit('mensaje_nuevo', msg_emit, to=rsid)
 
+    if destinatario_id not in usuarios_conectados:
+        await enviar_push_chat(
+            [destinatario_id],
+            titulo=f"Nuevo mensaje de {nombre_remitente}",
+            cuerpo=_texto_push_chat(data, contenido),
+            url='/dashboard',
+            tag=f'chat-directo-{destinatario_id}',
+        )
+
     logger.info(f"[Chat] Msg {nombre_remitente} -> {destinatario_id}: {contenido[:40]}")
     return {'ok': True, 'mensaje': msg_emit}
 
@@ -218,6 +237,14 @@ async def zumbido(sid, data):
             'remitente_id': remitente_id,
             'nombre_remitente': nombre_remitente,
         }, to=rsid)
+    if destinatario_id not in usuarios_conectados:
+        await enviar_push_chat(
+            [destinatario_id],
+            titulo=f"Zumbido de {nombre_remitente}",
+            cuerpo='Te enviaron un zumbido en el chat',
+            url='/dashboard',
+            tag=f'chat-zumbido-{destinatario_id}',
+        )
     logger.info(f"[Chat] Zumbido {nombre_remitente} -> {destinatario_id}")
 
 
@@ -227,7 +254,7 @@ async def zumbido(sid, data):
 @sio.event
 async def join_general(sid, data=None):
     """Unir al usuario a la sala general."""
-    sio.enter_room(sid, SALA_GENERAL)
+    await sio.enter_room(sid, SALA_GENERAL)
 
 
 @sio.event
@@ -266,6 +293,17 @@ async def msg_general(sid, data):
         'archivo_nombre': doc['archivo_nombre'],
     }
     await sio.emit('msg_general', msg_emit, room=SALA_GENERAL, skip_sid=sid)
+
+    ids_push = await ids_suscritos_push(excluir_id=remitente_id)
+    ids_offline = [pid for pid in ids_push if pid not in usuarios_conectados]
+    if ids_offline:
+        await enviar_push_chat(
+            ids_offline,
+            titulo='Nuevo mensaje en Chat General',
+            cuerpo=f"{nombre}: {_texto_push_chat(data, contenido)}",
+            url='/dashboard',
+            tag='chat-general',
+        )
     return {'ok': True, 'mensaje': msg_emit}
 
 
@@ -274,7 +312,7 @@ async def join_grupo(sid, data):
     """Unir al usuario a una sala de grupo."""
     grupo_id = data.get('grupo_id')
     if grupo_id:
-        sio.enter_room(sid, f'grupo_{grupo_id}')
+        await sio.enter_room(sid, f'grupo_{grupo_id}')
 
 
 @sio.event
@@ -305,9 +343,19 @@ async def msg_grupo(sid, data):
     }
     resultado = await coleccion_msg_grupo.insert_one(doc)
 
+    grupo_doc = await coleccion_grupos.find_one({'_id': grupo_id})
+    if not grupo_doc:
+        try:
+            grupo_doc = await coleccion_grupos.find_one({'_id': ObjectId(grupo_id)})
+        except Exception:
+            grupo_doc = None
+    grupo_nombre = (grupo_doc or {}).get('nombre', 'Grupo')
+    miembros = (grupo_doc or {}).get('miembros', [])
+
     msg_emit = {
         'id': str(resultado.inserted_id),
         'grupo_id': grupo_id,
+        'grupo_nombre': grupo_nombre,
         'remitente_id': remitente_id,
         'nombre_remitente': nombre,
         'contenido': contenido,
@@ -318,6 +366,24 @@ async def msg_grupo(sid, data):
         'leido_por': [],
     }
     await sio.emit('msg_grupo', msg_emit, room=f'grupo_{grupo_id}', skip_sid=sid)
+
+    ids_offline = []
+    for miembro_id in miembros:
+        try:
+            miembro_id = int(miembro_id)
+        except (TypeError, ValueError):
+            continue
+        if miembro_id == remitente_id or miembro_id in usuarios_conectados:
+            continue
+        ids_offline.append(miembro_id)
+    if ids_offline:
+        await enviar_push_chat(
+            ids_offline,
+            titulo=f"Nuevo mensaje en {grupo_nombre}",
+            cuerpo=f"{nombre}: {_texto_push_chat(data, contenido)}",
+            url='/dashboard',
+            tag=f'chat-grupo-{grupo_id}',
+        )
     return {'ok': True, 'mensaje': msg_emit}
 
 

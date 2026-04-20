@@ -8,11 +8,19 @@ import MiEspacio from './MiEspacio';
 import { faComments, faSearch, faTimes, faCircle, faMinus, faGlobe, faUsers, faPlus, faStickyNote, faTrash } from '@fortawesome/free-solid-svg-icons';
 import { CHAT_URL, CHAT_SOCKET_URL, obtenerToken } from '../auth';
 import { getSession } from '../utils/session';
+import { showDesktopNotification } from '../utils/desktopNotifications';
 import '../styles/Chat.css';
 
 // Sonido de notificación MSN para mensajes cuando chat no está abierto
 const sonidoNotificacion = new Audio('/sounds/msn_messenger.mp3');
 sonidoNotificacion.volume = 0.5;
+
+function resumirMensaje(msg) {
+    if (msg.tipo === 'archivo') {
+        return msg.archivo_nombre ? ('Archivo: ' + msg.archivo_nombre) : 'Te enviaron un archivo';
+    }
+    return msg.contenido || 'Nuevo mensaje';
+}
 
 /**
  * ChatPanel — Panel lateral de contactos + ventanas de chat flotantes.
@@ -42,9 +50,11 @@ export default function ChatPanel() {
     const contactosRef = useRef([]);
     const totalNoLeidosGrupos = Object.values(noLeidosGrupos).reduce((s, v) => s + v, 0);
     const totalNoLeidos = Object.values(noLeidos).reduce((s, v) => s + v, 0) + noLeidosGeneral + totalNoLeidosGrupos;
+    const gruposRef = useRef([]);
 
     // Mantener ref sincronizada para acceder dentro de socket listeners
     useEffect(() => { contactosRef.current = contactos; }, [contactos]);
+    useEffect(() => { gruposRef.current = grupos; }, [grupos]);
 
     // ── Detectar mobile/tablet ──
     useEffect(() => {
@@ -113,6 +123,15 @@ export default function ChatPanel() {
                     sonidoNotificacion.currentTime = 0;
                     sonidoNotificacion.play().catch(() => {});
                 }
+                if (!estaAbierto || document.hidden) {
+                    showDesktopNotification({
+                        title: 'Mensaje de ' + (msg.nombre_remitente || 'Contacto'),
+                        body: resumirMensaje(msg),
+                        tag: 'chat-directo-' + msg.remitente_id,
+                        url: '/dashboard',
+                        silent: true,
+                    });
+                }
                 return prev;
             });
         });
@@ -125,7 +144,23 @@ export default function ChatPanel() {
                     setAbierto(true);
                     sonidoNotificacion.currentTime = 0;
                     sonidoNotificacion.play().catch(() => {});
+                    showDesktopNotification({
+                        title: 'Chat General',
+                        body: (msg.nombre_remitente || 'Usuario') + ': ' + resumirMensaje(msg),
+                        tag: 'chat-general',
+                        url: '/dashboard',
+                        silent: true,
+                    });
                     return true; // abre chatGeneralAbierto
+                }
+                if (document.hidden) {
+                    showDesktopNotification({
+                        title: 'Chat General',
+                        body: (msg.nombre_remitente || 'Usuario') + ': ' + resumirMensaje(msg),
+                        tag: 'chat-general',
+                        url: '/dashboard',
+                        silent: true,
+                    });
                 }
                 return prev;
             });
@@ -142,6 +177,16 @@ export default function ChatPanel() {
                     }));
                     sonidoNotificacion.currentTime = 0;
                     sonidoNotificacion.play().catch(() => {});
+                }
+                if (!estaAbierto || document.hidden) {
+                    const grupo = gruposRef.current.find(g => g.id === msg.grupo_id);
+                    showDesktopNotification({
+                        title: 'Grupo: ' + (msg.grupo_nombre || grupo?.nombre || 'Chat de grupo'),
+                        body: (msg.nombre_remitente || 'Usuario') + ': ' + resumirMensaje(msg),
+                        tag: 'chat-grupo-' + msg.grupo_id,
+                        url: '/dashboard',
+                        silent: true,
+                    });
                 }
                 return prev;
             });
@@ -172,6 +217,14 @@ export default function ChatPanel() {
                 setAbierto(true);
                 sonidoNotificacion.currentTime = 0;
                 sonidoNotificacion.play().catch(() => {});
+                showDesktopNotification({
+                    title: 'Zumbido de ' + (data.nombre_remitente || 'Contacto'),
+                    body: 'Te enviaron un zumbido en el chat',
+                    tag: 'chat-zumbido-' + data.remitente_id,
+                    url: '/dashboard',
+                    silent: true,
+                    requireInteraction: true,
+                });
                 return [{ id_personal: data.remitente_id, nombre: data.nombre_remitente, foto: null, cargo: '' }, ...prev];
             });
         });

@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useHeader } from '../hooks/useHeader';
 import { useClickAfuera } from '../hooks/useClickAfuera';
 import { usePushNotificaciones } from '../hooks/usePushNotificaciones';
+import { showDesktopNotification } from '../utils/desktopNotifications';
 import Img from './Img'; 
 import IconoFa from './IconoFa';
 import { faBell, faMoon, faSun, faFileContract, faCakeCandles, faUtensils, faCalendarDay, faCircleExclamation, faUserXmark, faTicket, faWrench, faCalendarCheck } from '@fortawesome/free-solid-svg-icons';
@@ -77,22 +78,15 @@ export default function Header({ onToggleMenu, onToggleEmpresa, onCambiarPasswor
                     if (nuevas.length > prevNotiTotal.current && nuevas.length > 0) {
                         sonidoNotificacion.currentTime = 0;
                         sonidoNotificacion.play().catch(function () {});
-
-                        // Mostrar push notification del SO para cada notificación nueva
-                        if (Notification.permission === 'granted' && 'serviceWorker' in navigator) {
-                            navigator.serviceWorker.ready.then(function (reg) {
-                                nuevas.slice(0, 3).forEach(function (n) {
-                                    reg.showNotification('INTRANET EQ', {
-                                        body: n.texto,
-                                        icon: '/assets/icono.jpg',
-                                        badge: '/assets/icono.jpg',
-                                        tag: 'noti-' + claveNoti(n),
-                                        silent: true, // ya sonó el audio
-                                        data: { url: '/' },
-                                    });
-                                });
-                            }).catch(function () {});
-                        }
+                        nuevas.slice(0, 3).forEach(function (n) {
+                            showDesktopNotification({
+                                title: 'INTRANET EQ',
+                                body: n.texto,
+                                tag: 'noti-' + claveNoti(n),
+                                url: '/dashboard',
+                                silent: true,
+                            });
+                        });
                     }
                     prevNotiTotal.current = nuevas.length;
                 }

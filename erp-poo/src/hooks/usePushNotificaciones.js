@@ -4,6 +4,7 @@
 
 import { useEffect, useRef } from 'react';
 import { API_URL, headersConToken } from '../auth';
+import { ensureDesktopNotificationPermission } from '../utils/desktopNotifications';
 
 // Clave pública VAPID — debe coincidir con VAPID_PUBLIC_KEY del backend
 const VAPID_PUBLIC_KEY = 'BP1irtdR4fFitQItazHcArSW7GSCBr2hyh99MJH7eEfJTQnck3JT0OLTLcVFYT-4_N0kZBxSTpfKfoRmspIxCAQ';
@@ -24,42 +25,60 @@ export function usePushNotificaciones() {
     var suscripcionEnviada = useRef(false);
 
     useEffect(function () {
-        // Verificar soporte del browser
-        if (!('serviceWorker' in navigator) || !('PushManager' in window)) {
+        if (typeof window === 'undefined' || !('Notification' in window)) {
             return;
         }
 
-        var swRegistration = null;
+        var listenerRegistrado = false;
 
         async function registrarYSuscribir() {
             try {
-                // 1. Registrar (o reutilizar) el Service Worker
-                swRegistration = await navigator.serviceWorker.register('/sw.js', { scope: '/' });
-
-                // 2. Esperar a que esté activo
-                await navigator.serviceWorker.ready;
-
-                // 3. Pedir permiso al usuario (solo si no lo ha dado ya)
-                var permiso = Notification.permission;
-                if (permiso === 'denied') return;
+                var permiso = await ensureDesktopNotificationPermission();
                 if (permiso !== 'granted') {
-                    permiso = await Notification.requestPermission();
-                    if (permiso !== 'granted') return;
+                    return;
                 }
 
-                // 4. Ver si ya hay suscripción existente
-                var suscripcionExistente = await swRegistration.pushManager.getSubscription();
-                if (suscripcionExistente && suscripcionEnviada.current) return;
+                if ('serviceWorker' in navigator && !listenerRegistrado) {
+                    navigator.serviceWorker.addEventListener('message', function (event) {
+                        if (event.data && event.data.type === 'PUSH_NAVIGATE') {
+                            var url = event.data.url || '/dashboard';
+                            window.dispatchEvent(new CustomEvent('push-navigate', { detail: { url: url } }));
+                        }
+                    });
+                    listenerRegistrado = true;
+                }
 
-                // 5. Suscribirse al servidor push
+                if (!('serviceWorker' in navigator) || !('PushManager' in window) || window.location.protocol === 'file:') {
+                    return;
+                }
+
+                var swRegistration = await navigator.serviceWorker.register('/sw.js', { scope: '/' });
+                await navigator.serviceWorker.ready;
+
+                var suscripcionExistente = await swRegistration.pushManager.getSubscription();
+                if (suscripcionExistente && suscripcionEnviada.current) {
+                    return;
+                }
+
+                var vapidPublicKey = VAPID_PUBLIC_KEY;
+                try {
+                    var respClave = await fetch(API_URL + '/push/vapid-public-key', {
+                        headers: headersConToken(),
+                    });
+                    if (respClave.ok) {
+                        var dataClave = await respClave.json();
+                        vapidPublicKey = dataClave.public_key || vapidPublicKey;
+                    }
+                } catch (_error) {
+                }
+
                 var suscripcion = suscripcionExistente || await swRegistration.pushManager.subscribe({
                     userVisibleOnly: true,
-                    applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY),
+                    applicationServerKey: urlBase64ToUint8Array(vapidPublicKey),
                 });
 
-                // 6. Enviar suscripción al backend
                 if (!suscripcionEnviada.current) {
-                    await fetch(API_URL + '/push/suscribir', {
+                    var respSuscripcion = await fetch(API_URL + '/push/suscribir', {
                         method: 'POST',
                         headers: {
                             ...headersConToken(),
@@ -74,20 +93,11 @@ export function usePushNotificaciones() {
                             user_agent: navigator.userAgent,
                         }),
                     });
-                    suscripcionEnviada.current = true;
-                }
-
-                // 7. Manejar mensajes del SW (para navegar cuando se hace clic en notif)
-                navigator.serviceWorker.addEventListener('message', function (event) {
-                    if (event.data && event.data.type === 'PUSH_NAVIGATE') {
-                        var url = event.data.url || '/';
-                        // Navegar sin recargar si es posible
-                        window.dispatchEvent(new CustomEvent('push-navigate', { detail: { url: url } }));
+                    if (respSuscripcion.ok) {
+                        suscripcionEnviada.current = true;
                     }
-                });
-
+                }
             } catch (err) {
-                // Silencioso: push es funcionalidad adicional, no crítica
                 console.warn('[Push] No se pudo suscribir:', err);
             }
         }

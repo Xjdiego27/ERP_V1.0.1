@@ -29,6 +29,17 @@ CHAT_PORT = int(os.getenv('CHAT_PORT', '4001'))
 # ── AES ──
 AES_KEY = os.getenv('AES_KEY', '')
 
+# ── Push / VAPID ──
+VAPID_PUBLIC_KEY = os.getenv(
+    'VAPID_PUBLIC_KEY',
+    'BP1irtdR4fFitQItazHcArSW7GSCBr2hyh99MJH7eEfJTQnck3JT0OLTLcVFYT-4_N0kZBxSTpfKfoRmspIxCAQ'
+)
+VAPID_PRIVATE_PEM = os.getenv(
+    'VAPID_PRIVATE_PEM',
+    '-----BEGIN PRIVATE KEY-----\nMIGHAgEAMBMGByqGSM49AgEGCCqGSM49AwEHBG0wawIBAQQgDutwOdgTa4doGTFd\nC7cnNbuHs5vcUz1j4gVKyeeOumOhRANCAAT9Yq7XUeHxYrUCLWsx3AK0luxkgga9\nocoffTCR+3hHyU0J3JNyU9Di0y3FRWE/uPzdJGQcUk6Xyn6EZrKSMQgE\n-----END PRIVATE KEY-----\n'
+).replace('\\n', '\n')
+VAPID_EMAIL = os.getenv('VAPID_EMAIL', 'contacto@intranet.local')
+
 # ── CORS ──
 _cors_env = os.getenv('CORS_ORIGINS', 'http://localhost:3000').split(',')
 CORS_ORIGINS = [o.strip() for o in _cors_env if o.strip()]
