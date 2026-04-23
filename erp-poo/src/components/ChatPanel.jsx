@@ -45,6 +45,12 @@ export default function ChatPanel() {
     const [chatActivoMobile, setChatActivoMobile] = useState(null); // id_personal del chat expandido en mobile
     const [esMobile, setEsMobile] = useState(window.innerWidth <= 1024);
     const [ultimoMsg, setUltimoMsg] = useState({});            // {id_personal: timestamp} para ordenar contactos
+    const [modoBurbuja, setModoBurbuja] = useState(() => localStorage.getItem('chat_modo') || 'barra');
+    const [burbujaPreviews, setBurbujaPreviews] = useState({});  // {id_personal: {texto, ts}}
+    const [burbujaActivaId, setBurbujaActivaId] = useState(null); // qué ventana de chat está expandida en modo burbuja
+    const [burbujaPosiciones, setBurbujaPosiciones] = useState({}); // {id_personal: {x, y}}
+    const previewTimers = useRef({});
+    const dragRef = useRef(null);
     const socketRef = useRef(null);
     const panelRef = useRef(null);
     const contactosRef = useRef([]);
@@ -64,6 +70,56 @@ export default function ChatPanel() {
         window.addEventListener('resize', handleResize);
         return () => window.removeEventListener('resize', handleResize);
     }, []);
+
+    // ── Escuchar cambio de modo burbuja desde UserMenu ──
+    useEffect(() => {
+        function onModoChange(e) {
+            setModoBurbuja(e.detail.modo);
+        }
+        window.addEventListener('chat-modo-change', onModoChange);
+        return () => window.removeEventListener('chat-modo-change', onModoChange);
+    }, []);
+
+    // ── Posición inicial de burbuja (si no fue movida) ──
+    function getBurbujaPos(id, idx) {
+        if (burbujaPosiciones[id]) return burbujaPosiciones[id];
+        return {
+            x: window.innerWidth - 68 - idx * 68,
+            y: window.innerHeight - 68,
+        };
+    }
+
+    // ── Drag libre de burbujas ──
+    function handleBurbujaMouseDown(e, id, idx, onClickCb) {
+        if (e.button !== 0) return;
+        e.preventDefault();
+        e.stopPropagation();
+        const pos = getBurbujaPos(id, idx);
+        let moved = false;
+        dragRef.current = { id, startX: e.clientX, startY: e.clientY, origX: pos.x, origY: pos.y };
+
+        function onMove(ev) {
+            if (!dragRef.current) return;
+            const dx = ev.clientX - dragRef.current.startX;
+            const dy = ev.clientY - dragRef.current.startY;
+            if (Math.abs(dx) > 4 || Math.abs(dy) > 4) moved = true;
+            if (!moved) return;
+            const nx = Math.max(0, Math.min(window.innerWidth - 56, dragRef.current.origX + dx));
+            const ny = Math.max(0, Math.min(window.innerHeight - 56, dragRef.current.origY + dy));
+            setBurbujaPosiciones(prev => ({ ...prev, [dragRef.current.id]: { x: nx, y: ny } }));
+        }
+
+        function onUp() {
+            const wasMoved = moved;
+            dragRef.current = null;
+            window.removeEventListener('mousemove', onMove);
+            window.removeEventListener('mouseup', onUp);
+            if (!wasMoved) onClickCb();
+        }
+
+        window.addEventListener('mousemove', onMove);
+        window.addEventListener('mouseup', onUp);
+    }
 
     // ── Conectar Socket.IO ──
     useEffect(() => {
@@ -112,6 +168,16 @@ export default function ChatPanel() {
             // Registrar timestamp del último mensaje recibido para ordenar contactos
             setUltimoMsg(prev => ({ ...prev, [msg.remitente_id]: Date.now() }));
 
+            // Mostrar preview en burbuja (modo burbuja)
+            const textoPreview = msg.nombre_remitente
+                ? msg.nombre_remitente.split(' ')[0] + ': ' + resumirMensaje(msg)
+                : resumirMensaje(msg);
+            setBurbujaPreviews(prev => ({ ...prev, [msg.remitente_id]: { texto: textoPreview, ts: Date.now() } }));
+            if (previewTimers.current[msg.remitente_id]) clearTimeout(previewTimers.current[msg.remitente_id]);
+            previewTimers.current[msg.remitente_id] = setTimeout(() => {
+                setBurbujaPreviews(prev => { const c = { ...prev }; delete c[msg.remitente_id]; return c; });
+            }, 4000);
+
             // Si la ventana de ese contacto NO está abierta, incrementar no leídos y sonar
             setChatsAbiertos(prev => {
                 const estaAbierto = prev.some(c => c.id_personal === msg.remitente_id);
@@ -131,6 +197,11 @@ export default function ChatPanel() {
                         url: '/dashboard',
                         silent: true,
                     });
+                }
+                // En modo burbuja: si ya está en la lista, expandir automáticamente
+                const modoActual = localStorage.getItem('chat_modo') || 'barra';
+                if (modoActual === 'burbujas' && estaAbierto) {
+                    setBurbujaActivaId(msg.remitente_id);
                 }
                 return prev;
             });
@@ -355,6 +426,12 @@ export default function ChatPanel() {
     // ── Cerrar ventana de chat ──
     function cerrarChat(id_personal) {
         setChatsAbiertos(prev => prev.filter(c => c.id_personal !== id_personal));
+    }
+
+    // ── Toggle modo burbuja / barra ──
+    function cambiarModo(modo) {
+        setModoBurbuja(modo);
+        localStorage.setItem('chat_modo', modo);
     }
 
     // ── Abrir/cerrar grupo ──
@@ -678,9 +755,9 @@ export default function ChatPanel() {
             {/* ── Ventanas de chat individual flotantes ── */}
             {esMobile ? (
                 <>
-                    {/* Burbujas tipo Messenger */}
+                    {/* Burbujas tipo Messenger (mobile) */}
                     <div className="chat-heads-container">
-                        {chatsAbiertos.map((chat, idx) => {
+                        {chatsAbiertos.map((chat) => {
                             const esActivo = chatActivoMobile === chat.id_personal;
                             return (
                                 <div
@@ -732,21 +809,92 @@ export default function ChatPanel() {
                         />
                     )}
                 </>
+            ) : modoBurbuja === 'barra' ? (
+                /* ── Modo Barra: ventanas flotantes en tray con scroll horizontal ── */
+                <div
+                    className="chat-ventanas-tray"
+                    style={{ right: (abierto ? 326 : 82) + 'px' }}
+                >
+                    {chatsAbiertos.map((chat, idx) => {
+                        const baseOffset = (chatGeneralAbierto ? 1 : 0) + (miEspacioAbierto ? 1 : 0);
+                        return (
+                            <ChatVentana
+                                key={chat.id_personal}
+                                contacto={chat}
+                                socket={socketRef.current}
+                                onCerrar={() => cerrarChat(chat.id_personal)}
+                                posicion={baseOffset + idx}
+                                enLinea={conectados.has(chat.id_personal)}
+                                panelAbierto={abierto}
+                                modeTray={true}
+                            />
+                        );
+                    })}
+                </div>
             ) : (
-                chatsAbiertos.map((chat, idx) => {
-                    const baseOffset = (chatGeneralAbierto ? 1 : 0) + (miEspacioAbierto ? 1 : 0);
-                    return (
-                    <ChatVentana
-                        key={chat.id_personal}
-                        contacto={chat}
-                        socket={socketRef.current}
-                        onCerrar={() => cerrarChat(chat.id_personal)}
-                        posicion={baseOffset + idx}
-                        enLinea={conectados.has(chat.id_personal)}
-                        panelAbierto={abierto}
-                    />
-                    );
-                })
+                /* ── Modo Burbuja: círculos flotantes draggables estilo Messenger ── */
+                <>
+                    {chatsAbiertos.map((chat, idx) => {
+                        const preview = burbujaPreviews[chat.id_personal];
+                        const noLeido = noLeidos[chat.id_personal] || 0;
+                        const esActiva = burbujaActivaId === chat.id_personal;
+                        const pos = getBurbujaPos(chat.id_personal, idx);
+                        return (
+                            <div
+                                key={chat.id_personal}
+                                className={'chat-burbuja-item' + (esActiva ? ' activa' : '')}
+                                title={chat.nombre}
+                                style={{ position: 'fixed', left: pos.x + 'px', top: pos.y + 'px', cursor: 'grab', zIndex: 9010 }}
+                                onMouseDown={(e) => handleBurbujaMouseDown(e, chat.id_personal, idx, () => {
+                                    setBurbujaActivaId(esActiva ? null : chat.id_personal);
+                                    setNoLeidos(old => { const c = { ...old }; delete c[chat.id_personal]; return c; });
+                                })}
+                            >
+                                {preview && (
+                                    <div className="chat-burbuja-preview">{preview.texto}</div>
+                                )}
+                                <div className="chat-burbuja-avatar">
+                                    {chat.foto ? (
+                                        <img src={'/assets/perfiles/' + chat.foto} alt="" />
+                                    ) : (
+                                        <span>{chat.nombre.charAt(0)}</span>
+                                    )}
+                                </div>
+                                {conectados.has(chat.id_personal) && (
+                                    <span className="chat-burbuja-online"></span>
+                                )}
+                                {noLeido > 0 && (
+                                    <span className="chat-burbuja-badge">{noLeido}</span>
+                                )}
+                                <button
+                                    className="chat-burbuja-cerrar"
+                                    title="Cerrar"
+                                    onMouseDown={(e) => e.stopPropagation()}
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        cerrarChat(chat.id_personal);
+                                        if (esActiva) setBurbujaActivaId(null);
+                                    }}
+                                >&times;</button>
+                            </div>
+                        );
+                    })}
+                    {/* Ventana de chat activa en modo burbuja */}
+                    {burbujaActivaId && chatsAbiertos.find(c => c.id_personal === burbujaActivaId) && (
+                        <ChatVentana
+                            key={burbujaActivaId}
+                            contacto={chatsAbiertos.find(c => c.id_personal === burbujaActivaId)}
+                            socket={socketRef.current}
+                            onCerrar={() => { cerrarChat(burbujaActivaId); setBurbujaActivaId(null); }}
+                            posicion={0}
+                            enLinea={conectados.has(burbujaActivaId)}
+                            panelAbierto={abierto}
+                            modeBurbuja={true}
+                            burbujaPos={getBurbujaPos(burbujaActivaId, chatsAbiertos.findIndex(c => c.id_personal === burbujaActivaId))}
+                            onMinimizar={() => setBurbujaActivaId(null)}
+                        />
+                    )}
+                </>
             )}
 
             {/* ── Ventanas de chat de grupo flotantes ── */}

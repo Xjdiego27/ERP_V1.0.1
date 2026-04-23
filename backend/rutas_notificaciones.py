@@ -1,7 +1,8 @@
 from datetime import datetime, timedelta
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from sqlalchemy import extract, or_, and_
+from bson import ObjectId
 from database import (
     get_db, Personal, Contrato, Acceso, Horario, HorarioDetalle, Cargo,
     Ticket, Mantenimiento, Equipo, EspecificacionesTec,
@@ -108,7 +109,23 @@ async def obtener_notificaciones(db: Session = Depends(get_db), token: dict = De
                     cumples_prox.setdefault(dias_offset, []).append(p)
                 break
 
+    # Para filtrar cumpleaños ya saludados necesitamos el personal del usuario actual
+    id_accs_precheck = token.get("id_accs")
+    mi_personal_precheck = db.query(Personal).filter(Personal.ID_ACCS == id_accs_precheck).first() if id_accs_precheck else None
+    anio_actual_precheck = hoy.year
+
     for p in cumples:
+        # Omitir la notificación informativa si ya enviamos saludo
+        ya_saludo_previo = False
+        if mi_personal_precheck and p.ID_PERSONAL != mi_personal_precheck.ID_PERSONAL:
+            doc_s = await coleccion_saludos_cumple.find_one(
+                {"id_personal_cumple": p.ID_PERSONAL, "anio": anio_actual_precheck},
+                {"saludos.id_personal": 1}
+            )
+            if doc_s and doc_s.get("saludos"):
+                ya_saludo_previo = any(s["id_personal"] == mi_personal_precheck.ID_PERSONAL for s in doc_s["saludos"])
+        if ya_saludo_previo:
+            continue
         items.append({
             "tipo": "cumpleanos",
             "texto": f"¡Hoy es el cumpleaños de {p.NOMBRES} {p.APE_PATERNO}!",
@@ -139,10 +156,9 @@ async def obtener_notificaciones(db: Session = Depends(get_db), token: dict = De
             })
 
     # ── 2c. Aviso de saludo de cumpleaños pendiente HOY ──
-    id_accs_usuario = token.get("id_accs")
-    mi_personal = db.query(Personal).filter(Personal.ID_ACCS == id_accs_usuario).first() if id_accs_usuario else None
+    mi_personal = mi_personal_precheck
     if mi_personal and cumples:
-        anio_actual = hoy.year
+        anio_actual = anio_actual_precheck
         for c in cumples:
             if c.ID_PERSONAL == mi_personal.ID_PERSONAL:
                 continue  # no se saluda a sí mismo
@@ -322,9 +338,8 @@ async def obtener_notificaciones(db: Session = Depends(get_db), token: dict = De
             })
 
     # ── 7. Notificaciones personales de tickets (MongoDB) ──
-    # Obtener id_personal del usuario actual
     id_accs = token.get("id_accs")
-    persona_actual = db.query(Personal).filter(Personal.ID_ACCS == id_accs).first() if id_accs else None
+    persona_actual = mi_personal if mi_personal else (db.query(Personal).filter(Personal.ID_ACCS == id_accs).first() if id_accs else None)
     if persona_actual:
         # Traer notificaciones no leídas de las últimas 24 horas
         hace_24h = datetime.now() - timedelta(hours=24)
@@ -332,15 +347,34 @@ async def obtener_notificaciones(db: Session = Depends(get_db), token: dict = De
             "id_personal": persona_actual.ID_PERSONAL,
             "leido": False,
             "fecha": {"$gte": hace_24h},
-        }, {"tipo": 1, "texto": 1}).sort("fecha", -1).limit(20)
+        }, {"tipo": 1, "texto": 1, "id_ticket": 1}).sort("fecha", -1).limit(20)
         notifs_ticket = await cursor_notif.to_list(length=20)
+
+        # Filtrar notificaciones de tickets ya cerrados
+        # (mantener solo el aviso de cierre; descartar los demás)
+        ids_ticket = list({nt["id_ticket"] for nt in notifs_ticket if nt.get("id_ticket")})
+        tickets_cerrados = set()
+        if ids_ticket and Ticket:
+            cerrados = db.query(Ticket.ID_TICKET).filter(
+                Ticket.ID_TICKET.in_(ids_ticket),
+                Ticket.ESTADO == "CERRADO",
+            ).all()
+            tickets_cerrados = {r.ID_TICKET for r in cerrados}
+
         for nt in notifs_ticket:
+            id_t = nt.get("id_ticket")
+            if id_t in tickets_cerrados:
+                texto_nt = (nt.get("texto") or "").lower()
+                # Solo pasar la notificación de cierre
+                if "cerrado" not in texto_nt:
+                    continue
             items.append({
                 "tipo": nt.get("tipo", "ticket"),
                 "texto": nt.get("texto", "Actualización de ticket"),
                 "icono": "ticket",
                 "urgente": False,
                 "id_notif": str(nt["_id"]),
+                "id_ticket": id_t,
             })
 
     # ── 8. Mantenimientos programados — solo para ADMIN / TI ──
@@ -430,3 +464,14 @@ async def obtener_notificaciones(db: Session = Depends(get_db), token: dict = De
         "total": len(items),
         "items": items,
     }
+
+
+@router.delete("/notificaciones/{id_notif}")
+async def eliminar_notificacion(id_notif: str, _: dict = Depends(verificar_token)):
+    """Elimina una notificación personal de ticket (MongoDB) por su _id."""
+    try:
+        oid = ObjectId(id_notif)
+    except Exception:
+        raise HTTPException(status_code=400, detail="ID de notificación inválido")
+    await coleccion_notif_tickets.delete_one({"_id": oid})
+    return {"ok": True}

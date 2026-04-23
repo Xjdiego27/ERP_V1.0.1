@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, Fragment } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { API_URL, headersConToken } from '../auth';
 import { getSession } from '../utils/session';
 import IconoFa from '../components/IconoFa';
@@ -42,6 +43,7 @@ export default function Tickets() {
     var [codigosSAP, setCodigosSAP] = useState({});
     var [fotoPreview, setFotoPreview] = useState(null);
     var canvasRef = useRef(null);
+    var [searchParams, setSearchParams] = useSearchParams();
 
     // Informe PDF
     var [informeMes, setInformeMes] = useState(new Date().getMonth() + 1);
@@ -80,10 +82,30 @@ export default function Tickets() {
                 return r.json();
             }),
         ]).then(function (res) {
-            setTickets(Array.isArray(res[0]) ? res[0] : []);
+            var lista = Array.isArray(res[0]) ? res[0] : [];
+            setTickets(lista);
             if (res[1]) setEstadisticas(res[1]);
             setTecnicos(Array.isArray(res[2]) ? res[2] : []);
             setPersonalRRHH(Array.isArray(res[3]) ? res[3] : []);
+            // Si viene ?ticket=ID desde una notificación, abrir ese ticket
+            var ticketIdParam = searchParams.get('ticket');
+            if (ticketIdParam) {
+                var idNum = parseInt(ticketIdParam, 10);
+                var encontrado = lista.find(function (t) { return t.id_ticket === idNum; });
+                if (encontrado) {
+                    setMensajeTI(''); setCodigosSAP({});
+                    fetch(API_URL + '/tickets/' + idNum, { headers: headersConToken() })
+                        .then(function (r) { return r.ok ? r.json() : encontrado; })
+                        .then(function (detalle) { setSeleccionado(detalle); })
+                        .catch(function () { setSeleccionado(encontrado); });
+                }
+                // Limpiar el param de la URL sin recargar
+                setSearchParams(function (prev) {
+                    var next = new URLSearchParams(prev);
+                    next.delete('ticket');
+                    return next;
+                }, { replace: true });
+            }
         }).catch(function () {});
     }
 
@@ -533,32 +555,54 @@ export default function Tickets() {
                                 </div>
                             )}
 
-                            {/* Códigos SAP — solo para tickets SAP y TI */}
-                            {seleccionado.es_sap && seleccionado.estado !== 'CERRADO' && esPanel && seleccionado.sap_data && seleccionado.sap_data.length > 0 && (
+                            {/* Datos SAP — descripción de lo que el usuario solicitó */}
+                            {seleccionado.es_sap && seleccionado.sap_data && seleccionado.sap_data.length > 0 && (
                                 <div className="detalle-sap-code">
-                                    <span className="detalle-label">Código(s) SAP (asignar antes de cerrar)</span>
+                                    <span className="detalle-label">Datos SAP solicitados</span>
                                     {seleccionado.sap_data.map(function (item, idx) {
-                                        var label = item.tipo === 'articulo' ? 'Artículo' : item.tipo === 'servicio' ? 'Servicio' : 'Socio';
+                                        var label = item.tipo === 'articulo' ? 'Artículo' : item.tipo === 'servicio' ? 'Servicio' : 'Socio de Negocio';
                                         return (
-                                            <div key={item.id || idx} style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 6 }}>
-                                                <span style={{ fontSize: '0.8rem', fontWeight: 600, minWidth: 80 }}>{label} #{idx + 1}</span>
-                                                <input type="text" value={codigosSAP[item.id] || ''} placeholder="Código SAP..."
-                                                    onChange={function (e) { setCodigosSAP(function (prev) { return Object.assign({}, prev, { [item.id]: e.target.value }); }); }}
-                                                    style={{ flex: 1 }} />
-                                            </div>
-                                        );
-                                    })}
-                                </div>
-                            )}
-                            {seleccionado.es_sap && seleccionado.estado === 'CERRADO' && seleccionado.sap_data && seleccionado.sap_data.length > 0 && (
-                                <div className="detalle-campo" style={{ marginTop: 10 }}>
-                                    <span className="detalle-label">Código(s) SAP</span>
-                                    {seleccionado.sap_data.map(function (item, idx) {
-                                        if (!item.codigo_sap) return null;
-                                        var label = item.tipo === 'articulo' ? 'Artículo' : item.tipo === 'servicio' ? 'Servicio' : 'Socio';
-                                        return (
-                                            <div key={item.id || idx} style={{ marginTop: 4 }}>
-                                                <span className="detalle-valor">{label} #{idx + 1}: {item.codigo_sap}</span>
+                                            <div key={item.id || idx} className="detalle-sap-item">
+                                                <div className="detalle-sap-item-header">
+                                                    <span className="detalle-sap-tipo-badge">{label} #{idx + 1}</span>
+                                                    {item.codigo_sap && (
+                                                        <span className="detalle-sap-codigo-asignado">Código: <b>{item.codigo_sap}</b></span>
+                                                    )}
+                                                </div>
+                                                {/* Campos descriptivos según tipo */}
+                                                {item.tipo === 'articulo' && (
+                                                    <div className="detalle-sap-campos">
+                                                        {item.articulo_sap && <span><b>Artículo:</b> {item.articulo_sap}</span>}
+                                                        {item.familia_nombre && <span><b>Familia:</b> {item.familia_nombre}</span>}
+                                                        {item.subfamilia_nombre && <span><b>Subfamilia:</b> {item.subfamilia_nombre}</span>}
+                                                        {item.grupo_nombre && <span><b>Grupo de artículos:</b> {item.grupo_nombre}</span>}
+                                                        {item.marca_nombre && <span><b>Marca:</b> {item.marca_nombre}</span>}
+                                                        {item.modelo_nombre && <span><b>Modelo:</b> {item.modelo_nombre}</span>}
+                                                        {item.unidad_nombre && <span><b>Unidad:</b> {item.unidad_nombre}</span>}
+                                                        {item.id_lista && <span><b>Lista de precios:</b> {item.id_lista}</span>}
+                                                    </div>
+                                                )}
+                                                {item.tipo === 'servicio' && (
+                                                    <div className="detalle-sap-campos">
+                                                        {item.servicio_sap && <span><b>Servicio:</b> {item.servicio_sap}</span>}
+                                                        {item.grupo_nombre && <span><b>Grupo:</b> {item.grupo_nombre}</span>}
+                                                        {item.unidad_nombre && <span><b>Unidad:</b> {item.unidad_nombre}</span>}
+                                                    </div>
+                                                )}
+                                                {item.tipo === 'socio' && (
+                                                    <div className="detalle-sap-campos">
+                                                        {item.tipo_socio_nombre && <span><b>Tipo de socio:</b> {item.tipo_socio_nombre}</span>}
+                                                        {item.razon_social && <span><b>Razón social:</b> {item.razon_social}</span>}
+                                                        {item.ruc && <span><b>RUC:</b> {item.ruc}</span>}
+                                                        {item.direccion && <span><b>Dirección:</b> {item.direccion}</span>}
+                                                    </div>
+                                                )}
+                                                {/* Asignar código SAP (solo TI, ticket abierto) */}
+                                                {seleccionado.estado !== 'CERRADO' && esPanel && (
+                                                    <input type="text" value={codigosSAP[item.id] || ''} placeholder="Asignar código SAP..."
+                                                        className="detalle-sap-input"
+                                                        onChange={function (e) { setCodigosSAP(function (prev) { return Object.assign({}, prev, { [item.id]: e.target.value }); }); }} />
+                                                )}
                                             </div>
                                         );
                                     })}
@@ -638,7 +682,15 @@ export default function Tickets() {
                                     return (
                                         <tr key={t.id_ticket}
                                             className={'ticket-fila' + (activo ? ' activa' : '')}
-                                            onClick={function () { setSeleccionado(t); setMensajeTI(''); }}>
+                                            onClick={function () {
+                                                setMensajeTI('');
+                                                setCodigosSAP({});
+                                                // Cargar detalle completo para tener sap_data y todos los campos
+                                                fetch(API_URL + '/tickets/' + t.id_ticket, { headers: headersConToken() })
+                                                    .then(function (r) { return r.ok ? r.json() : t; })
+                                                    .then(function (detalle) { setSeleccionado(detalle); })
+                                                    .catch(function () { setSeleccionado(t); });
+                                            }}>
                                             <td className="td-id">#{t.id_ticket}</td>
                                             <td className="td-nombre">{t.nombre_creador}</td>
                                             <td>{t.categoria}</td>

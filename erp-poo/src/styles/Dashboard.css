@@ -210,3 +210,37 @@ html, body {
     opacity: 1;
     cursor: pointer;
 }
+
+/* ═══ CHAT — siempre interactivo, incluso en modo SUPERVISOR ═══
+   El chat es comunicación interna, no modifica datos del ERP.   */
+.modo-lectura .chat-ventana input,
+.modo-lectura .chat-ventana textarea,
+.modo-lectura .chat-ventana select,
+.modo-lectura .chat-ventana button,
+.modo-lectura .chat-ventana-input input,
+.modo-lectura .chat-ventana-input button,
+.modo-lectura .chat-ventana-input textarea,
+.modo-lectura .chat-ventana-tools button,
+.modo-lectura .chat-sala input,
+.modo-lectura .chat-sala textarea,
+.modo-lectura .chat-sala button,
+.modo-lectura .chat-sala-input input,
+.modo-lectura .chat-sala-input button,
+.modo-lectura .chat-panel input,
+.modo-lectura .chat-panel button,
+.modo-lectura .chat-panel select,
+.modo-lectura .chat-icono-flotante,
+.modo-lectura .chat-head,
+.modo-lectura .chat-head button,
+.modo-lectura .chat-heads-container button,
+.modo-lectura .chat-contacto-item,
+.modo-lectura .chat-btn-zumbido-header,
+.modo-lectura .chat-tool-button,
+.modo-lectura .mi-espacio-input input,
+.modo-lectura .mi-espacio-input button,
+.modo-lectura .mi-espacio-input textarea {
+    pointer-events: auto !important;
+    opacity: 1 !important;
+    cursor: pointer !important;
+    filter: none !important;
+}

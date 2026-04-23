@@ -8,6 +8,7 @@ import { CHAT_URL, obtenerToken } from '../auth';
 import { getSession } from '../utils/session';
 import { formatHora as formatHoraUtil, subirArchivo as subirArchivoUtil, renderContenidoMensaje } from '../utils/chatUtils';
 import { buildStickerToken, parseStickerToken } from '../data/stickerCatalog';
+import { showDesktopNotification } from '../utils/desktopNotifications';
 
 // ── Sonidos MSN ──
 const sonidoMensaje = new Audio('/sounds/msn_messenger.mp3');
@@ -44,7 +45,7 @@ function parpadearTitulo(texto) {
  * ChatVentana — Ventana de chat individual flotante.
  * Se comunica vía Socket.IO (recibido desde ChatPanel).
  */
-export default function ChatVentana({ contacto, socket, onCerrar, posicion, enLinea, panelAbierto, modeMobile, onMinimizar }) {
+export default function ChatVentana({ contacto, socket, onCerrar, posicion, enLinea, panelAbierto, modeMobile, onMinimizar, modeTray, modeBurbuja, burbujaPos }) {
     const [mensajes, setMensajes] = useState([]);
     const [texto, setTexto] = useState('');
     const [cargando, setCargando] = useState(true);
@@ -57,11 +58,15 @@ export default function ChatVentana({ contacto, socket, onCerrar, posicion, enLi
     const [perfilAbierto, setPerfilAbierto] = useState(false);
     const [datosPerfil, setDatosPerfil] = useState(null);
     const [cargandoPerfil, setCargandoPerfil] = useState(false);
+    const [archivosEnCola, setArchivosEnCola] = useState([]);  // [{ file, previewUrl, esImagen }]
+    const [enviandoArchivo, setEnviandoArchivo] = useState(false);
     const chatBodyRef = useRef(null);
     const inputRef = useRef(null);
     const escribiendoTimer = useRef(null);
     const ventanaRef = useRef(null);
     const fileInputRef = useRef(null);
+    const minimizadaRef = useRef(minimizada);
+    useEffect(() => { minimizadaRef.current = minimizada; }, [minimizada]);
 
     // Mi ID_PERSONAL
     const session = getSession();
@@ -105,6 +110,15 @@ export default function ChatVentana({ contacto, socket, onCerrar, posicion, enLi
                     sonidoMensaje.play().catch(() => {});
                     if (document.hidden) {
                         parpadearTitulo(`${contacto.nombre.split(' ')[0]} te envio un mensaje`);
+                    }
+                    // Notificación Windows cuando el chat está minimizado o la pestaña no está visible
+                    if (minimizadaRef.current || document.hidden) {
+                        showDesktopNotification({
+                            title: 'Mensaje de ' + contacto.nombre.split(' ').slice(0, 2).join(' '),
+                            body: msg.contenido || 'Nuevo mensaje',
+                            tag: 'chat-directo-' + contacto.id_personal,
+                            url: '/dashboard',
+                        });
                     }
                     // Marcar como leído via socket (la ventana está abierta)
                     socket.emit('marcar_visto', { contacto_id: contacto.id_personal });
@@ -185,10 +199,10 @@ export default function ChatVentana({ contacto, socket, onCerrar, posicion, enLi
 
     // ── Auto-scroll al final ──
     useEffect(() => {
-        if (chatBodyRef.current) {
+        if (!minimizada && chatBodyRef.current) {
             chatBodyRef.current.scrollTop = chatBodyRef.current.scrollHeight;
         }
-    }, [mensajes, escribiendo]);
+    }, [mensajes, escribiendo, minimizada]);
 
     // ── Enviar mensaje ──
     function enviarContenido(contenido, onSuccess) {
@@ -243,35 +257,68 @@ export default function ChatVentana({ contacto, socket, onCerrar, posicion, enLi
         }]);
     }
 
-    // ── Subir archivo (reutilizable para input y drag & drop) ──
-    async function handleSubirArchivo(file) {
-        if (!file || !socket) return;
-        try {
-            const data = await subirArchivoUtil(file);
-            if (data.ok) {
-                const esImagen = file.type.startsWith('image/');
-                socket.emit('enviar_mensaje', {
-                    destinatario_id: contacto.id_personal,
-                    contenido: esImagen ? `[Imagen] ${data.nombre_original}` : `[Archivo] ${data.nombre_original}`,
-                    tipo: 'archivo',
-                    archivo_url: data.url,
-                    archivo_nombre: data.nombre_original,
-                }, (resp2) => {
-                    if (resp2 && resp2.ok && resp2.mensaje) {
-                        setMensajes(prev => [...prev, resp2.mensaje]);
-                    }
-                });
+    // ── Preparar archivos para previa (acepta array de File) ──
+    function prepararArchivos(files) {
+        if (!files || files.length === 0) return;
+        const lista = Array.from(files);
+        const resultados = [];
+        let pendientes = lista.length;
+
+        lista.forEach(function (file) {
+            const esImagen = file.type.startsWith('image/');
+            if (esImagen) {
+                const reader = new FileReader();
+                reader.onload = function (ev) {
+                    resultados.push({ file, previewUrl: ev.target.result, esImagen: true });
+                    pendientes--;
+                    if (pendientes === 0) setArchivosEnCola(function (prev) { return [...prev, ...resultados]; });
+                };
+                reader.readAsDataURL(file);
+            } else {
+                resultados.push({ file, previewUrl: null, esImagen: false });
+                pendientes--;
+                if (pendientes === 0) setArchivosEnCola(function (prev) { return [...prev, ...resultados]; });
             }
-        } catch (err) {
-            console.error('Error al subir archivo:', err);
-            alert('No se pudo subir el archivo. Verifica el tipo y tamaño (máx 10 MB).');
+        });
+    }
+
+    // ── Confirmar envío de todos los archivos en cola ──
+    async function confirmarEnvioArchivos() {
+        if (archivosEnCola.length === 0 || !socket || enviandoArchivo) return;
+        setEnviandoArchivo(true);
+        const cola = [...archivosEnCola];
+        setArchivosEnCola([]);
+        try {
+            for (const item of cola) {
+                try {
+                    const data = await subirArchivoUtil(item.file);
+                    if (data.ok) {
+                        socket.emit('enviar_mensaje', {
+                            destinatario_id: contacto.id_personal,
+                            contenido: item.esImagen
+                                ? `[Imagen] ${data.nombre_original}`
+                                : `[Archivo] ${data.nombre_original}`,
+                            tipo: 'archivo',
+                            archivo_url: data.url,
+                            archivo_nombre: data.nombre_original,
+                        }, (resp) => {
+                            if (resp && resp.ok && resp.mensaje) {
+                                setMensajes(prev => [...prev, resp.mensaje]);
+                            }
+                        });
+                    }
+                } catch (err) {
+                    alert(`No se pudo subir "${item.file.name}". Verifica el tipo y tamaño (máx 10 MB).`);
+                }
+            }
+        } finally {
+            setEnviandoArchivo(false);
         }
     }
 
-    // ── Adjuntar archivo (input file) ──
-    async function handleFileUpload(e) {
-        const file = e.target.files?.[0];
-        await handleSubirArchivo(file);
+    // ── Adjuntar archivo(s) (input file) ──
+    function handleFileUpload(e) {
+        if (e.target.files && e.target.files.length > 0) prepararArchivos(e.target.files);
         e.target.value = '';
     }
 
@@ -286,25 +333,27 @@ export default function ChatVentana({ contacto, socket, onCerrar, posicion, enLi
         e.stopPropagation();
         setArrastrando(false);
     }
-    async function handleDrop(e) {
+    function handleDrop(e) {
         e.preventDefault();
         e.stopPropagation();
         setArrastrando(false);
-        const file = e.dataTransfer?.files?.[0];
-        if (file) await handleSubirArchivo(file);
+        if (e.dataTransfer?.files?.length > 0) prepararArchivos(e.dataTransfer.files);
     }
 
     // ── Ctrl+V pegar imagen/archivo ──
-    async function handlePaste(e) {
+    function handlePaste(e) {
         const items = e.clipboardData?.items;
         if (!items) return;
+        const archivos = [];
         for (let i = 0; i < items.length; i++) {
             if (items[i].kind === 'file') {
-                e.preventDefault();
                 const file = items[i].getAsFile();
-                if (file) await handleSubirArchivo(file);
-                return;
+                if (file) archivos.push(file);
             }
+        }
+        if (archivos.length > 0) {
+            e.preventDefault();
+            prepararArchivos(archivos);
         }
     }
 
@@ -351,7 +400,30 @@ export default function ChatVentana({ contacto, socket, onCerrar, posicion, enLi
     }
 
     // Posición de la ventana
-    const offsetRight = modeMobile ? 0 : (panelAbierto ? 354 : 80) + posicion * 320;
+    const offsetRight = modeMobile || modeTray || modeBurbuja ? 0 : (panelAbierto ? 354 : 80) + posicion * 320;
+
+    // Estilo de posición
+    function calcStyle() {
+        if (modeMobile || modeTray) return {};
+        if (modeBurbuja && burbujaPos) {
+            // Posicionar la ventana encima/izquierda de la burbuja que la originó
+            const winW = 340;
+            const winH = 490;
+            const margin = 8;
+            const bx = burbujaPos.x;
+            const by = burbujaPos.y;
+            // Preferir arriba de la burbuja, alineada a la derecha de la burbuja
+            var left = Math.max(margin, Math.min(window.innerWidth - winW - margin, bx - winW + 56));
+            var top = Math.max(margin, by - winH - 8);
+            // Si no cabe arriba, poner abajo
+            if (top < margin) top = Math.min(window.innerHeight - winH - margin, by + 64);
+            return { position: 'fixed', left: left + 'px', top: top + 'px' };
+        }
+        if (modeBurbuja) {
+            return { position: 'fixed', bottom: 72, right: 92 };
+        }
+        return { right: offsetRight + 'px' };
+    }
 
     // Clase mobile
     const clasesMobile = modeMobile ? ' chat-ventana-mobile' : '';
@@ -360,7 +432,7 @@ export default function ChatVentana({ contacto, socket, onCerrar, posicion, enLi
         <div
             ref={ventanaRef}
             className={'chat-ventana' + clasesMobile + (minimizada ? ' chat-ventana-minimizada' : '') + (sacudiendo ? ' chat-ventana-zumbido' : '')}
-            style={modeMobile ? {} : { right: offsetRight + 'px' }}
+            style={calcStyle()}
         >
             {/* ── Header de la ventana ── */}
             <div 
@@ -472,6 +544,50 @@ export default function ChatVentana({ contacto, socket, onCerrar, posicion, enLi
                         )}
                     </div>
 
+                    {/* ── Modal de vista previa antes de enviar archivo(s) ── */}
+                    {archivosEnCola.length > 0 && (
+                        <div className="chat-preview-overlay">
+                            <div className="chat-preview-titulo">
+                                {archivosEnCola.length === 1 ? 'Vista previa' : `${archivosEnCola.length} archivos seleccionados`}
+                            </div>
+                            <div className="chat-preview-grid">
+                                {archivosEnCola.map(function (item, idx) {
+                                    return item.esImagen ? (
+                                        <div key={idx} className="chat-preview-grid-item">
+                                            <img className="chat-preview-img" src={item.previewUrl} alt={item.file.name} />
+                                            <span className="chat-preview-grid-nombre">{item.file.name}</span>
+                                        </div>
+                                    ) : (
+                                        <div key={idx} className="chat-preview-file chat-preview-grid-item">
+                                            <span className="chat-preview-file-icon">📄</span>
+                                            <span className="chat-preview-file-name">{item.file.name}</span>
+                                            <span className="chat-preview-file-size">
+                                                {(item.file.size / 1024 / 1024).toFixed(2)} MB
+                                            </span>
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                            <div className="chat-preview-actions">
+                                <button
+                                    className="chat-preview-btn-cancel"
+                                    onClick={() => setArchivosEnCola([])}
+                                    disabled={enviandoArchivo}
+                                >
+                                    Cancelar
+                                </button>
+                                <button
+                                    className="chat-preview-btn-send"
+                                    onClick={confirmarEnvioArchivos}
+                                    disabled={enviandoArchivo}
+                                >
+                                    <IconoFa icono={faPaperPlane} />
+                                    {enviandoArchivo ? 'Enviando...' : archivosEnCola.length > 1 ? `Enviar ${archivosEnCola.length}` : 'Enviar'}
+                                </button>
+                            </div>
+                        </div>
+                    )}
+
                     {/* ── Input de mensaje ── */}
                     <form className="chat-ventana-input" onSubmit={enviarMensaje}>
                         <div className="chat-ventana-tools">
@@ -491,7 +607,7 @@ export default function ChatVentana({ contacto, socket, onCerrar, posicion, enLi
                             >
                                 <IconoFa icono={faPaperclip} />
                             </button>
-                            <input ref={fileInputRef} type="file" style={{ display: 'none' }} onChange={handleFileUpload} />
+                            <input ref={fileInputRef} type="file" multiple style={{ display: 'none' }} onChange={handleFileUpload} />
                             {pickerAbierto && (
                                 <StickerPicker
                                     onSelectEmoji={insertarEmoji}

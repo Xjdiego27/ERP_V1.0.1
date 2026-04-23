@@ -755,6 +755,29 @@ body.dark-mode .detalle-stepper-card {
 body.dark-mode .detalle-asunto-stepper {
   color: var(--text-primary);
 }
+/* SAP items in detail — dark mode */
+body.dark-mode .detalle-sap-item {
+  background: rgba(14, 165, 233, 0.08);
+  border-color: rgba(14, 165, 233, 0.25);
+}
+body.dark-mode .detalle-sap-campos {
+  color: var(--text-secondary);
+}
+body.dark-mode .detalle-sap-campos span b {
+  color: #38bdf8;
+}
+body.dark-mode .detalle-sap-codigo-asignado {
+  background: rgba(14, 165, 233, 0.15);
+  color: #38bdf8;
+}
+body.dark-mode .detalle-sap-input {
+  background: var(--bg-input);
+  border-color: rgba(14, 165, 233, 0.3);
+  color: var(--text-primary);
+}
+body.dark-mode .detalle-sap-input:focus {
+  border-color: #38bdf8;
+}
 /* SAP code input in detail */
 body.dark-mode .detalle-sap-code input {
   background: var(--bg-input);

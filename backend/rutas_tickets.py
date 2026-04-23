@@ -265,20 +265,66 @@ def _serializar_ticket(db: Session, t):
     # Equipo asignado al creador
     equipo = _equipo_asignado(db, t.ID_PERSONAL) if persona else None
 
-    # SAP data — retornar todos los ítems asociados
+    # SAP data — retornar todos los ítems con campos descriptivos completos
     es_sap = False
     sap_data = []
     if cat and cat.DESCRIP and cat.DESCRIP.upper() == 'SAP':
         es_sap = True
+
+        # Pre-cargar catálogos SAP para resolución de nombres
+        fam_map = {f.ID_FAMSAP: f.DESCRIP for f in db.query(FamiliaSap).all()} if FamiliaSap else {}
+        sbfam_map = {s.ID_SBFAMSAP: s.DESCRIP for s in db.query(SubfamiliaSap).all()} if SubfamiliaSap else {}
+        marca_map = {m.ID_MARCASAP: m.DESCRIP for m in db.query(MarcaSap).all()} if MarcaSap else {}
+        modelo_map = {mo.ID_MODELOSAP: mo.DESCRIP for mo in db.query(ModeloSap).all()} if ModeloSap else {}
+        grp_map = {g.ID_GRP_ART: g.DESCRIP for g in db.query(GrupoArticulos).all()} if GrupoArticulos else {}
+        unidad_map = {u.ID_UNIDAD: u.DESCRIP for u in db.query(TipoUnidad).all()} if TipoUnidad else {}
+        tsocio_map = {ts.ID_TSOCIO: ts.DESCRIP for ts in db.query(TipoSocioNegocio).all()} if TipoSocioNegocio else {}
+
         if SapArticulo:
             for sa in db.query(SapArticulo).filter(SapArticulo.ID_TICKET == t.ID_TICKET).all():
-                sap_data.append({"tipo": "articulo", "codigo_sap": sa.CODIGO_SAP, "id": sa.ID_SAP_ARTICULO})
+                id_fam = getattr(sa, "ID_FAMSAP", None)
+                id_sbfam = getattr(sa, "ID_SBFAMSAP", None)
+                id_marca = getattr(sa, "ID_MARCASAP", None)
+                id_modelo = getattr(sa, "ID_MODELOSAP", None)
+                id_grp = getattr(sa, "ID_GRP_ART", None)
+                id_unidad = getattr(sa, "ID_UNIDAD", None)
+                sap_data.append({
+                    "tipo": "articulo",
+                    "id": sa.ID_SAP_ARTICULO,
+                    "codigo_sap": sa.CODIGO_SAP or "",
+                    "articulo_sap": getattr(sa, "ARTICULO_SAP", None) or "",
+                    "id_lista": getattr(sa, "ID_LISTA", None) or "",
+                    "familia_nombre": fam_map.get(id_fam, ""),
+                    "subfamilia_nombre": sbfam_map.get(id_sbfam, ""),
+                    "marca_nombre": marca_map.get(id_marca) or getattr(sa, "MARCA_DESCRIP", None) or "",
+                    "modelo_nombre": modelo_map.get(id_modelo) or getattr(sa, "MODELO_DESCRIP", None) or "",
+                    "grupo_nombre": grp_map.get(id_grp, ""),
+                    "unidad_nombre": unidad_map.get(id_unidad, ""),
+                })
         if SapServicio:
             for ss in db.query(SapServicio).filter(SapServicio.ID_TICKET == t.ID_TICKET).all():
-                sap_data.append({"tipo": "servicio", "codigo_sap": ss.CODIGO_SAP, "id": ss.ID_SAP_SERVICIO})
+                id_grp = getattr(ss, "ID_GRP_ART", None)
+                id_unidad = getattr(ss, "ID_UNIDAD", None)
+                sap_data.append({
+                    "tipo": "servicio",
+                    "id": ss.ID_SAP_SERVICIO,
+                    "codigo_sap": ss.CODIGO_SAP or "",
+                    "servicio_sap": getattr(ss, "SERVICIO_SAP", None) or "",
+                    "grupo_nombre": grp_map.get(id_grp, ""),
+                    "unidad_nombre": unidad_map.get(id_unidad, ""),
+                })
         if SapSocioNegocio:
             for sn in db.query(SapSocioNegocio).filter(SapSocioNegocio.ID_TICKET == t.ID_TICKET).all():
-                sap_data.append({"tipo": "socio", "codigo_sap": sn.CODIGO_SAP, "id": sn.ID_SAP_SOCIO})
+                id_tsocio = getattr(sn, "ID_TSOCIO", None)
+                sap_data.append({
+                    "tipo": "socio",
+                    "id": sn.ID_SAP_SOCIO,
+                    "codigo_sap": sn.CODIGO_SAP or "",
+                    "razon_social": getattr(sn, "RAZON_SOCIAL", None) or "",
+                    "ruc": getattr(sn, "RUC", None) or "",
+                    "direccion": getattr(sn, "DIRECCION", None) or "",
+                    "tipo_socio_nombre": tsocio_map.get(id_tsocio, ""),
+                })
 
     return {
         "id_ticket": t.ID_TICKET,

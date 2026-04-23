@@ -209,6 +209,7 @@
     display: flex;
     align-items: flex-start;
     gap: 12px;
+    position: relative;
     padding: 12px 16px;
     border-bottom: 1px solid var(--border-color, #f0f0f0);
     transition: background 0.15s;
@@ -305,6 +306,33 @@ body.dark-mode .noti-tipo-falta .noti-item-icono { background: #3a1515; color: #
     flex-shrink: 0;
     margin-top: 2px;
     animation: pulseDot 1.5s ease infinite;
+}
+
+/* Botón descartar notificación */
+.noti-descartar-btn {
+    flex-shrink: 0;
+    background: none;
+    border: none;
+    color: var(--text-muted, #aaa);
+    font-size: 11px;
+    padding: 2px 5px;
+    border-radius: 4px;
+    cursor: pointer;
+    opacity: 0;
+    transition: opacity .15s, background .15s, color .15s;
+    margin-left: auto;
+    align-self: center;
+}
+.noti-item:hover .noti-descartar-btn {
+    opacity: 1;
+}
+.noti-descartar-btn:hover {
+    background: #fee2e2;
+    color: #dc2626;
+}
+body.dark-mode .noti-descartar-btn:hover {
+    background: rgba(220, 38, 38, 0.2);
+    color: #f87171;
 }
 
 @keyframes pulseDot {

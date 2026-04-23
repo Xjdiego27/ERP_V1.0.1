@@ -1,4 +1,4 @@
-import { faRightFromBracket, faUserCircle, faKey, faDroplet } from '@fortawesome/free-solid-svg-icons';
+import { faRightFromBracket, faUserCircle, faKey, faDroplet, faCommentDots } from '@fortawesome/free-solid-svg-icons';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import IconoFa from './IconoFa';
@@ -15,11 +15,21 @@ export default function UserMenu({ datos, onCambiarPassword }) {
     var [glassActivo, setGlassActivo] = useState(function () {
         return localStorage.getItem('erp-glass-off') !== '1';
     });
+    var [burbujaActivo, setBurbujaActivo] = useState(function () {
+        return localStorage.getItem('chat_modo') === 'burbujas';
+    });
 
     const cerrarSesion = () => {
         localStorage.removeItem('session');
         navigate('/');
     };
+
+    function toggleBurbuja() {
+        var nuevoModo = burbujaActivo ? 'barra' : 'burbujas';
+        localStorage.setItem('chat_modo', nuevoModo);
+        setBurbujaActivo(!burbujaActivo);
+        window.dispatchEvent(new CustomEvent('chat-modo-change', { detail: { modo: nuevoModo } }));
+    }
 
     return (
         <div className="user-dropdown">
@@ -41,6 +51,16 @@ export default function UserMenu({ datos, onCambiarPassword }) {
                 <IconoFa icono={faDroplet} />
                 <span>Efecto Vidrio</span>
                 <span className={'glass-indicator' + (glassActivo ? ' on' : '')}>{glassActivo ? 'ON' : 'OFF'}</span>
+            </button>
+
+            {/* Toggle modo burbuja (Messenger) */}
+            <button
+                className={'tema-glass-toggle' + (burbujaActivo ? ' activo' : '')}
+                onClick={toggleBurbuja}
+            >
+                <IconoFa icono={faCommentDots} />
+                <span>Modo Burbuja</span>
+                <span className={'glass-indicator' + (burbujaActivo ? ' on' : '')}>{burbujaActivo ? 'ON' : 'OFF'}</span>
             </button>
 
             <hr />
