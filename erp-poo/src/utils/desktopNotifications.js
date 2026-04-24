@@ -64,29 +64,43 @@ export async function showDesktopNotification({
     data: { url: urlDestino },
   };
 
-  try {
-    if ('serviceWorker' in navigator) {
-      const registro = await navigator.serviceWorker.ready.catch(function () { return null; });
+  // ── Ruta 1: Electron vía IPC nativo (más confiable en Windows) ──
+  const esElectron = typeof window !== 'undefined' && !!window.electronAPI?.isElectron;
+  if (esElectron && typeof window.electronAPI?.notify === 'function') {
+    try {
+      await window.electronAPI.notify(title || 'INTRANET EQ', body || '', tag || '');
+      return true;
+    } catch (_) {}
+  }
+
+  // ── Ruta 2: Service Worker (solo funciona con HTTPS, no Electron) ──
+  // navigator.serviceWorker.ready NUNCA resuelve en HTTP ni en Electron.
+  // Usamos Promise.race con timeout de 2s para no quedarse colgado.
+  if (!esElectron && 'serviceWorker' in navigator) {
+    try {
+      const registro = await Promise.race([
+        navigator.serviceWorker.ready,
+        new Promise(resolve => setTimeout(() => resolve(null), 2000)),
+      ]).catch(() => null);
       if (registro && typeof registro.showNotification === 'function') {
         await registro.showNotification(title || 'INTRANET EQ', opciones);
         return true;
       }
-    }
-  } catch (_error) {
+    } catch (_) {}
   }
 
+  // ── Ruta 3: Notification API directa (fallback universal) ──
   try {
     const notification = new Notification(title || 'INTRANET EQ', opciones);
     notification.onclick = function () {
       try {
         window.focus();
         window.dispatchEvent(new CustomEvent('push-navigate', { detail: { url: urlDestino } }));
-      } catch (_error) {
-      }
+      } catch (_) {}
       notification.close();
     };
     return true;
-  } catch (_error) {
+  } catch (_) {
     return false;
   }
 }

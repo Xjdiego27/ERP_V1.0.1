@@ -447,7 +447,11 @@ export default function ChatVentana({ contacto, socket, onCerrar, posicion, enLi
                 <div className="chat-ventana-header-info">
                     <div className="chat-ventana-avatar-mini chat-avatar-clickable" onClick={(e) => { e.stopPropagation(); abrirPerfil(); }}>
                         {contacto.foto ? (
-                            <img src={'/assets/perfiles/' + contacto.foto} alt="" />
+                            <>
+                                <img src={'/assets/perfiles/' + contacto.foto} alt=""
+                                    onError={(e) => { e.target.style.display='none'; e.target.nextElementSibling.style.display='inline'; }} />
+                                <span style={{display:'none'}}>{contacto.nombre.charAt(0)}</span>
+                            </>
                         ) : (
                             <span>{contacto.nombre.charAt(0)}</span>
                         )}
@@ -464,7 +468,7 @@ export default function ChatVentana({ contacto, socket, onCerrar, posicion, enLi
                     <button onClick={enviarZumbido} title="Enviar zumbido" className="chat-btn-zumbido-header">
                         <IconoFa icono={faBolt} />
                     </button>
-                    <button onClick={() => modeMobile && onMinimizar ? onMinimizar() : setMinimizada(!minimizada)} title={minimizada ? 'Expandir' : 'Minimizar'}>
+                    <button onClick={() => (modeMobile || modeBurbuja) && onMinimizar ? onMinimizar() : setMinimizada(!minimizada)} title={minimizada ? 'Expandir' : 'Minimizar'}>
                         <IconoFa icono={minimizada ? faExpand : faMinus} />
                     </button>
                     <button onClick={onCerrar} title="Cerrar">
@@ -509,7 +513,11 @@ export default function ChatVentana({ contacto, socket, onCerrar, posicion, enLi
                                         {!esMio && (
                                             <div className="chat-ventana-avatar-mini chat-avatar-clickable" onClick={abrirPerfil}>
                                                 {contacto.foto ? (
-                                                    <img src={'/assets/perfiles/' + contacto.foto} alt="" />
+                                                    <>
+                                                        <img src={'/assets/perfiles/' + contacto.foto} alt=""
+                                                            onError={(e) => { e.target.style.display='none'; e.target.nextElementSibling.style.display='inline'; }} />
+                                                        <span style={{display:'none'}}>{contacto.nombre.charAt(0)}</span>
+                                                    </>
                                                 ) : (
                                                     <span>{contacto.nombre.charAt(0)}</span>
                                                 )}
@@ -654,7 +662,11 @@ export default function ChatVentana({ contacto, socket, onCerrar, posicion, enLi
                                 <div className="chat-perfil-header">
                                     <div className="chat-perfil-avatar">
                                         {datosPerfil.foto ? (
-                                            <img src={'/assets/perfiles/' + datosPerfil.foto} alt="" />
+                                            <>
+                                                <img src={'/assets/perfiles/' + datosPerfil.foto} alt=""
+                                                    onError={(e) => { e.target.style.display='none'; e.target.nextElementSibling.style.display='inline'; }} />
+                                                <span className="chat-perfil-avatar-letra" style={{display:'none'}}>{datosPerfil.nombres?.charAt(0)}</span>
+                                            </>
                                         ) : (
                                             <span className="chat-perfil-avatar-letra">{datosPerfil.nombres?.charAt(0)}</span>
                                         )}

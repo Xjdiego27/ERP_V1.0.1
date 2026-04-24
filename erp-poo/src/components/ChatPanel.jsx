@@ -48,7 +48,9 @@ export default function ChatPanel() {
     const [modoBurbuja, setModoBurbuja] = useState(() => localStorage.getItem('chat_modo') || 'barra');
     const [burbujaPreviews, setBurbujaPreviews] = useState({});  // {id_personal: {texto, ts}}
     const [burbujaActivaId, setBurbujaActivaId] = useState(null); // qué ventana de chat está expandida en modo burbuja
-    const [burbujaPosiciones, setBurbujaPosiciones] = useState({}); // {id_personal: {x, y}}
+    const [burbujaPosiciones, setBurbujaPosiciones] = useState({}); // {id_personal|'general'|'notas': {x, y}}
+    const [generalBurbujaActiva, setGeneralBurbujaActiva] = useState(false);
+    const [notasBurbujaActiva, setNotasBurbujaActiva] = useState(false);
     const previewTimers = useRef({});
     const dragRef = useRef(null);
     const socketRef = useRef(null);
@@ -81,11 +83,13 @@ export default function ChatPanel() {
     }, []);
 
     // ── Posición inicial de burbuja (si no fue movida) ──
+    // FAB está en bottom:24 right:24 tamaño 42x42 → ocupa x:[W-66,W-24] y:[H-66,H-24]
+    // Empezar las burbujas 140px desde la derecha y 160px desde abajo para evitar solapamiento
     function getBurbujaPos(id, idx) {
         if (burbujaPosiciones[id]) return burbujaPosiciones[id];
         return {
-            x: window.innerWidth - 68 - idx * 68,
-            y: window.innerHeight - 68,
+            x: window.innerWidth - 140 - idx * 64,
+            y: window.innerHeight - 160,
         };
     }
 
@@ -99,14 +103,16 @@ export default function ChatPanel() {
         dragRef.current = { id, startX: e.clientX, startY: e.clientY, origX: pos.x, origY: pos.y };
 
         function onMove(ev) {
+            ev.preventDefault(); // evitar drag nativo sobre inputs u otros elementos
             if (!dragRef.current) return;
             const dx = ev.clientX - dragRef.current.startX;
             const dy = ev.clientY - dragRef.current.startY;
             if (Math.abs(dx) > 4 || Math.abs(dy) > 4) moved = true;
             if (!moved) return;
-            const nx = Math.max(0, Math.min(window.innerWidth - 56, dragRef.current.origX + dx));
-            const ny = Math.max(0, Math.min(window.innerHeight - 56, dragRef.current.origY + dy));
-            setBurbujaPosiciones(prev => ({ ...prev, [dragRef.current.id]: { x: nx, y: ny } }));
+            const nx = Math.max(0, Math.min(window.innerWidth - 60, dragRef.current.origX + dx));
+            const ny = Math.max(0, Math.min(window.innerHeight - 60, dragRef.current.origY + dy));
+            // Usar 'id' del closure, no dragRef.current.id (puede ser null en el callback async)
+            setBurbujaPosiciones(prev => ({ ...prev, [id]: { x: nx, y: ny } }));
         }
 
         function onUp() {
@@ -629,7 +635,11 @@ export default function ChatPanel() {
                                     >
                                         <div className="chat-contacto-avatar">
                                             {c.foto ? (
-                                                <img src={'/assets/perfiles/' + c.foto} alt="" />
+                                                <>
+                                                    <img src={'/assets/perfiles/' + c.foto} alt=""
+                                                        onError={(e) => { e.target.style.display='none'; e.target.nextElementSibling.style.display='flex'; }} />
+                                                    <div className="chat-avatar-placeholder" style={{display:'none'}}>{c.nombre.charAt(0)}</div>
+                                                </>
                                             ) : (
                                                 <div className="chat-avatar-placeholder">
                                                     {c.nombre.charAt(0)}
@@ -662,7 +672,11 @@ export default function ChatPanel() {
                                     >
                                         <div className="chat-contacto-avatar">
                                             {c.foto ? (
-                                                <img src={'/assets/perfiles/' + c.foto} alt="" />
+                                                <>
+                                                    <img src={'/assets/perfiles/' + c.foto} alt=""
+                                                        onError={(e) => { e.target.style.display='none'; e.target.nextElementSibling.style.display='flex'; }} />
+                                                    <div className="chat-avatar-placeholder" style={{display:'none'}}>{c.nombre.charAt(0)}</div>
+                                                </>
                                             ) : (
                                                 <div className="chat-avatar-placeholder">
                                                     {c.nombre.charAt(0)}
@@ -732,8 +746,8 @@ export default function ChatPanel() {
                 </div>
             )}
 
-            {/* ── Chat General flotante ── */}
-            {chatGeneralAbierto && (
+            {/* ── Chat General flotante (solo mobile — barra usa tray, burbujas usa burbuja) ── */}
+            {chatGeneralAbierto && esMobile && (
                 <ChatSala
                     tipo="general"
                     socket={socketRef.current}
@@ -743,8 +757,8 @@ export default function ChatPanel() {
                 />
             )}
 
-            {/* ── Mi Espacio flotante ── */}
-            {miEspacioAbierto && (
+            {/* ── Mi Espacio flotante (solo mobile) ── */}
+            {miEspacioAbierto && esMobile && (
                 <MiEspacio
                     onCerrar={() => setMiEspacioAbierto(false)}
                     panelAbierto={abierto}
@@ -767,7 +781,11 @@ export default function ChatPanel() {
                                     title={chat.nombre}
                                 >
                                     {chat.foto ? (
-                                        <img src={'/assets/perfiles/' + chat.foto} alt="" />
+                                        <>
+                                            <img src={'/assets/perfiles/' + chat.foto} alt=""
+                                                onError={(e) => { e.target.style.display='none'; e.target.nextElementSibling.style.display='inline'; }} />
+                                            <span className="chat-head-letra" style={{display:'none'}}>{chat.nombre.charAt(0)}</span>
+                                        </>
                                     ) : (
                                         <span className="chat-head-letra">{chat.nombre.charAt(0)}</span>
                                     )}
@@ -810,26 +828,57 @@ export default function ChatPanel() {
                     )}
                 </>
             ) : modoBurbuja === 'barra' ? (
-                /* ── Modo Barra: ventanas flotantes en tray con scroll horizontal ── */
+                /* ── Modo Barra: todas las ventanas en un tray con scroll horizontal ── */
                 <div
                     className="chat-ventanas-tray"
                     style={{ right: (abierto ? 326 : 82) + 'px' }}
                 >
-                    {chatsAbiertos.map((chat, idx) => {
-                        const baseOffset = (chatGeneralAbierto ? 1 : 0) + (miEspacioAbierto ? 1 : 0);
-                        return (
-                            <ChatVentana
-                                key={chat.id_personal}
-                                contacto={chat}
-                                socket={socketRef.current}
-                                onCerrar={() => cerrarChat(chat.id_personal)}
-                                posicion={baseOffset + idx}
-                                enLinea={conectados.has(chat.id_personal)}
-                                panelAbierto={abierto}
-                                modeTray={true}
-                            />
-                        );
-                    })}
+                    {/* Chat General — primero en DOM = extremo derecho (direction:rtl) */}
+                    {chatGeneralAbierto && (
+                        <ChatSala
+                            tipo="general"
+                            socket={socketRef.current}
+                            onCerrar={() => setChatGeneralAbierto(false)}
+                            panelAbierto={abierto}
+                            posicion={0}
+                            modeTray={true}
+                        />
+                    )}
+                    {/* Mi Espacio */}
+                    {miEspacioAbierto && (
+                        <MiEspacio
+                            onCerrar={() => setMiEspacioAbierto(false)}
+                            panelAbierto={abierto}
+                            posicion={0}
+                            modeTray={true}
+                        />
+                    )}
+                    {/* Chats individuales */}
+                    {chatsAbiertos.map((chat) => (
+                        <ChatVentana
+                            key={chat.id_personal}
+                            contacto={chat}
+                            socket={socketRef.current}
+                            onCerrar={() => cerrarChat(chat.id_personal)}
+                            posicion={0}
+                            enLinea={conectados.has(chat.id_personal)}
+                            panelAbierto={abierto}
+                            modeTray={true}
+                        />
+                    ))}
+                    {/* Grupos — extremo izquierdo */}
+                    {gruposAbiertos.map((grupo) => (
+                        <ChatSala
+                            key={grupo.id}
+                            tipo="grupo"
+                            grupo={grupo}
+                            socket={socketRef.current}
+                            onCerrar={() => cerrarGrupo(grupo.id)}
+                            posicion={0}
+                            panelAbierto={abierto}
+                            modeTray={true}
+                        />
+                    ))}
                 </div>
             ) : (
                 /* ── Modo Burbuja: círculos flotantes draggables estilo Messenger ── */
@@ -855,7 +904,11 @@ export default function ChatPanel() {
                                 )}
                                 <div className="chat-burbuja-avatar">
                                     {chat.foto ? (
-                                        <img src={'/assets/perfiles/' + chat.foto} alt="" />
+                                        <>
+                                            <img src={'/assets/perfiles/' + chat.foto} alt=""
+                                                onError={(e) => { e.target.style.display='none'; e.target.nextElementSibling.style.display='inline'; }} />
+                                            <span style={{display:'none'}}>{chat.nombre.charAt(0)}</span>
+                                        </>
                                     ) : (
                                         <span>{chat.nombre.charAt(0)}</span>
                                     )}
@@ -894,11 +947,83 @@ export default function ChatPanel() {
                             onMinimizar={() => setBurbujaActivaId(null)}
                         />
                     )}
+                    {/* Burbuja de Chat General */}
+                    {chatGeneralAbierto && (() => {
+                        const gIdx = chatsAbiertos.length;
+                        const pos = getBurbujaPos('general', gIdx);
+                        return (
+                            <div
+                                key="burbuja-general"
+                                className={'chat-burbuja-item chat-burbuja-general' + (generalBurbujaActiva ? ' activa' : '')}
+                                title="Chat General"
+                                style={{ position: 'fixed', left: pos.x + 'px', top: pos.y + 'px', cursor: 'grab', zIndex: 9010 }}
+                                onMouseDown={(e) => handleBurbujaMouseDown(e, 'general', gIdx, () => {
+                                    setGeneralBurbujaActiva(prev => !prev);
+                                })}
+                            >
+                                <div className="chat-burbuja-avatar chat-burbuja-avatar-general">
+                                    <IconoFa icono={faGlobe} />
+                                </div>
+                                <button className="chat-burbuja-cerrar" title="Cerrar"
+                                    onMouseDown={(e) => e.stopPropagation()}
+                                    onClick={(e) => { e.stopPropagation(); setChatGeneralAbierto(false); setGeneralBurbujaActiva(false); }}
+                                >&times;</button>
+                            </div>
+                        );
+                    })()}
+                    {/* Burbuja de Mi Espacio */}
+                    {miEspacioAbierto && (() => {
+                        const nIdx = chatsAbiertos.length + (chatGeneralAbierto ? 1 : 0);
+                        const pos = getBurbujaPos('notas', nIdx);
+                        return (
+                            <div
+                                key="burbuja-notas"
+                                className={'chat-burbuja-item chat-burbuja-notas' + (notasBurbujaActiva ? ' activa' : '')}
+                                title="Mi Espacio"
+                                style={{ position: 'fixed', left: pos.x + 'px', top: pos.y + 'px', cursor: 'grab', zIndex: 9010 }}
+                                onMouseDown={(e) => handleBurbujaMouseDown(e, 'notas', nIdx, () => {
+                                    setNotasBurbujaActiva(prev => !prev);
+                                })}
+                            >
+                                <div className="chat-burbuja-avatar chat-burbuja-avatar-notas">
+                                    <IconoFa icono={faStickyNote} />
+                                </div>
+                                <button className="chat-burbuja-cerrar" title="Cerrar"
+                                    onMouseDown={(e) => e.stopPropagation()}
+                                    onClick={(e) => { e.stopPropagation(); setMiEspacioAbierto(false); setNotasBurbujaActiva(false); }}
+                                >&times;</button>
+                            </div>
+                        );
+                    })()}
+                    {/* Ventana Chat General activa en modo burbuja */}
+                    {chatGeneralAbierto && generalBurbujaActiva && (
+                        <ChatSala
+                            tipo="general"
+                            socket={socketRef.current}
+                            onCerrar={() => { setChatGeneralAbierto(false); setGeneralBurbujaActiva(false); }}
+                            panelAbierto={abierto}
+                            posicion={0}
+                            modeBurbuja={true}
+                            burbujaPos={getBurbujaPos('general', chatsAbiertos.length)}
+                            onMinimizar={() => setGeneralBurbujaActiva(false)}
+                        />
+                    )}
+                    {/* Ventana Mi Espacio activa en modo burbuja */}
+                    {miEspacioAbierto && notasBurbujaActiva && (
+                        <MiEspacio
+                            onCerrar={() => { setMiEspacioAbierto(false); setNotasBurbujaActiva(false); }}
+                            panelAbierto={abierto}
+                            posicion={0}
+                            modeBurbuja={true}
+                            burbujaPos={getBurbujaPos('notas', chatsAbiertos.length + (chatGeneralAbierto ? 1 : 0))}
+                            onMinimizar={() => setNotasBurbujaActiva(false)}
+                        />
+                    )}
                 </>
             )}
 
-            {/* ── Ventanas de chat de grupo flotantes ── */}
-            {gruposAbiertos.map((grupo, idx) => {
+            {/* ── Ventanas de chat de grupo flotantes (solo modo burbuja/mobile) ── */}
+            {(esMobile || modoBurbuja !== 'barra') && gruposAbiertos.map((grupo, idx) => {
                 const baseOffset = (chatGeneralAbierto ? 1 : 0) + (miEspacioAbierto ? 1 : 0) + chatsAbiertos.length;
                 return (
                 <ChatSala

@@ -22,7 +22,7 @@ sonidoMensaje.volume = 0.5;
  *   posicion    offset numérico          (solo para tipo='grupo')
  *   panelAbierto  boolean
  */
-export default function ChatSala({ tipo = 'general', grupo, socket, onCerrar, posicion = 0, panelAbierto }) {
+export default function ChatSala({ tipo = 'general', grupo, socket, onCerrar, posicion = 0, panelAbierto, modeTray, modeBurbuja, burbujaPos, onMinimizar }) {
     const [mensajes, setMensajes] = useState([]);
     const [texto, setTexto] = useState('');
     const [cargando, setCargando] = useState(true);
@@ -256,10 +256,22 @@ export default function ChatSala({ tipo = 'general', grupo, socket, onCerrar, po
         }
     }
 
-    const offsetRight = (panelAbierto ? 354 : 80) + posicion * 320;
+    function calcStyle() {
+        if (modeTray) return {};
+        if (modeBurbuja && burbujaPos) {
+            const winW = 340, winH = 490, margin = 8;
+            const bx = burbujaPos.x, by = burbujaPos.y;
+            var left = Math.max(margin, Math.min(window.innerWidth - winW - margin, bx - winW + 56));
+            var top = Math.max(margin, by - winH - 8);
+            if (top < margin) top = Math.min(window.innerHeight - winH - margin, by + 64);
+            return { position: 'fixed', left: left + 'px', top: top + 'px' };
+        }
+        if (modeBurbuja) return { position: 'fixed', bottom: 72, right: 92 };
+        return { right: (panelAbierto ? 354 : 80) + posicion * 320 + 'px' };
+    }
 
     return (
-        <div className={'chat-ventana ' + claseVentana + (minimizada ? ' chat-ventana-minimizada' : '')} style={{ right: offsetRight + 'px' }}>
+        <div className={'chat-ventana ' + claseVentana + (minimizada ? ' chat-ventana-minimizada' : '')} style={calcStyle()}>
             {/* ── Header ── */}
             <div
                 className={'chat-ventana-header ' + claseHeader}
@@ -275,7 +287,7 @@ export default function ChatSala({ tipo = 'general', grupo, socket, onCerrar, po
                     </div>
                 </div>
                 <div className="chat-ventana-acciones" onClick={(e) => e.stopPropagation()}>
-                    <button onClick={() => setMinimizada(!minimizada)} title={minimizada ? 'Expandir' : 'Minimizar'}>
+                    <button onClick={() => modeBurbuja && onMinimizar ? onMinimizar() : setMinimizada(!minimizada)} title={minimizada ? 'Expandir' : 'Minimizar'}>
                         <IconoFa icono={minimizada ? faExpand : faMinus} />
                     </button>
                     <button onClick={onCerrar} title="Cerrar">

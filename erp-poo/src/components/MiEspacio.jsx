@@ -16,7 +16,7 @@ const COLORES = [
  * MiEspacio — Ventana flotante de notas personales.
  * Permite al usuario guardar notas/recordatorios para sí mismo.
  */
-export default function MiEspacio({ onCerrar, panelAbierto, posicion }) {
+export default function MiEspacio({ onCerrar, panelAbierto, posicion, modeTray, modeBurbuja, burbujaPos, onMinimizar }) {
     const [notas, setNotas] = useState([]);
     const [cargando, setCargando] = useState(true);
     const [minimizada, setMinimizada] = useState(false);
@@ -29,8 +29,19 @@ export default function MiEspacio({ onCerrar, panelAbierto, posicion }) {
     const inputRef = useRef(null);
     const ventanaRef = useRef(null);
 
-    // Posición: a la derecha del panel (320px panel + 24px margen + 10px gap)
-    const offsetRight = (panelAbierto ? 354 : 80) + (posicion || 0) * 320;
+    function calcStyle() {
+        if (modeTray) return {};
+        if (modeBurbuja && burbujaPos) {
+            const winW = 340, winH = 490, margin = 8;
+            const bx = burbujaPos.x, by = burbujaPos.y;
+            var left = Math.max(margin, Math.min(window.innerWidth - winW - margin, bx - winW + 56));
+            var top = Math.max(margin, by - winH - 8);
+            if (top < margin) top = Math.min(window.innerHeight - winH - margin, by + 64);
+            return { position: 'fixed', left: left + 'px', top: top + 'px' };
+        }
+        if (modeBurbuja) return { position: 'fixed', bottom: 72, right: 92 };
+        return { right: (panelAbierto ? 354 : 80) + (posicion || 0) * 320 + 'px' };
+    }
 
     // ── Cargar notas ──
     const cargarNotas = useCallback(async () => {
@@ -145,7 +156,7 @@ export default function MiEspacio({ onCerrar, panelAbierto, posicion }) {
         <div
             ref={ventanaRef}
             className={'chat-ventana mi-espacio-ventana' + (minimizada ? ' chat-ventana-minimizada' : '')}
-            style={{ right: offsetRight + 'px' }}
+            style={calcStyle()}
         >
             {/* ── Header ── */}
             <div
@@ -163,7 +174,7 @@ export default function MiEspacio({ onCerrar, panelAbierto, posicion }) {
                     </div>
                 </div>
                 <div className="chat-ventana-acciones" onClick={e => e.stopPropagation()}>
-                    <button onClick={() => setMinimizada(!minimizada)} title={minimizada ? 'Expandir' : 'Minimizar'}>
+                    <button onClick={() => modeBurbuja && onMinimizar ? onMinimizar() : setMinimizada(!minimizada)} title={minimizada ? 'Expandir' : 'Minimizar'}>
                         <IconoFa icono={minimizada ? faExpand : faMinus} />
                     </button>
                     <button onClick={onCerrar} title="Cerrar">

@@ -3088,3 +3088,15 @@ body.dark-mode .chat-burbuja-online { border-color: #1e293b; }
 body.dark-mode .chat-burbuja-badge { border-color: #1e293b; }
 body.dark-mode .chat-burbuja-cerrar { background: #475569; border-color: #1e293b; }
 body.dark-mode .chat-burbuja-preview { background: #0f172a; }
+
+/* Colores especiales para burbujas de Chat General y Mi Espacio */
+.chat-burbuja-general .chat-burbuja-avatar,
+.chat-burbuja-avatar-general {
+    background: rgba(16, 185, 129, 0.82);
+    box-shadow: 0 4px 18px rgba(16,185,129,.4), inset 0 1px 1px rgba(255,255,255,.25);
+}
+.chat-burbuja-notas .chat-burbuja-avatar,
+.chat-burbuja-avatar-notas {
+    background: rgba(202, 138, 4, 0.82);
+    box-shadow: 0 4px 18px rgba(202,138,4,.4), inset 0 1px 1px rgba(255,255,255,.25);
+}

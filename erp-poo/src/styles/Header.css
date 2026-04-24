@@ -97,13 +97,20 @@
     cursor: pointer;
 }
 
-.user-photo-container img {
+.user-photo-container img,
+.user-photo-container .img-avatar-fallback {
     width: 36px;
     height: 36px;
     border-radius: 50%;
     object-fit: cover;
     border: 2px solid var(--border-color, #ddd);
-    display: block;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--color-primario, #2563eb);
+    color: #fff;
+    padding: 6px;
+    box-sizing: border-box;
 }
 
 .header-placeholder {
