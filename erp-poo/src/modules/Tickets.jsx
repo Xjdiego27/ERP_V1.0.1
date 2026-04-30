@@ -174,6 +174,7 @@ export default function Tickets() {
             var coincide = (t.asunto || '').toLowerCase().indexOf(b) >= 0
                 || (t.nombre_creador || '').toLowerCase().indexOf(b) >= 0
                 || (t.categoria || '').toLowerCase().indexOf(b) >= 0
+                || (t.subcategoria || '').toLowerCase().indexOf(b) >= 0
                 || String(t.id_ticket).indexOf(b) >= 0;
             if (!coincide) return false;
         }
@@ -292,9 +293,9 @@ export default function Tickets() {
             }
             return s;
         }
-        var cabecera = 'ID,NOMBRE,CATEGORÍA,ASUNTO,PRIORIDAD,TÉCNICO,ESTADO,FECHA CREACIÓN,FECHA CIERRE\n';
+        var cabecera = 'ID,NOMBRE,CATEGORÍA,SUBCATEGORÍA,ASUNTO,PRIORIDAD,TÉCNICO,ESTADO,FECHA CREACIÓN,FECHA CIERRE\n';
         var filas = ticketsFiltrados.map(function (t) {
-            return [t.id_ticket, t.nombre_creador, t.categoria, t.asunto, t.prioridad, t.tecnico || '', t.estado, formatearFechaHora(t.fech_creacion), t.fech_cierre ? formatearFechaHora(t.fech_cierre) : ''].map(escaparCSV).join(',');
+            return [t.id_ticket, t.nombre_creador, t.categoria, t.subcategoria || '', t.asunto, t.prioridad, t.tecnico || '', t.estado, formatearFechaHora(t.fech_creacion), t.fech_cierre ? formatearFechaHora(t.fech_cierre) : ''].map(escaparCSV).join(',');
         }).join('\n');
         var blob = new Blob(['\uFEFF' + cabecera + filas], { type: 'text/csv;charset=utf-8' });
         var url = URL.createObjectURL(blob);
@@ -478,6 +479,12 @@ export default function Tickets() {
                                             <span className="detalle-label">Categoría</span>
                                             <span className="detalle-valor">{seleccionado.categoria}</span>
                                         </div>
+                                        {seleccionado.subcategoria && (
+                                            <div className="detalle-campo">
+                                                <span className="detalle-label">Subcategoría</span>
+                                                <span className="detalle-valor">{seleccionado.subcategoria}</span>
+                                            </div>
+                                        )}
                                         <div className="detalle-campo">
                                             <span className="detalle-label">Estado</span>
                                             <span className="detalle-valor">
@@ -693,7 +700,10 @@ export default function Tickets() {
                                             }}>
                                             <td className="td-id">#{t.id_ticket}</td>
                                             <td className="td-nombre">{t.nombre_creador}</td>
-                                            <td>{t.categoria}</td>
+                                            <td>
+                                                {t.categoria}
+                                                {t.subcategoria && <div style={{ fontSize: '0.78em', color: '#64748b', marginTop: 2 }}>{t.subcategoria}</div>}
+                                            </td>
                                             <td className="td-asunto">{t.asunto}</td>
                                             <td>
                                                 <span className="prioridad-badge" style={{ background: (PRIORIDAD_COLOR[t.prioridad] || {}).bg || '#f1f5f9', color: (PRIORIDAD_COLOR[t.prioridad] || {}).color || '#64748b' }}>

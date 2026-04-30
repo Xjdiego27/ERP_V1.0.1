@@ -406,19 +406,17 @@ def catalogos_sap(db: Session = Depends(get_db), _: dict = Depends(verificar_tok
 
 @router.get("/tickets/tecnicos")
 def listar_tecnicos(db: Session = Depends(get_db), token: dict = Depends(verificar_token)):
-    """Lista empleados con rol SOPORTE de la empresa del usuario logueado."""
-    id_empresa = token.get("id_emp")
+    """Lista empleados con rol SOPORTE o ADMINISTRADOR con contrato activo."""
     tecnicos = (
         db.query(Personal, Acceso)
         .join(Acceso, Acceso.ID_ACCS == Personal.ID_ACCS)
         .join(Contrato, Contrato.ID_PERSONAL == Personal.ID_PERSONAL)
-        .join(Cargo, Cargo.ID_CARGO == Contrato.ID_CARGO)
         .filter(
             Acceso.ID_ESTADO == 1,
-            Acceso.ID_ROL == 2,  # Solo SOPORTE
+            Acceso.ID_ROL.in_([1, 2]),  # 1=ADMIN, 2=SOPORTE
             Contrato.ID_ESTADO_CONTRATO == 1,
-            Cargo.ID_EMP == id_empresa,
         )
+        .distinct(Personal.ID_PERSONAL)
         .all()
     )
     return [
@@ -753,7 +751,7 @@ def _generar_pdf_tickets(tickets_data: list, mes: int, anio: int, nombre_usuario
     # ── Detalle de tickets ──
     if tickets_data:
         elementos.append(Paragraph("Detalle de Tickets", seccion_style))
-        det_rows = [["#", "Creador", "Asunto", "Estado", "Prioridad", "Técnico", "Creación", "Cierre"]]
+        det_rows = [["#", "Creador", "Asunto", "Cat. / Subcat.", "Estado", "Técnico", "Creación", "Cierre"]]
         for t in tickets_data:
             fch = ""
             if t.get("fech_creacion"):
@@ -771,19 +769,23 @@ def _generar_pdf_tickets(tickets_data: list, mes: int, anio: int, nombre_usuario
                 except Exception:
                     fch_cierre = str(t["fech_cierre"])[:16]
 
+            cat_txt = str(t.get("categoria") or "—")
+            if t.get("subcategoria"):
+                cat_txt += f"\n{t['subcategoria']}"
+
             det_rows.append([
                 str(t.get("id_ticket", "")),
                 Paragraph(str(t.get("nombre_creador", "") or "")[:30], normal_style),
                 Paragraph(str(t.get("asunto", ""))[:40], normal_style),
+                Paragraph(cat_txt[:50], normal_style),
                 t.get("estado", ""),
-                t.get("prioridad", ""),
                 Paragraph(str(t.get("tecnico", "") or "—")[:25], normal_style),
                 fch,
                 fch_cierre or "—",
             ])
 
-        col_w = [doc.width * 0.05, doc.width * 0.14, doc.width * 0.18, doc.width * 0.10,
-                 doc.width * 0.10, doc.width * 0.13, doc.width * 0.15, doc.width * 0.15]
+        col_w = [doc.width * 0.05, doc.width * 0.13, doc.width * 0.17, doc.width * 0.15,
+                 doc.width * 0.09, doc.width * 0.13, doc.width * 0.14, doc.width * 0.14]
         tbl_det = Table(det_rows, colWidths=col_w, repeatRows=1)
         tbl_det.setStyle(TableStyle([
             ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor("#1e293b")),
@@ -883,6 +885,11 @@ def informe_tickets_pdf(
         if creador:
             nombre_creador = f"{creador.APE_PATERNO} {creador.APE_MATERNO}, {creador.NOMBRES}"
 
+        # Subcategoría
+        subcat = db.query(SubcategoriaTicket).filter(
+            SubcategoriaTicket.ID_SUBCATEGORIA == t.ID_SUBCATEGORIA
+        ).first() if SubcategoriaTicket and t.ID_SUBCATEGORIA else None
+
         # Nombre del técnico asignado
         tecnico_nombre = None
         if t.ID_TI:
@@ -896,6 +903,7 @@ def informe_tickets_pdf(
             "prioridad": t.PRIORIDAD,
             "asunto": t.ASUNTO,
             "categoria": cat.DESCRIP if cat else None,
+            "subcategoria": subcat.DESCRIP if subcat else None,
             "nombre_creador": nombre_creador,
             "tecnico": tecnico_nombre,
             "fech_creacion": str(t.FECH_CREACION) if t.FECH_CREACION else None,

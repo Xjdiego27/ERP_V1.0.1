@@ -3100,3 +3100,258 @@ body.dark-mode .chat-burbuja-preview { background: #0f172a; }
     background: rgba(202, 138, 4, 0.82);
     box-shadow: 0 4px 18px rgba(202,138,4,.4), inset 0 1px 1px rgba(255,255,255,.25);
 }
+
+
+/* ══════════════════════════════════════════════════════════
+   NUEVAS FUNCIONES: REPLY, EDIT, CLEAR, BADGE TRAY
+   ══════════════════════════════════════════════════════════ */
+
+/* ── Badge no-leídos en header tray (barra minimizada) ── */
+.chat-header-badge-tray {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: #ef4444;
+    color: #fff;
+    font-size: .6rem;
+    font-weight: 700;
+    min-width: 16px;
+    height: 16px;
+    border-radius: 8px;
+    padding: 0 4px;
+    margin-left: 6px;
+    vertical-align: middle;
+}
+
+/* ── Botón vaciar chat ── */
+.chat-btn-vaciar {
+    background: none !important;
+    border: none;
+    color: rgba(255,255,255,.7);
+    cursor: pointer;
+    font-size: .72rem;
+    padding: 4px 6px;
+    border-radius: 4px;
+    transition: color .15s, background .15s;
+}
+.chat-btn-vaciar:hover {
+    color: #fca5a5 !important;
+    background: rgba(255,255,255,.1) !important;
+}
+
+/* ── Acciones al hover de un mensaje ── */
+.chat-msg-acciones {
+    display: flex;
+    gap: 3px;
+    opacity: 0;
+    transition: opacity .15s;
+    margin-top: 2px;
+    justify-content: flex-start;
+}
+.chat-msg-acciones.mio {
+    justify-content: flex-end;
+}
+.chat-msg:hover .chat-msg-acciones {
+    opacity: 1;
+}
+.chat-msg-accion-btn {
+    background: #f1f5f9;
+    border: 1px solid #e2e8f0;
+    color: #64748b;
+    font-size: .62rem;
+    padding: 3px 7px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background .12s, color .12s;
+    display: flex;
+    align-items: center;
+    gap: 3px;
+}
+.chat-msg-accion-btn:hover {
+    background: var(--color-primario, #2563eb);
+    color: #fff;
+    border-color: transparent;
+}
+body.dark-mode .chat-msg-accion-btn {
+    background: #334155;
+    border-color: #475569;
+    color: #94a3b8;
+}
+body.dark-mode .chat-msg-accion-btn:hover {
+    background: #3b82f6;
+    color: #fff;
+}
+
+/* ── Cita de mensaje respondido dentro de burbuja ── */
+.chat-msg-reply-cita {
+    background: rgba(37,99,235,.08);
+    border-left: 3px solid var(--color-primario, #2563eb);
+    border-radius: 6px;
+    padding: 4px 8px;
+    margin-bottom: 4px;
+    max-width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+.chat-msg.mio .chat-msg-reply-cita {
+    background: rgba(255,255,255,.18);
+    border-left-color: rgba(255,255,255,.6);
+}
+.chat-reply-cita-nombre {
+    font-size: .65rem;
+    font-weight: 700;
+    color: var(--color-primario, #2563eb);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.chat-msg.mio .chat-reply-cita-nombre {
+    color: rgba(255,255,255,.9);
+}
+.chat-reply-cita-texto {
+    font-size: .7rem;
+    color: #475569;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.chat-msg.mio .chat-reply-cita-texto {
+    color: rgba(255,255,255,.75);
+}
+body.dark-mode .chat-msg-reply-cita {
+    background: rgba(37,99,235,.15);
+}
+body.dark-mode .chat-reply-cita-texto {
+    color: #94a3b8;
+}
+
+/* ── Barra de respuesta sobre el input ── */
+.chat-reply-bar {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 10px;
+    background: #eff6ff;
+    border-top: 1px solid #bfdbfe;
+    border-left: 3px solid var(--color-primario, #2563eb);
+    flex-shrink: 0;
+}
+.chat-reply-bar-info {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+}
+.chat-reply-bar-nombre {
+    font-size: .68rem;
+    font-weight: 700;
+    color: var(--color-primario, #2563eb);
+}
+.chat-reply-bar-texto {
+    font-size: .7rem;
+    color: #475569;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.chat-reply-bar-cancel {
+    background: none;
+    border: none;
+    color: #94a3b8;
+    cursor: pointer;
+    font-size: .75rem;
+    padding: 2px 5px;
+    border-radius: 4px;
+    flex-shrink: 0;
+    transition: color .12s;
+}
+.chat-reply-bar-cancel:hover { color: #ef4444; }
+body.dark-mode .chat-reply-bar {
+    background: #1e3a5f;
+    border-top-color: #1d4ed8;
+}
+body.dark-mode .chat-reply-bar-texto { color: #94a3b8; }
+
+/* ── Edición inline de mensaje ── */
+.chat-edit-inline {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    max-width: 85%;
+}
+.chat-edit-input {
+    border: 1px solid var(--color-primario, #2563eb);
+    border-radius: 8px;
+    padding: 5px 10px;
+    font-size: .82rem;
+    outline: none;
+    background: #fff;
+    color: #1e293b;
+    width: 100%;
+    box-sizing: border-box;
+}
+body.dark-mode .chat-edit-input {
+    background: #0f172a;
+    color: #e2e8f0;
+    border-color: #3b82f6;
+}
+.chat-edit-btns {
+    display: flex;
+    gap: 4px;
+}
+.chat-edit-save {
+    background: var(--color-primario, #2563eb);
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+    padding: 3px 10px;
+    font-size: .72rem;
+    cursor: pointer;
+    font-weight: 600;
+}
+.chat-edit-save:hover { background: #1d4ed8; }
+.chat-edit-cancel {
+    background: #f1f5f9;
+    color: #64748b;
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+    padding: 3px 10px;
+    font-size: .72rem;
+    cursor: pointer;
+}
+.chat-edit-cancel:hover { background: #e2e8f0; }
+
+/* ── Etiqueta "editado" ── */
+.chat-editado-label {
+    font-size: .55rem;
+    font-style: italic;
+    opacity: .65;
+    margin-right: 4px;
+}
+
+/* ── Caption input en preview de archivo ── */
+.chat-preview-caption {
+    padding: 6px 10px 2px;
+}
+.chat-preview-caption-input {
+    width: 100%;
+    box-sizing: border-box;
+    border: 1px solid #d1d5db;
+    border-radius: 20px;
+    padding: 6px 12px;
+    font-size: .8rem;
+    outline: none;
+    background: #f8fafc;
+    color: #1e293b;
+    transition: border-color .15s;
+}
+.chat-preview-caption-input:focus {
+    border-color: var(--color-primario, #2563eb);
+}
+body.dark-mode .chat-preview-caption-input {
+    background: #0f172a;
+    border-color: #475569;
+    color: #e2e8f0;
+}

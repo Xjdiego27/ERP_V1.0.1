@@ -47,7 +47,7 @@ if ($back.HasExited) {
 }
 
 Write-Host "[2/3] Backend Chat (FastAPI) puerto 4001..." -ForegroundColor Yellow
-$chatCmd = "`"$VENV`" -u -m uvicorn chat_server:app --host 0.0.0.0 --port 4001 --reload 2>&1"
+$chatCmd = "`"$VENV`" -u -m uvicorn chat_server:app --host 0.0.0.0 --port 4001 2>&1"
 $chat = Start-Process -FilePath "cmd.exe" `
     -ArgumentList "/c","cd /d `"$CHAT_BACKEND`" && $chatCmd" `
     -PassThru -NoNewWindow

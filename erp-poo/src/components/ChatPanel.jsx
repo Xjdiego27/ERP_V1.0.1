@@ -11,6 +11,9 @@ import { getSession } from '../utils/session';
 import { showDesktopNotification } from '../utils/desktopNotifications';
 import '../styles/Chat.css';
 
+// Singleton de socket — evita doble conexión por React StrictMode en desarrollo
+let _socketSingleton = null;
+
 // Sonido de notificación MSN para mensajes cuando chat no está abierto
 const sonidoNotificacion = new Audio('/sounds/msn_messenger.mp3');
 sonidoNotificacion.volume = 0.5;
@@ -132,13 +135,28 @@ export default function ChatPanel() {
         const token = obtenerToken();
         if (!token) return;
 
+        // Reutilizar socket existente — evita duplicados por React StrictMode en dev,
+        // que monta → desmonta → monta el componente, creando dos sockets simultáneos
+        // con el primer socket aún a medio handshake cuando el segundo intenta conectar.
+        if (_socketSingleton) {
+            socketRef.current = _socketSingleton;
+            if (_socketSingleton.connected) {
+                cargarContactos();
+                cargarNoLeidos();
+                cargarGrupos();
+            }
+            return () => { socketRef.current = null; };
+        }
+
         const socket = io(CHAT_SOCKET_URL, {
             auth: { token },
-            transports: ['websocket', 'polling'],
+            transports: ['polling', 'websocket'],
+            upgrade: true,
             reconnection: true,
             reconnectionDelay: 2000,
             reconnectionAttempts: Infinity,
         });
+        _socketSingleton = socket;
 
         socket.on('connect', () => {
             console.log('[Chat] Socket conectado/reconectado');
@@ -313,7 +331,8 @@ export default function ChatPanel() {
         socketRef.current = socket;
 
         return () => {
-            socket.disconnect();
+            // No desconectar el singleton aquí — lo gestiona el propio módulo
+            // para evitar que StrictMode destruya la conexión en el primer desmontaje
             socketRef.current = null;
         };
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -634,17 +653,9 @@ export default function ChatPanel() {
                                         onClick={() => abrirChat(c)}
                                     >
                                         <div className="chat-contacto-avatar">
-                                            {c.foto ? (
-                                                <>
-                                                    <img src={'/assets/perfiles/' + c.foto} alt=""
-                                                        onError={(e) => { e.target.style.display='none'; e.target.nextElementSibling.style.display='flex'; }} />
-                                                    <div className="chat-avatar-placeholder" style={{display:'none'}}>{c.nombre.charAt(0)}</div>
-                                                </>
-                                            ) : (
-                                                <div className="chat-avatar-placeholder">
-                                                    {c.nombre.charAt(0)}
-                                                </div>
-                                            )}
+                                            <div className="chat-avatar-placeholder">
+                                                {c.nombre.charAt(0)}
+                                            </div>
                                             <span className="chat-status online">
                                                 <IconoFa icono={faCircle} />
                                             </span>
@@ -671,17 +682,9 @@ export default function ChatPanel() {
                                         onClick={() => abrirChat(c)}
                                     >
                                         <div className="chat-contacto-avatar">
-                                            {c.foto ? (
-                                                <>
-                                                    <img src={'/assets/perfiles/' + c.foto} alt=""
-                                                        onError={(e) => { e.target.style.display='none'; e.target.nextElementSibling.style.display='flex'; }} />
-                                                    <div className="chat-avatar-placeholder" style={{display:'none'}}>{c.nombre.charAt(0)}</div>
-                                                </>
-                                            ) : (
-                                                <div className="chat-avatar-placeholder">
-                                                    {c.nombre.charAt(0)}
-                                                </div>
-                                            )}
+                                            <div className="chat-avatar-placeholder">
+                                                {c.nombre.charAt(0)}
+                                            </div>
                                             <span className="chat-status offline-dot">
                                                 <IconoFa icono={faCircle} />
                                             </span>
@@ -824,6 +827,7 @@ export default function ChatPanel() {
                             panelAbierto={false}
                             modeMobile={true}
                             onMinimizar={() => setChatActivoMobile(null)}
+                            noLeidosCount={noLeidos[chatActivoMobile] || 0}
                         />
                     )}
                 </>
@@ -864,6 +868,7 @@ export default function ChatPanel() {
                             enLinea={conectados.has(chat.id_personal)}
                             panelAbierto={abierto}
                             modeTray={true}
+                            noLeidosCount={noLeidos[chat.id_personal] || 0}
                         />
                     ))}
                     {/* Grupos — extremo izquierdo */}
@@ -945,6 +950,7 @@ export default function ChatPanel() {
                             modeBurbuja={true}
                             burbujaPos={getBurbujaPos(burbujaActivaId, chatsAbiertos.findIndex(c => c.id_personal === burbujaActivaId))}
                             onMinimizar={() => setBurbujaActivaId(null)}
+                            noLeidosCount={noLeidos[burbujaActivaId] || 0}
                         />
                     )}
                     {/* Burbuja de Chat General */}

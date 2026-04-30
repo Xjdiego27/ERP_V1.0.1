@@ -3,7 +3,7 @@ import { createPortal } from 'react-dom';
 import IconoFa from './IconoFa';
 import StickerPicker from './StickerPicker';
 import ModalImagen from './ModalImagen';
-import { faTimes, faPaperPlane, faCircle, faMinus, faExpand, faFaceSmile, faBolt, faPaperclip, faCheck, faCheckDouble, faEnvelope, faBriefcase, faBuilding, faCopy, faMobileAlt } from '@fortawesome/free-solid-svg-icons';
+import { faTimes, faPaperPlane, faCircle, faMinus, faExpand, faFaceSmile, faBolt, faPaperclip, faCheck, faCheckDouble, faEnvelope, faBriefcase, faBuilding, faCopy, faMobileAlt, faReply, faPen, faTrash } from '@fortawesome/free-solid-svg-icons';
 import { CHAT_URL, obtenerToken } from '../auth';
 import { getSession } from '../utils/session';
 import { formatHora as formatHoraUtil, subirArchivo as subirArchivoUtil, renderContenidoMensaje } from '../utils/chatUtils';
@@ -45,7 +45,7 @@ function parpadearTitulo(texto) {
  * ChatVentana — Ventana de chat individual flotante.
  * Se comunica vía Socket.IO (recibido desde ChatPanel).
  */
-export default function ChatVentana({ contacto, socket, onCerrar, posicion, enLinea, panelAbierto, modeMobile, onMinimizar, modeTray, modeBurbuja, burbujaPos }) {
+export default function ChatVentana({ contacto, socket, onCerrar, posicion, enLinea, panelAbierto, modeMobile, onMinimizar, modeTray, modeBurbuja, burbujaPos, noLeidosCount }) {
     const [mensajes, setMensajes] = useState([]);
     const [texto, setTexto] = useState('');
     const [cargando, setCargando] = useState(true);
@@ -60,6 +60,11 @@ export default function ChatVentana({ contacto, socket, onCerrar, posicion, enLi
     const [cargandoPerfil, setCargandoPerfil] = useState(false);
     const [archivosEnCola, setArchivosEnCola] = useState([]);  // [{ file, previewUrl, esImagen }]
     const [enviandoArchivo, setEnviandoArchivo] = useState(false);
+    const [respondiendo, setRespondiendo] = useState(null); // { id, contenido, nombre_remitente }
+    const [editandoId, setEditandoId] = useState(null);
+    const [textoEdit, setTextoEdit] = useState('');
+    const [captionTexto, setCaptionTexto] = useState('');
+    const inputEditRef = useRef(null);
     const chatBodyRef = useRef(null);
     const inputRef = useRef(null);
     const escribiendoTimer = useRef(null);
@@ -103,7 +108,11 @@ export default function ChatVentana({ contacto, socket, onCerrar, posicion, enLi
         function onMensajeNuevo(msg) {
             // Solo agregar si es de/para este contacto
             if (msg.remitente_id === contacto.id_personal || msg.destinatario_id === contacto.id_personal) {
-                setMensajes(prev => [...prev, msg]);
+                setMensajes(prev => {
+                    // Deduplicar: no agregar si ya existe un mensaje con el mismo ID
+                    if (msg.id && prev.some(m => m.id === msg.id)) return prev;
+                    return [...prev, msg];
+                });
                 // Sonido de mensaje entrante si es del otro usuario
                 if (msg.remitente_id === contacto.id_personal) {
                     sonidoMensaje.currentTime = 0;
@@ -168,13 +177,24 @@ export default function ChatVentana({ contacto, socket, onCerrar, posicion, enLi
             }
         }
 
+        function onMensajeEditado(data) {
+            // data: { id, contenido, remitente_id, destinatario_id }
+            const involucra = data.remitente_id === contacto.id_personal || data.destinatario_id === contacto.id_personal;
+            if (!involucra) return;
+            setMensajes(prev => prev.map(m =>
+                m.id === data.id ? { ...m, contenido: data.contenido, editado: true } : m
+            ));
+        }
+
         socket.on('mensaje_nuevo', onMensajeNuevo);
+        socket.on('mensaje_editado', onMensajeEditado);
         socket.on('escribiendo', onEscribiendo);
         socket.on('zumbido', onZumbido);
         socket.on('mensaje_visto', onMensajeVisto);
 
         return () => {
             socket.off('mensaje_nuevo', onMensajeNuevo);
+            socket.off('mensaje_editado', onMensajeEditado);
             socket.off('escribiendo', onEscribiendo);
             socket.off('zumbido', onZumbido);
             socket.off('mensaje_visto', onMensajeVisto);
@@ -205,12 +225,13 @@ export default function ChatVentana({ contacto, socket, onCerrar, posicion, enLi
     }, [mensajes, escribiendo, minimizada]);
 
     // ── Enviar mensaje ──
-    function enviarContenido(contenido, onSuccess) {
+    function enviarContenido(contenido, onSuccess, replyTo) {
         if (!contenido || !socket) return;
 
         socket.emit('enviar_mensaje', {
             destinatario_id: contacto.id_personal,
             contenido: contenido,
+            reply_to: replyTo || null,
         }, (resp) => {
             if (resp && resp.ok && resp.mensaje) {
                 setMensajes(prev => [...prev, resp.mensaje]);
@@ -222,10 +243,36 @@ export default function ChatVentana({ contacto, socket, onCerrar, posicion, enLi
     function enviarMensaje(e) {
         e.preventDefault();
         const contenido = texto.trim();
+        const replyTo = respondiendo ? { id: respondiendo.id, contenido: respondiendo.contenido, nombre_remitente: respondiendo.nombre_remitente } : null;
         enviarContenido(contenido, () => {
             setTexto('');
+            setRespondiendo(null);
             inputRef.current?.focus();
-        });
+        }, replyTo);
+    }
+
+    // ── Editar mensaje ──
+    async function guardarEdicion() {
+        if (!editandoId || !textoEdit.trim()) return;
+        const token = obtenerToken();
+        try {
+            const resp = await fetch(CHAT_URL + '/mensajes/' + editandoId, {
+                method: 'PUT',
+                headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
+                body: JSON.stringify({ contenido: textoEdit.trim() }),
+            });
+            if (resp.ok) {
+                setMensajes(prev => prev.map(m => m.id === editandoId ? { ...m, contenido: textoEdit.trim(), editado: true } : m));
+            }
+        } catch (_) {}
+        setEditandoId(null);
+        setTextoEdit('');
+    }
+
+    // ── Vaciar chat (solo frontend, no afecta BD) ──
+    function vaciarChat() {
+        if (!window.confirm('¿Vaciar el historial visible? No se eliminarán mensajes de la base de datos.')) return;
+        setMensajes([]);
     }
 
     function insertarEmoji(emoji) {
@@ -287,7 +334,9 @@ export default function ChatVentana({ contacto, socket, onCerrar, posicion, enLi
         if (archivosEnCola.length === 0 || !socket || enviandoArchivo) return;
         setEnviandoArchivo(true);
         const cola = [...archivosEnCola];
+        const caption = captionTexto.trim();
         setArchivosEnCola([]);
+        setCaptionTexto('');
         try {
             for (const item of cola) {
                 try {
@@ -307,9 +356,13 @@ export default function ChatVentana({ contacto, socket, onCerrar, posicion, enLi
                             }
                         });
                     }
-                } catch (err) {
-                    alert(`No se pudo subir "${item.file.name}". Verifica el tipo y tamaño (máx 10 MB).`);
+                } catch (_) {
+                    alert(`No se pudo subir "${item.file.name}". Verifica el tipo y tamaño (máx 25 MB).`);
                 }
+            }
+            // Enviar caption como mensaje de texto separado si tiene contenido
+            if (caption) {
+                enviarContenido(caption, null, null);
             }
         } finally {
             setEnviandoArchivo(false);
@@ -435,7 +488,7 @@ export default function ChatVentana({ contacto, socket, onCerrar, posicion, enLi
             style={calcStyle()}
         >
             {/* ── Header de la ventana ── */}
-            <div 
+            <div
                 className="chat-ventana-header"
                 onClick={(e) => {
                     if (minimizada && !e.target.closest('button')) {
@@ -446,28 +499,28 @@ export default function ChatVentana({ contacto, socket, onCerrar, posicion, enLi
             >
                 <div className="chat-ventana-header-info">
                     <div className="chat-ventana-avatar-mini chat-avatar-clickable" onClick={(e) => { e.stopPropagation(); abrirPerfil(); }}>
-                        {contacto.foto ? (
-                            <>
-                                <img src={'/assets/perfiles/' + contacto.foto} alt=""
-                                    onError={(e) => { e.target.style.display='none'; e.target.nextElementSibling.style.display='inline'; }} />
-                                <span style={{display:'none'}}>{contacto.nombre.charAt(0)}</span>
-                            </>
-                        ) : (
-                            <span>{contacto.nombre.charAt(0)}</span>
-                        )}
+                        <span>{contacto.nombre.charAt(0)}</span>
                         <span className={'chat-status-mini ' + (enLinea ? 'online' : 'offline-dot')}>
                             <IconoFa icono={faCircle} />
                         </span>
                     </div>
                     <div className="chat-ventana-nombre chat-nombre-clickable" onClick={(e) => { e.stopPropagation(); abrirPerfil(); }}>
                         <strong>{contacto.nombre.split(' ').slice(0, 2).join(' ')}</strong>
-                        {escribiendo && <span className="chat-escribiendo">escribiendo...</span>}
+                        {minimizada && noLeidosCount > 0 && (
+                            <span className="chat-header-badge-tray">{noLeidosCount}</span>
+                        )}
+                        {!minimizada && escribiendo && <span className="chat-escribiendo">escribiendo...</span>}
                     </div>
                 </div>
                 <div className="chat-ventana-acciones" onClick={(e) => e.stopPropagation()}>
                     <button onClick={enviarZumbido} title="Enviar zumbido" className="chat-btn-zumbido-header">
                         <IconoFa icono={faBolt} />
                     </button>
+                    {!minimizada && (
+                        <button onClick={vaciarChat} title="Vaciar chat" className="chat-btn-vaciar">
+                            <IconoFa icono={faTrash} />
+                        </button>
+                    )}
                     <button onClick={() => (modeMobile || modeBurbuja) && onMinimizar ? onMinimizar() : setMinimizada(!minimizada)} title={minimizada ? 'Expandir' : 'Minimizar'}>
                         <IconoFa icono={minimizada ? faExpand : faMinus} />
                     </button>
@@ -508,34 +561,73 @@ export default function ChatVentana({ contacto, socket, onCerrar, posicion, enLi
                                 }
                                 const esMio = m.remitente_id === miIdPersonal;
                                 const esSticker = !!parseStickerToken(m.contenido);
+                                const estaEditando = editandoId === m.id;
                                 return (
                                     <div key={idx} className={'chat-msg ' + (esMio ? 'mio' : 'suyo')}>
                                         {!esMio && (
                                             <div className="chat-ventana-avatar-mini chat-avatar-clickable" onClick={abrirPerfil}>
-                                                {contacto.foto ? (
-                                                    <>
-                                                        <img src={'/assets/perfiles/' + contacto.foto} alt=""
-                                                            onError={(e) => { e.target.style.display='none'; e.target.nextElementSibling.style.display='inline'; }} />
-                                                        <span style={{display:'none'}}>{contacto.nombre.charAt(0)}</span>
-                                                    </>
-                                                ) : (
-                                                    <span>{contacto.nombre.charAt(0)}</span>
-                                                )}
+                                                <span>{contacto.nombre.charAt(0)}</span>
                                             </div>
                                         )}
                                         <div className="chat-msg-contenido">
                                             {!esMio && <strong className="chat-msg-nombre">{contacto.nombre.split(' ')[0]}</strong>}
-                                            <div className={'chat-msg-burbuja' + (esSticker ? ' chat-msg-burbuja-sticker' : '')}>
-                                                {renderContenidoMensaje(m, true, (url) => setImagenExpandida(url))}
-                                                <span className="chat-msg-hora">
-                                                    {formatHora(m.fecha || m.fecha_creacion)}
-                                                    {esMio && (
-                                                        <span className={'chat-visto' + (m.leido ? ' chat-visto-leido' : '')}>
-                                                            <IconoFa icono={m.leido ? faCheckDouble : faCheck} />
-                                                        </span>
+                                            {/* Cita respondida */}
+                                            {m.reply_to && (
+                                                <div className="chat-msg-reply-cita">
+                                                    <span className="chat-reply-cita-nombre">{m.reply_to.nombre_remitente}</span>
+                                                    <span className="chat-reply-cita-texto">{(m.reply_to.contenido || '').substring(0, 80)}</span>
+                                                </div>
+                                            )}
+                                            {estaEditando ? (
+                                                <div className="chat-edit-inline">
+                                                    <input
+                                                        ref={inputEditRef}
+                                                        className="chat-edit-input"
+                                                        value={textoEdit}
+                                                        onChange={e => setTextoEdit(e.target.value)}
+                                                        onKeyDown={e => { if (e.key === 'Enter') guardarEdicion(); if (e.key === 'Escape') { setEditandoId(null); setTextoEdit(''); } }}
+                                                        autoFocus
+                                                    />
+                                                    <div className="chat-edit-btns">
+                                                        <button className="chat-edit-save" onClick={guardarEdicion}>Guardar</button>
+                                                        <button className="chat-edit-cancel" onClick={() => { setEditandoId(null); setTextoEdit(''); }}>Cancelar</button>
+                                                    </div>
+                                                </div>
+                                            ) : (
+                                                <div className={'chat-msg-burbuja' + (esSticker ? ' chat-msg-burbuja-sticker' : '')}>
+                                                    {renderContenidoMensaje(m, true, (url) => setImagenExpandida(url))}
+                                                    <span className="chat-msg-hora">
+                                                        {m.editado && <em className="chat-editado-label">editado</em>}
+                                                        {formatHora(m.fecha || m.fecha_creacion)}
+                                                        {esMio && (
+                                                            <span className={'chat-visto' + (m.leido ? ' chat-visto-leido' : '')}>
+                                                                <IconoFa icono={m.leido ? faCheckDouble : faCheck} />
+                                                            </span>
+                                                        )}
+                                                    </span>
+                                                </div>
+                                            )}
+                                            {/* Acciones al hover */}
+                                            {!esSticker && !estaEditando && (
+                                                <div className={'chat-msg-acciones' + (esMio ? ' mio' : '')}>
+                                                    <button
+                                                        className="chat-msg-accion-btn"
+                                                        title="Responder"
+                                                        onClick={() => setRespondiendo({ id: m.id, contenido: m.contenido || '', nombre_remitente: esMio ? 'Tú' : contacto.nombre.split(' ')[0] })}
+                                                    >
+                                                        <IconoFa icono={faReply} />
+                                                    </button>
+                                                    {esMio && m.tipo !== 'archivo' && (
+                                                        <button
+                                                            className="chat-msg-accion-btn"
+                                                            title="Editar"
+                                                            onClick={() => { setEditandoId(m.id); setTextoEdit(m.contenido || ''); }}
+                                                        >
+                                                            <IconoFa icono={faPen} />
+                                                        </button>
                                                     )}
-                                                </span>
-                                            </div>
+                                                </div>
+                                            )}
                                         </div>
                                     </div>
                                 );
@@ -576,10 +668,20 @@ export default function ChatVentana({ contacto, socket, onCerrar, posicion, enLi
                                     );
                                 })}
                             </div>
+                            <div className="chat-preview-caption">
+                                <input
+                                    type="text"
+                                    className="chat-preview-caption-input"
+                                    placeholder="Añadir un mensaje..."
+                                    value={captionTexto}
+                                    onChange={e => setCaptionTexto(e.target.value)}
+                                    onKeyDown={e => { if (e.key === 'Enter' && !enviandoArchivo) confirmarEnvioArchivos(); }}
+                                />
+                            </div>
                             <div className="chat-preview-actions">
                                 <button
                                     className="chat-preview-btn-cancel"
-                                    onClick={() => setArchivosEnCola([])}
+                                    onClick={() => { setArchivosEnCola([]); setCaptionTexto(''); }}
                                     disabled={enviandoArchivo}
                                 >
                                     Cancelar
@@ -593,6 +695,19 @@ export default function ChatVentana({ contacto, socket, onCerrar, posicion, enLi
                                     {enviandoArchivo ? 'Enviando...' : archivosEnCola.length > 1 ? `Enviar ${archivosEnCola.length}` : 'Enviar'}
                                 </button>
                             </div>
+                        </div>
+                    )}
+
+                    {/* ── Barra de respuesta ── */}
+                    {respondiendo && (
+                        <div className="chat-reply-bar">
+                            <div className="chat-reply-bar-info">
+                                <span className="chat-reply-bar-nombre">Respondiendo a {respondiendo.nombre_remitente}</span>
+                                <span className="chat-reply-bar-texto">{(respondiendo.contenido || '').substring(0, 60)}</span>
+                            </div>
+                            <button className="chat-reply-bar-cancel" onClick={() => setRespondiendo(null)} title="Cancelar respuesta">
+                                <IconoFa icono={faTimes} />
+                            </button>
                         </div>
                     )}
 

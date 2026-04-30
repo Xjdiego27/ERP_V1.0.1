@@ -21,7 +21,7 @@ from chat_db import (
     coleccion_grupos, coleccion_msg_grupo, coleccion_notas,
 )
 from chat_auth import verificar_token, resolver_id_personal
-from chat_socket_events import usuarios_conectados
+from chat_socket_events import sio, usuarios_conectados
 
 
 # ── FastAPI app ──
@@ -273,6 +273,8 @@ async def obtener_historial(
             'tipo': m.get('tipo', 'texto'),
             'archivo_url': m.get('archivo_url', ''),
             'archivo_nombre': m.get('archivo_nombre', ''),
+            'reply_to': m.get('reply_to', None),
+            'editado': m.get('editado', False),
         })
     return resultado
 
@@ -570,6 +572,54 @@ async def eliminar_nota(
 # ══════════════════════════════════════════════════════════
 # ARCHIVOS / UPLOAD
 # ══════════════════════════════════════════════════════════
+class EditarMensajeBody(BaseModel):
+    contenido: str
+
+
+@fastapi_app.put("/mensajes/{msg_id}")
+async def editar_mensaje(
+    msg_id: str,
+    body: EditarMensajeBody,
+    token: dict = Depends(verificar_token),
+):
+    """Editar el contenido de un mensaje propio."""
+    id_personal, _ = resolver_id_personal(token)
+    if not id_personal:
+        raise HTTPException(status_code=404, detail="Personal no encontrado")
+    try:
+        oid = ObjectId(msg_id)
+    except InvalidId:
+        raise HTTPException(status_code=400, detail="ID de mensaje inválido")
+
+    msg = await coleccion_mensajes.find_one({'_id': oid})
+    if not msg:
+        raise HTTPException(status_code=404, detail="Mensaje no encontrado")
+    if msg['remitente_id'] != id_personal:
+        raise HTTPException(status_code=403, detail="Solo puedes editar tus propios mensajes")
+
+    nuevo_contenido = body.contenido.strip()
+    if not nuevo_contenido:
+        raise HTTPException(status_code=400, detail="El contenido no puede estar vacío")
+
+    await coleccion_mensajes.update_one(
+        {'_id': oid},
+        {'$set': {'contenido': nuevo_contenido, 'editado': True}}
+    )
+
+    # Notificar al destinatario en tiempo real
+    otro_id = msg['destinatario_id'] if msg['remitente_id'] == id_personal else msg['remitente_id']
+    evento = {
+        'id': msg_id,
+        'contenido': nuevo_contenido,
+        'remitente_id': msg['remitente_id'],
+        'destinatario_id': msg['destinatario_id'],
+    }
+    for rsid in list(usuarios_conectados.get(otro_id, [])):
+        await sio.emit('mensaje_editado', evento, to=rsid)
+
+    return {'ok': True}
+
+
 @fastapi_app.post("/upload")
 async def subir_archivo(
     file: UploadFile = File(...),

@@ -23,10 +23,33 @@ from chat_routes import fastapi_app       # FastAPI app con todas las rutas regi
 
 logging.basicConfig(level=logging.INFO)
 
+
+# ══════════════════════════════════════════════════════════
+# MIDDLEWARE — Cache-Control: no-store para /socket.io/
+# Evita ERR_CACHE_OPERATION_NOT_SUPPORTED en Chrome al intentar
+# cachear respuestas de long-polling (streams no cacheables).
+# ══════════════════════════════════════════════════════════
+class NoCacheSocketIO:
+    def __init__(self, app):
+        self.app = app
+
+    async def __call__(self, scope, receive, send):
+        if scope['type'] == 'http' and '/socket.io/' in scope.get('path', ''):
+            async def send_nocache(event):
+                if event['type'] == 'http.response.start':
+                    headers = list(event.get('headers', []))
+                    headers.append((b'cache-control', b'no-store'))
+                    event = {**event, 'headers': headers}
+                await send(event)
+            await self.app(scope, receive, send_nocache)
+        else:
+            await self.app(scope, receive, send)
+
+
 # ══════════════════════════════════════════════════════════
 # APP COMBINADA — Socket.IO envuelve FastAPI
 # ══════════════════════════════════════════════════════════
-app = socketio.ASGIApp(sio, other_asgi_app=fastapi_app)
+app = NoCacheSocketIO(socketio.ASGIApp(sio, other_asgi_app=fastapi_app))
 
 
 # ══════════════════════════════════════════════════════════
@@ -37,5 +60,5 @@ if __name__ == "__main__":
         "chat_server:app",
         host="0.0.0.0",
         port=CHAT_PORT,
-        reload=True,
+        reload=False,
     )

@@ -8,22 +8,34 @@ from bson import ObjectId
 from jose import jwt, JWTError
 import socketio
 
-from chat_config import SECRET_KEY, ALGORITHM, CORS_ORIGINS
+import re
+from chat_config import SECRET_KEY, ALGORITHM, CORS_ORIGINS, CORS_ORIGIN_REGEX
 from chat_auth import resolver_id_personal
 from chat_db import coleccion_mensajes, coleccion_msg_general, coleccion_msg_grupo, coleccion_grupos
 from chat_push import enviar_push_chat, ids_suscritos_push
 
 logger = logging.getLogger("chat")
 
+# Orígenes fijos permitidos
+_CORS_FIXED = {
+    'http://localhost:3000',
+    'http://localhost:5173',
+    'http://intraneteq',
+    'http://intraneteq:3000',
+    *CORS_ORIGINS,
+}
+_CORS_RE = re.compile(CORS_ORIGIN_REGEX)
+
+def _cors_permitido(origin):
+    """Permite localhost, dominios de la lista .env y cualquier IP de red local."""
+    if not origin:
+        return True
+    return origin in _CORS_FIXED or bool(_CORS_RE.match(origin))
+
 # ── Socket.IO server ──
 sio = socketio.AsyncServer(
     async_mode='asgi',
-    cors_allowed_origins=[
-        'http://localhost:3000',
-        'http://localhost:5173',
-        'http://intraneteq',
-        'http://intraneteq:3000',
-    ],
+    cors_allowed_origins=_cors_permitido,
     ping_interval=25,
     ping_timeout=60,
     logger=False,
@@ -148,6 +160,7 @@ async def enviar_mensaje(sid, data):
         return {'error': 'destinatario_id inválido'}
 
     ahora = datetime.now()
+    reply_to = data.get('reply_to')  # { id, contenido, nombre_remitente } o None
     mensaje_doc = {
         'remitente_id': remitente_id,
         'destinatario_id': destinatario_id,
@@ -158,6 +171,8 @@ async def enviar_mensaje(sid, data):
         'tipo': data.get('tipo', 'texto'),
         'archivo_url': data.get('archivo_url', ''),
         'archivo_nombre': data.get('archivo_nombre', ''),
+        'reply_to': reply_to,
+        'editado': False,
     }
 
     try:
@@ -178,6 +193,8 @@ async def enviar_mensaje(sid, data):
         'tipo': mensaje_doc['tipo'],
         'archivo_url': mensaje_doc['archivo_url'],
         'archivo_nombre': mensaje_doc['archivo_nombre'],
+        'reply_to': reply_to,
+        'editado': False,
     }
 
     sids_destino = list(usuarios_conectados.get(destinatario_id, []))
